@@ -89,7 +89,17 @@ function assertionExpr(expected) {
     const minTop = Math.min(...tops);
     const cardsPerRow = tops.filter(t => t === minTop).length;
     const usedPct = Math.round(wrapW / window.innerWidth * 100);
-    const lefts = [...new Set([...document.querySelectorAll('.slabel')].map(e => Math.round(e.getBoundingClientRect().left)))];
+    // gutter symmetry: for each major block, left gutter must equal right gutter
+    // (this is the real "left/right in sync" property — robust to blocks that are
+    //  intentionally different widths, e.g. the centered layers column)
+    const vw = window.innerWidth;
+    let maxAsym = 0, worstBlock = '';
+    ['.hero .wrap', '#layerList', '.depthbar', '.cols', '#pills', '#cards'].forEach(sel => {
+      const e = document.querySelector(sel); if (!e) return;
+      const r = e.getBoundingClientRect();
+      const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
+      if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
+    });
     const bodyText = document.body.innerText;
     const expected = ${JSON.stringify(expected)};
     const missing = expected.filter(s => !bodyText.includes(s));
@@ -100,7 +110,8 @@ function assertionExpr(expected) {
       overflow: cs.scrollWidth - cs.clientWidth,
       clippedLayers: clipped,
       zeroHeightCards: zeroCards,
-      labelLefts: lefts,
+      maxAsym: maxAsym,
+      worstBlock: worstBlock,
       missingCount: missing.length,
       missingSample: missing.slice(0, 3),
       leaks: leaks,
@@ -182,7 +193,7 @@ async function main() {
       r.overflow <= 0        ? ok(`${tag} no horizontal overflow`)            : bad(`${tag} horizontal overflow: ${r.overflow}px`);
       r.clippedLayers === 0  ? ok(`${tag} no clipped layers`)                 : bad(`${tag} ${r.clippedLayers} layer(s) clipped by max-height`);
       r.zeroHeightCards === 0? ok(`${tag} no zero-height cards`)              : bad(`${tag} ${r.zeroHeightCards} zero-height card(s)`);
-      r.labelLefts.length===1? ok(`${tag} section labels share one left edge (${r.labelLefts[0]}px)`) : bad(`${tag} section labels misaligned: ${r.labelLefts.join(',')}`);
+      r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 8      ? ok(`${tag} 8 topic cards present`)             : bad(`${tag} expected 8 cards, got ${r.cardCount}`);

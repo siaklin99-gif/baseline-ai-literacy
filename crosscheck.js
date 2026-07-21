@@ -100,6 +100,15 @@ function assertionExpr(expected) {
       const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
+    // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
+    // inline text links are exempt (WCAG inline exception) so they're excluded here.
+    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['#depth','depth slider'], ['details.card > summary','card tap-row']];
+    const taps = PRIMARY.map(([sel,name]) => {
+      const els = [...document.querySelectorAll(sel)];
+      if (!els.length) return null;
+      const boxes = els.map(e => e.getBoundingClientRect());
+      return { name, minW: Math.round(Math.min(...boxes.map(b => b.width))), minH: Math.round(Math.min(...boxes.map(b => b.height))) };
+    }).filter(Boolean);
     const bodyText = document.body.innerText;
     const expected = ${JSON.stringify(expected)};
     const missing = expected.filter(s => !bodyText.includes(s));
@@ -118,7 +127,8 @@ function assertionExpr(expected) {
       cardCount: cards.length,
       wrapW: wrapW,
       usedPct: usedPct,
-      cardsPerRow: cardsPerRow
+      cardsPerRow: cardsPerRow,
+      taps: taps
     };
   })()`;
 }
@@ -203,6 +213,14 @@ async function main() {
       } else {
         r.usedPct >= 68      ? ok(`${tag} container uses ${r.usedPct}% of width (efficient)`) : bad(`${tag} only ${r.usedPct}% of width used — too narrow`);
         r.cardsPerRow === 2  ? ok(`${tag} topic cards are 2-up`)              : bad(`${tag} expected 2 cards/row on desktop, got ${r.cardsPerRow}`);
+      }
+      // touch targets (mobile only — that's where fingers tap)
+      if (c.mobile) {
+        r.taps.forEach(t => {
+          (t.minW >= 44 && t.minH >= 44)
+            ? ok(`${tag} ${t.name} tap target ${t.minW}x${t.minH} (>=44)`)
+            : bad(`${tag} ${t.name} tap target ${t.minW}x${t.minH} — under 44x44`);
+        });
       }
       console.log(`     \x1b[2m→ saved crosscheck_shots/${c.name}.png\x1b[0m`);
     }

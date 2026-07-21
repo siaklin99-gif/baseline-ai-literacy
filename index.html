@@ -212,6 +212,10 @@ footer .line { max-width: 520px; }
   section { padding: 22px 0; }
   .hero h1 { font-size: clamp(30px, 9vw, 40px); }
   footer { padding: 34px 0 44px; }
+  /* touch targets >= 44px (Apple HIG / WCAG): fatter pills + a grabbable slider,
+     visual track stays 6px — padding just widens the invisible hit area */
+  .pill { min-height: 44px; display: inline-flex; align-items: center; }
+  input[type=range] { box-sizing: content-box; height: 6px; padding: 19px 0; background-clip: content-box; }
 }
 </style>
 </head>

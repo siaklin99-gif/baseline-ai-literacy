@@ -83,6 +83,12 @@ function assertionExpr(expected) {
     const clipped = layers.filter(el => el.scrollHeight > el.clientHeight + 1).length;
     const cards = [...document.querySelectorAll('#cards details.card')];
     const zeroCards = cards.filter(c => c.getBoundingClientRect().height < 2).length;
+    const wrapW = Math.round((document.querySelector('.wrap')||{getBoundingClientRect:()=>({width:0})}).getBoundingClientRect().width);
+    // how many cards sit on the first row (share the min top) = columns in the grid
+    const tops = cards.map(c => Math.round(c.getBoundingClientRect().top));
+    const minTop = Math.min(...tops);
+    const cardsPerRow = tops.filter(t => t === minTop).length;
+    const usedPct = Math.round(wrapW / window.innerWidth * 100);
     const lefts = [...new Set([...document.querySelectorAll('.slabel')].map(e => Math.round(e.getBoundingClientRect().left)))];
     const bodyText = document.body.innerText;
     const expected = ${JSON.stringify(expected)};
@@ -98,7 +104,10 @@ function assertionExpr(expected) {
       missingCount: missing.length,
       missingSample: missing.slice(0, 3),
       leaks: leaks,
-      cardCount: cards.length
+      cardCount: cards.length,
+      wrapW: wrapW,
+      usedPct: usedPct,
+      cardsPerRow: cardsPerRow
     };
   })()`;
 }
@@ -177,6 +186,13 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 8      ? ok(`${tag} 8 topic cards present`)             : bad(`${tag} expected 8 cards, got ${r.cardCount}`);
+      // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
+      if (c.mobile) {
+        r.cardsPerRow === 1  ? ok(`${tag} cards single-column (mobile)`)      : bad(`${tag} expected 1 card/row on mobile, got ${r.cardsPerRow}`);
+      } else {
+        r.usedPct >= 68      ? ok(`${tag} container uses ${r.usedPct}% of width (efficient)`) : bad(`${tag} only ${r.usedPct}% of width used — too narrow`);
+        r.cardsPerRow === 2  ? ok(`${tag} topic cards are 2-up`)              : bad(`${tag} expected 2 cards/row on desktop, got ${r.cardsPerRow}`);
+      }
       console.log(`     \x1b[2m→ saved crosscheck_shots/${c.name}.png\x1b[0m`);
     }
   } catch (e) {

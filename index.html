@@ -15,7 +15,8 @@
   --blue: #185fa5; --blue-bg: #e6f1fb;
   --radius: 14px; --radius-sm: 8px;
   --accent: #185fa5;
-  --wrap: 720px;
+  --wrap: 940px;   /* outer container: uses wide screens without going edge-to-edge */
+  --read: 640px;   /* readable prose column cap (~78 chars max) — text never stretches past this */
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -69,9 +70,13 @@ section { padding: 30px 0; }
   color: var(--text-ter); font-weight: 600; margin-bottom: 6px;
 }
 .stitle { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
-.ssub { color: var(--text-sec); margin-bottom: 22px; font-size: 15.5px; }
+.ssub { color: var(--text-sec); margin-bottom: 22px; font-size: 15.5px; max-width: var(--read); }
 
 /* ---------- 10 layers ---------- */
+/* the 10-layer explainer is a sequential reading flow — keep it a readable
+   column (720) instead of stretching the cards across the wide container */
+.depthbar { max-width: 720px; }
+#layerList { max-width: 720px; }
 .depthbar {
   position: sticky; top: 0; z-index: 5; background: var(--bg);
   padding: 14px 0 12px; margin-bottom: 6px;
@@ -144,10 +149,14 @@ input[type=range]::-moz-range-thumb {
 .pill .n { opacity: .6; font-weight: 500; margin-left: 4px; }
 .pill.active .n { opacity: .7; }
 
+/* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
+#cards { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
+@media (min-width: 760px) { #cards { grid-template-columns: 1fr 1fr; } }
+
 /* ---------- accordion clusters ---------- */
 details.card {
   background: var(--surface); border: 0.5px solid var(--border-med);
-  border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
+  border-radius: var(--radius); overflow: hidden;   /* spacing handled by grid gap */
 }
 details.card > summary {
   list-style: none; cursor: pointer; padding: 16px 18px;
@@ -191,7 +200,8 @@ details.card[open] .chev { transform: rotate(90deg); }
 
 /* ---------- footer ---------- */
 footer { padding: 44px 0 60px; text-align: center; color: var(--text-ter); font-size: 13px; }
-footer .line { max-width: 520px; margin: 0 auto 10px; }
+footer p { max-width: 560px; margin: 0 auto 10px; }
+footer .line { max-width: 520px; }
 </style>
 </head>
 <body>

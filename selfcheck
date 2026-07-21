@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# ============================================================
+# Baseline — one-command project guard (Proactive Auditing Rule)
+#   ./selfcheck         fast, offline: static + units + invariants
+#   ./selfcheck --full  also runs the headless-Chrome render crosscheck
+# Exits non-zero if ANY check fails. Fails closed: a missing tool
+# or unreadable file blocks rather than silently passing.
+# ============================================================
+set -uo pipefail
+cd "$(dirname "$0")" || { echo "❌ cannot cd to project dir"; exit 2; }
+
+command -v node >/dev/null 2>&1 || { echo "❌ node not found (failing closed)"; exit 2; }
+
+fail=0
+step() {
+  local label="$1"; shift
+  echo ""
+  echo "▶ $label"
+  if "$@"; then :; else fail=1; echo "  ↳ FAILED: $label"; fi
+}
+
+echo "=================================================="
+echo " Baseline selfcheck"
+echo "=================================================="
+
+# fast / offline path — safe for a pre-commit hook (no network, no browser)
+step "static + data + regression guards"  node verify.js
+step "adversarial unit tests"             node test/functions.test.js
+step "universal invariants"               node test/invariants.js
+
+# heavy / live path — opt-in
+if [ "${1:-}" = "--full" ]; then
+  step "rendered crosscheck (headless Chrome, 4 combos)" node crosscheck.js
+else
+  echo ""
+  echo "  (skipping rendered crosscheck — run './selfcheck --full' for the browser pass)"
+fi
+
+echo ""
+echo "=================================================="
+if [ "$fail" -eq 0 ]; then
+  echo " ✅ selfcheck PASS"
+else
+  echo " ❌ selfcheck FAIL — do not ship"
+fi
+echo "=================================================="
+exit "$fail"

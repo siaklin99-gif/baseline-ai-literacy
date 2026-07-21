@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Blocks a commit if the project guard fails (fast, offline path).
+# If the guard is wrong, fix the guard — do not bypass it.
+exec "$(git rev-parse --show-toplevel)/selfcheck"

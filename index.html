@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Baseline — reset your AI literacy</title>
+<style>
+:root {
+  --bg: #f9f8f6; --surface: #ffffff; --surface2: #f1f0ec;
+  --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.15);
+  --text: #1a1a18; --text-sec: #5f5e5a; --text-ter: #888780;
+  --green: #0f6e56; --green-bg: #e1f5ee;
+  --red: #a32d2d; --red-bg: #fcebeb;
+  --amber: #854f0b; --amber-bg: #faeeda;
+  --blue: #185fa5; --blue-bg: #e6f1fb;
+  --radius: 14px; --radius-sm: 8px;
+  --accent: #185fa5;
+  --wrap: 720px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --surface: #242422; --surface2: #2c2c2a;
+    --border: rgba(255,255,255,0.08); --border-med: rgba(255,255,255,0.15);
+    --text: #f1f0ec; --text-sec: #b4b2a9; --text-ter: #888780;
+    --green: #5dcaa5; --green-bg: #085041;
+    --red: #f09595; --red-bg: #501313;
+    --amber: #ef9f27; --amber-bg: #412402;
+    --blue: #85b7eb; --blue-bg: #042c53;
+    --accent: #85b7eb;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 22px; }
+
+/* ---------- hero ---------- */
+.hero { padding: 64px 0 40px; text-align: center; }
+.eyebrow {
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-ter); font-weight: 600; margin-bottom: 18px;
+}
+.hero h1 {
+  font-size: clamp(34px, 7vw, 52px); line-height: 1.08; letter-spacing: -0.02em;
+  font-weight: 700; margin-bottom: 18px;
+}
+.hero h1 .grad {
+  background: linear-gradient(120deg, var(--accent), var(--green));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p { font-size: clamp(16px, 2.3vw, 19px); color: var(--text-sec); max-width: 540px; margin: 0 auto 30px; }
+.cta {
+  display: inline-block; background: var(--text); color: var(--bg);
+  font-weight: 600; font-size: 15px; padding: 13px 26px; border-radius: 999px;
+  text-decoration: none; transition: transform .15s ease, opacity .15s ease;
+}
+.cta:active { transform: scale(0.97); }
+.cta.ghost { background: transparent; color: var(--text); border: 1px solid var(--border-med); margin-left: 8px; }
+
+/* ---------- section ---------- */
+section { padding: 30px 0; }
+.slabel {
+  font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--text-ter); font-weight: 600; margin-bottom: 6px;
+}
+.stitle { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; }
+.ssub { color: var(--text-sec); margin-bottom: 22px; font-size: 15.5px; }
+
+/* ---------- 10 layers ---------- */
+.depthbar {
+  position: sticky; top: 0; z-index: 5; background: var(--bg);
+  padding: 14px 0 12px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.depthbar .lbl { display:flex; justify-content: space-between; align-items:baseline; margin-bottom: 9px; }
+.depthbar .lbl span:first-child { font-size: 13px; color: var(--text-sec); font-weight: 500; }
+.depthbar .lbl span:last-child { font-size: 13px; color: var(--accent); font-weight: 700; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+  background: var(--surface2); border-radius: 999px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 26px; height: 26px;
+  border-radius: 50%; background: var(--accent); cursor: pointer;
+  border: 3px solid var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+input[type=range]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
+  cursor: pointer; border: 3px solid var(--surface);
+}
+
+.layer {
+  background: var(--surface); border: 0.5px solid var(--border-med);
+  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px;
+  display: flex; gap: 14px; align-items: flex-start;
+  opacity: 0; max-height: 0; overflow: hidden; padding-top: 0; padding-bottom: 0;
+  border-width: 0; margin-bottom: 0;
+  transition: opacity .35s ease, max-height .4s ease, padding .35s ease, margin .35s ease;
+}
+.layer.on {
+  opacity: 1; max-height: 600px; padding-top: 16px; padding-bottom: 16px;
+  border-width: 0.5px; margin-bottom: 10px;
+}
+.layer .num {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
+  background: var(--surface2); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px;
+}
+.layer .body h4 { font-size: 16.5px; font-weight: 650; margin-bottom: 3px; }
+.layer .body p { font-size: 15px; color: var(--text-sec); }
+.layer .body .tag {
+  display:inline-block; font-size: 11px; letter-spacing:.04em; text-transform:uppercase;
+  color: var(--text-ter); font-weight:600; margin-top: 8px;
+}
+
+/* ---------- can / cannot ---------- */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.col { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 16px 16px 6px; }
+.col h4 { font-size: 15px; margin-bottom: 12px; display:flex; align-items:center; gap:7px; }
+.col.can h4 { color: var(--green); }
+.col.cant h4 { color: var(--red); }
+.col ul { list-style: none; }
+.col li { font-size: 14.5px; color: var(--text-sec); padding: 7px 0; border-top: 1px solid var(--border); }
+.col li:first-child { border-top: 0; }
+@media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
+
+/* ---------- filter pills ---------- */
+.pills {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.pill {
+  font-size: 13.5px; font-weight: 550; padding: 8px 15px; border-radius: 999px;
+  border: 1px solid var(--border-med); background: var(--surface); color: var(--text-sec);
+  cursor: pointer; transition: all .15s ease; -webkit-tap-highlight-color: transparent;
+}
+.pill:hover { border-color: var(--text-ter); }
+.pill.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.pill .n { opacity: .6; font-weight: 500; margin-left: 4px; }
+.pill.active .n { opacity: .7; }
+
+/* ---------- accordion clusters ---------- */
+details.card {
+  background: var(--surface); border: 0.5px solid var(--border-med);
+  border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
+}
+details.card > summary {
+  list-style: none; cursor: pointer; padding: 16px 18px;
+  display: flex; align-items: center; gap: 13px;
+}
+details.card > summary::-webkit-details-marker { display: none; }
+.card .idx {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px;
+  background: var(--surface2); display:flex; align-items:center; justify-content:center;
+  font-size: 15px;
+}
+.card .head { flex: 1; }
+.card .head .t { font-weight: 620; font-size: 16px; }
+.card .head .s { font-size: 13.5px; color: var(--text-ter); }
+.card .chev { color: var(--text-ter); transition: transform .2s ease; flex:0 0 auto; }
+details.card[open] .chev { transform: rotate(90deg); }
+.card .content { padding: 0 18px 18px 61px; font-size: 15px; color: var(--text-sec); }
+.card .content p { margin-bottom: 10px; }
+.card .content p:last-child { margin-bottom: 0; }
+.card .content strong { color: var(--text); font-weight: 620; }
+.card .content .flag {
+  display:inline-block; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  font-weight:700; color: var(--amber); background: var(--amber-bg);
+  padding: 2px 8px; border-radius: 5px; margin-bottom: 8px;
+}
+/* freshness stamp on data-driven cards */
+.stamp { display:flex; align-items:center; gap:7px; margin-top: 12px; font-size: 12.5px; }
+.stamp .dot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
+.stamp.fresh { color: var(--text-ter); }
+.stamp.fresh .dot { background: var(--green); }
+.stamp.stale, .stamp.missing { color: var(--amber); font-weight: 600; }
+.stamp.stale .dot, .stamp.missing .dot { background: var(--amber); }
+.stamp a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.dlist { list-style:none; margin: 4px 0 4px; }
+.dlist li { padding: 9px 0; border-top: 1px solid var(--border); }
+.dlist li:first-child { border-top: 0; }
+.dlist .dn { font-weight: 620; color: var(--text); }
+.dlist .dk { font-size: 11px; text-transform: uppercase; letter-spacing:.04em; color: var(--text-ter); font-weight:600; margin-left:7px; }
+.dlist .db { display:block; font-size: 14px; color: var(--text-sec); }
+@media (max-width: 560px) { .card .content { padding-left: 18px; } }
+
+/* ---------- footer ---------- */
+footer { padding: 44px 0 60px; text-align: center; color: var(--text-ter); font-size: 13px; }
+footer .line { max-width: 520px; margin: 0 auto 10px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Start on the same page</div>
+    <h1>Reset your<br><span class="grad">AI literacy.</span></h1>
+    <p>No jargon, no hype, no background required. One calm baseline everyone — young or old, techie or not — can start from. Then go as deep as you want.</p>
+    <a href="#layers" class="cta">Start at Layer&nbsp;1</a>
+    <a href="#topics" class="cta ghost">Skip to topics</a>
+  </div>
+</header>
+
+<!-- ============ 10 LAYERS ============ -->
+<section id="layers">
+  <div class="wrap">
+    <div class="slabel">The one idea to get first</div>
+    <div class="stitle">What is AI — in 10 layers</div>
+    <div class="ssub">Slide right to go deeper. Stop wherever it stops being useful to you. There's no wrong depth.</div>
+
+    <div class="depthbar">
+      <div class="lbl"><span>Drag to reveal depth</span><span id="depthCount">Layer 1 of 10</span></div>
+      <input id="depth" type="range" min="1" max="10" value="1" step="1"
+             aria-label="Reveal explanation depth, layer 1 to 10" />
+    </div>
+
+    <div id="layerList"></div>
+  </div>
+</section>
+
+<!-- ============ CAN / CANNOT ============ -->
+<section>
+  <div class="wrap">
+    <div class="slabel">Reality check</div>
+    <div class="stitle">What AI can &amp; can't do</div>
+    <div class="ssub">Roughly, versus a capable human today. The gap is narrower than the hype and wider than the fear.</div>
+    <div class="cols">
+      <div class="col can">
+        <h4>✓ Good at</h4>
+        <ul>
+          <li>Drafting, rewriting &amp; summarizing text</li>
+          <li>Explaining things at any level you ask</li>
+          <li>Translating &amp; changing tone or format</li>
+          <li>Writing and debugging code</li>
+          <li>Brainstorming and first drafts, fast</li>
+          <li>Pulling structure out of messy notes</li>
+        </ul>
+      </div>
+      <div class="col cant">
+        <h4>✗ Weak / unreliable at</h4>
+        <ul>
+          <li>Knowing what's true — it can sound sure and be wrong</li>
+          <li>Fresh facts after its training cutoff</li>
+          <li>Exact math &amp; counting, without tools</li>
+          <li>Remembering you between chats (by default)</li>
+          <li>Real judgment, ethics, accountability</li>
+          <li>Anything where a confident guess is dangerous</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOPIC CLUSTERS ============ -->
+<section id="topics">
+  <div class="wrap">
+    <div class="slabel">Go further, one tap at a time</div>
+    <div class="stitle">The rest, when you're ready</div>
+    <div class="ssub">Tap any card to open it. Close it and move on. Nothing here needs to be read in order.</div>
+    <div id="pills" class="pills"></div>
+    <div id="cards"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="line">Baseline is a starting point, not the last word. It's built to be honest about what's still uncertain — including where the numbers change too fast to hard-code.</p>
+    <p>v1 prototype · concepts are evergreen · market-data cards marked <strong style="color:var(--amber)">Needs live check</strong> are placeholders.</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+/* ---------- 10 layers data ---------- */
+const LAYERS = [
+  ["The one-line version", "AI is software that does tasks we used to think needed a human brain — writing, answering, recognizing, deciding.", "Layer 1 · plain English"],
+  ["It learns from examples", "Today's AI mostly isn't hand-coded rules. It's shown huge piles of examples and figures out the patterns itself.", "Layer 2 · how it's different"],
+  ["This wave is generative", "The current boom is 'generative AI' — it creates new text, images or code by predicting what plausibly comes next.", "Layer 3 · what's new"],
+  ["The engine is a 'model'", "A model is one giant math function with billions of adjustable numbers (parameters) tuned to be good at prediction.", "Layer 4 · the object"],
+  ["Training set those numbers", "It read enormous amounts of text/images and slowly adjusted those numbers to make fewer mistakes. That's 'training'.", "Layer 5 · where it came from"],
+  ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does"],
+  ["It has no memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window.", "Layer 7 · its blind spots"],
+  ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat"],
+  ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood"],
+  ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor"]
+];
+
+const list = document.getElementById('layerList');
+LAYERS.forEach((l, i) => {
+  const el = document.createElement('div');
+  el.className = 'layer' + (i === 0 ? ' on' : '');
+  el.innerHTML = `<div class="num">${i+1}</div><div class="body">
+    <h4>${l[0]}</h4><p>${l[1]}</p><span class="tag">${l[2]}</span></div>`;
+  list.appendChild(el);
+});
+const depth = document.getElementById('depth');
+const count = document.getElementById('depthCount');
+const layerEls = [...document.querySelectorAll('.layer')];
+function applyDepth(n){
+  n = Math.min(10, Math.max(1, n|0));
+  depth.value = n;
+  depth.setAttribute('aria-valuetext', `Layer ${n} of 10`);
+  count.textContent = `Layer ${n} of 10`;
+  layerEls.forEach((el, i) => {
+    const shown = i < n;
+    el.classList.toggle('on', shown);
+    // hide un-revealed layers from screen readers & find-in-page, not just visually
+    if (shown) el.removeAttribute('aria-hidden');
+    else el.setAttribute('aria-hidden', 'true');
+  });
+}
+depth.addEventListener('input', () => {
+  applyDepth(+depth.value);
+  try { localStorage.setItem('baseline_depth', depth.value); } catch(e){}
+});
+/* restore last depth the reader reached (falls back to 1) */
+let savedDepth = 1;
+try { savedDepth = parseInt(localStorage.getItem('baseline_depth'), 10) || 1; } catch(e){}
+applyDepth(savedDepth);
+
+/* ---------- freshness helper: turns a data.js entry into a stamp ---------- */
+const STALE_DAYS = 120;
+function daysSince(iso){
+  const t = Date.parse(iso); if (isNaN(t)) return null;
+  return Math.floor((Date.now() - t) / 86400000);
+}
+/* escape plain-text data.js fields so an editor can type &, <, > safely.
+   (the `html` field stays raw HTML on purpose — that's the one place markup is intended) */
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"]/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function renderList(items){
+  if (!items || !items.length) return '';
+  const rows = items.map((x, i) => {
+    if ('name'  in x) return `<li><span class="dn">${esc(x.name)}</span><span class="dk">${esc(x.kind)}</span><span class="db">${esc(x.best)}</span></li>`;
+    if ('plan'  in x) return `<li><span class="dn">${esc(x.plan)}</span><span class="dk">${esc(x.cost)}</span><span class="db">${esc(x.notes)}</span></li>`;
+    if ('title' in x) return `<li><span class="dn">${esc(x.title)}</span><span class="dk">${esc(x.kind)}</span><span class="db">${x.author ? esc(x.author)+' — ' : ''}${esc(x.why)}</span></li>`;
+    // mistyped row (e.g. a book entered with name: instead of title:) — show it, don't drop it
+    console.warn('Baseline data.js: list row', i, 'has no name/plan/title key — rendering fallback', x);
+    return `<li><span class="dn" style="color:var(--amber)">⚠ Malformed row ${i+1} in data.js</span><span class="db">Needs a <code>name</code>, <code>plan</code>, or <code>title</code> field.</span></li>`;
+  }).join('');
+  return `<ul class="dlist">${rows}</ul>`;
+}
+function dataCard(key){
+  const d = (window.BASELINE_DATA && window.BASELINE_DATA[key]) || {};
+  let stamp, body = (d.html || '') + renderList(d.list);
+  const n = d.asOf ? daysSince(d.asOf) : null;
+  if (!d.asOf) {
+    stamp = `<div class="stamp missing"><span class="dot"></span>Needs live check — not yet filled in <code style="opacity:.6">(data.js)</code></div>`;
+  } else if (n === null) {
+    stamp = `<div class="stamp missing"><span class="dot"></span>Invalid date "${esc(d.asOf)}" in data.js — use YYYY-MM-DD</div>`;
+  } else if (n > STALE_DAYS) {
+    stamp = `<div class="stamp stale"><span class="dot"></span>May be outdated — last checked ${d.asOf} (${n} days ago)</div>`;
+  } else {
+    const src = d.sourceUrl ? `<a href="${encodeURI(d.sourceUrl)}" target="_blank" rel="noopener">${esc(d.source)||'source'}</a>` : esc(d.source);
+    stamp = `<div class="stamp fresh"><span class="dot"></span>Verified ${esc(d.asOf)}${src?' · '+src:''}</div>`;
+  }
+  return body + stamp;
+}
+
+/* ---------- topic clusters (11 remaining topics, grouped) ---------- */
+/* c[3] as a string = static evergreen content.
+   c[3] as {data:"key"} = pulled live from data.js with a freshness stamp. */
+/* each card: [emoji, title, sub, content, cluster] */
+const CARDS = [
+  ["🧭", "Pick the right model for the job", "Topic 3–4 · which LLM, and when", {data:"models"}, "choose"],
+  ["💻", "Local vs cloud LLMs", "Topic 5 · where the model runs",
+    `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>
+     <p><strong>Local:</strong> the model runs on your own computer. Private and offline, but needs a capable machine and is usually smaller/weaker.</p>
+     <p>Most people start in the cloud. Go local when privacy or offline use matters more than raw power.</p>`, "choose"],
+  ["💳", "Setup &amp; what it costs", "Topic 6 · closed vs open source", {data:"pricing"}, "cost"],
+  ["🎟️", "Tokens &amp; not burning money", "Topic 7–8 · input, output, cost, tracking",
+    `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
+     <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
+     <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`, "cost"],
+  ["🎥", "Why so many AI 'gurus'?", "Topic 9 · guides everywhere",
+    `<p>Three honest reasons: the topic is new and genuinely confusing, attention is profitable, and selling a course is easier than the slow work of real skill.</p>
+     <p>Signal over noise: prefer people who <strong>show real work</strong> and admit limits over anyone promising 'get rich with AI in a weekend'.</p>`, "learn"],
+  ["🔒", "Privacy &amp; protecting yourself", "Topic 10 · what leaves your device",
+    `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
+     <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`, "safety"],
+  ["🏢", "Why work won't train you", "Topic 11 · the corporate gap",
+    `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
+     <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
+  ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"]
+];
+const cards = document.getElementById('cards');
+CARDS.forEach((c) => {
+  const content = (typeof c[3] === 'string') ? c[3] : dataCard(c[3].data);
+  const d = document.createElement('details');
+  d.className = 'card';
+  d.dataset.cluster = c[4] || '';
+  d.innerHTML = `<summary>
+      <div class="idx">${c[0]}</div>
+      <div class="head"><div class="t">${c[1]}</div><div class="s">${c[2]}</div></div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </summary><div class="content">${content}</div>`;
+  cards.appendChild(d);
+});
+
+/* ---------- cluster filter pills ---------- */
+const CLUSTERS = [
+  ["all", "All topics"],
+  ["choose", "Choose tools"],
+  ["cost", "Cost & tokens"],
+  ["safety", "Stay safe"],
+  ["learn", "Learn well"]
+];
+const cardEls = [...document.querySelectorAll('#cards details.card')];
+const pillWrap = document.getElementById('pills');
+function countFor(key){ return key === 'all' ? cardEls.length : cardEls.filter(c => c.dataset.cluster === key).length; }
+function filterCards(key){
+  cardEls.forEach(c => { c.style.display = (key === 'all' || c.dataset.cluster === key) ? '' : 'none'; });
+  [...pillWrap.children].forEach(p => {
+    const on = p.dataset.key === key;
+    p.classList.toggle('active', on);
+    p.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+pillWrap.setAttribute('role', 'group');
+pillWrap.setAttribute('aria-label', 'Filter topics by theme');
+CLUSTERS.forEach((cl, i) => {
+  const b = document.createElement('button');
+  b.className = 'pill' + (i === 0 ? ' active' : '');
+  b.dataset.key = cl[0];
+  b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+  b.innerHTML = `${cl[1]}<span class="n">${countFor(cl[0])}</span>`;
+  b.addEventListener('click', () => filterCards(cl[0]));
+  pillWrap.appendChild(b);
+});
+</script>
+</body>
+</html>

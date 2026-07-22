@@ -25,8 +25,8 @@ window.BASELINE_DATA = {
   /* Topic 3 & 4 — which models exist, and which to use for what */
   models: {
     asOf: "2026-07-21",
-    source: "Vendor sites, checked Jul 2026",
-    sourceUrl: "",
+    source: "Vendor sites · live landscape",
+    sourceUrl: "https://artificialanalysis.ai/models",
     // We list by PRODUCT name (stable) not version number (churns monthly).
     html: `
       <p>There are many models — some free, some paid, some open-source you can run yourself.
@@ -51,8 +51,8 @@ window.BASELINE_DATA = {
   /* Topic 6 — setup & what it costs, closed vs open source */
   pricing: {
     asOf: "2026-07-21",
-    source: "Vendor pricing pages, mid-2026",
-    sourceUrl: "",
+    source: "Vendor pricing pages (e.g. Claude's)",
+    sourceUrl: "https://claude.com/pricing",
     html: `
       <p><strong>Closed / paid:</strong> sign up, usually a free tier plus a monthly plan.
          No setup — it works in a browser or app straight away.</p>
@@ -71,7 +71,9 @@ window.BASELINE_DATA = {
   /* Topic 12 — books & classes worth taking */
   books: {
     asOf: "2026-07-21",
-    source: "Publisher, author & review pages",
+    // deliberate: no single section URL — every title above links to its own
+    // publisher/author page, which ARE the sources.
+    source: "Publisher & author pages — linked on each title",
     sourceUrl: "",
     html: `
       <p>Look for material that teaches <strong>how these systems actually work and where they

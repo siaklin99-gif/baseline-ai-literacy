@@ -77,6 +77,13 @@ if (DATA) {
     if (d.asOf && (!d.html || d.html.trim().length < 20)) {
       bad(`${key}: marked verified but html is empty/too short`);
     }
+
+    // models/pricing stamps must link to a source (books link per-title instead — deliberate)
+    if (key === 'models' || key === 'pricing') {
+      /^https:\/\/[^\s"]+$/.test(d.sourceUrl || '')
+        ? ok(`${key}: stamp has a clickable source (${d.sourceUrl})`)
+        : bad(`${key}: sourceUrl missing/malformed — "Verified" stamp has no clickable source`);
+    }
   }
 }
 
@@ -123,11 +130,19 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 5 ? ok('all 5 section titles are real <h2> headings')
-          : bad(`expected 5 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 6 ? ok('all 6 section titles are real <h2> headings')
+          : bad(`expected 6 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
+// self-quiz: section present with exactly 5 questions defined
+const quizBlock = html.match(/const QUIZ = \[([\s\S]*?)\n\];/);
+if (!quizBlock) bad('QUIZ array missing');
+else {
+  const nq = (quizBlock[1].match(/\n\s*\["/g) || []).length;
+  nq === 5 ? ok('self-quiz has exactly 5 questions') : bad(`expected 5 quiz questions, found ${nq}`);
+}
+html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')

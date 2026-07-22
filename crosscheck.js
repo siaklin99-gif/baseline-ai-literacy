@@ -104,6 +104,7 @@ function assertionExpr(expected) {
     });
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
     const glCount = document.querySelectorAll('#glossary .gl-table tbody tr').length;
+    const qzCount = document.querySelectorAll('#quiz details.qz').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
     const plCards = [...document.querySelectorAll('.pl-card')];
     const plCurrent = document.querySelectorAll('.pl-card.is-current').length;
@@ -112,7 +113,7 @@ function assertionExpr(expected) {
     const plExamples = plCards.filter(c => { const e = c.querySelector('.pl-eg'); return e && e.textContent.replace(/everyday/i, '').trim().length > 0; }).length;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
-    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row']];
+    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row']];
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
@@ -134,6 +135,7 @@ function assertionExpr(expected) {
       plExamples: plExamples,
       bmCount: bmCount,
       glCount: glCount,
+      qzCount: qzCount,
       maxAsym: maxAsym,
       worstBlock: worstBlock,
       missingCount: missing.length,
@@ -225,9 +227,9 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 9      ? ok(`${tag} 9 topic cards present (incl. first-15-minutes)`) : bad(`${tag} expected 9 cards, got ${r.cardCount}`);
-      (r.bmCount === 8 && r.glCount === 12)
-        ? ok(`${tag} body map (8) + glossary (12) rendered`)
-        : bad(`${tag} body map=${r.bmCount} (want 8), glossary=${r.glCount} (want 12)`);
+      (r.bmCount === 8 && r.glCount === 12 && r.qzCount === 5)
+        ? ok(`${tag} body map (8) + glossary (12) + quiz (5) rendered`)
+        : bad(`${tag} body map=${r.bmCount} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 5)`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
         r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);

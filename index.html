@@ -127,6 +127,17 @@ section { padding: 30px 0; }
 .pl-body p { font-size: 15.5px; color: var(--text-sec); }
 .pl-tag { display: inline-block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
   color: var(--text-ter); font-weight: 700; margin-top: 12px; }
+/* everyday example callout — helps users relate the layer to daily life */
+.pl-eg {
+  margin-top: 12px; padding: 11px 13px; border-radius: 10px;
+  background: color-mix(in srgb, var(--g2) 7%, var(--surface2));
+  font-size: 14.5px; line-height: 1.5; color: var(--text-sec);
+}
+.pl-eg-tag {
+  font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; font-weight: 800;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-right: 9px;
+}
 
 .pl-btn {
   display: inline-flex; align-items: center; gap: 7px; margin-top: 22px; min-height: 44px;
@@ -381,17 +392,18 @@ footer .line { max-width: 520px; }
 <script src="data.js"></script>
 <script>
 /* ---------- 10 layers data ---------- */
+/* each layer: [title, description, tag, everyday example] */
 const LAYERS = [
-  ["The one-line version", "AI is software that does tasks we used to think needed a human brain — writing, answering, recognizing, deciding.", "Layer 1 · plain English"],
-  ["It learns from examples", "Today's AI mostly isn't hand-coded rules. It's shown huge piles of examples and figures out the patterns itself.", "Layer 2 · how it's different"],
-  ["This wave is generative", "The current boom is 'generative AI' — it creates new text, images or code by predicting what plausibly comes next.", "Layer 3 · what's new"],
-  ["The engine is a 'model'", "A model is one giant math function with billions of adjustable numbers (parameters) tuned to be good at prediction.", "Layer 4 · the object"],
-  ["Training set those numbers", "It read enormous amounts of text/images and slowly adjusted those numbers to make fewer mistakes. That's 'training'.", "Layer 5 · where it came from"],
-  ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does"],
-  ["It has no memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window.", "Layer 7 · its blind spots"],
-  ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat"],
-  ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood"],
-  ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor"]
+  ["The one-line version", "AI is software that does tasks we used to think needed a human brain — writing, answering, recognizing, deciding.", "Layer 1 · plain English", "Your phone quietly grouping every photo of your dog into one album — nobody tagged them."],
+  ["It learns from examples", "Today's AI mostly isn't hand-coded rules. It's shown huge piles of examples and figures out the patterns itself.", "Layer 2 · how it's different", "Like a toddler learning “dog” after seeing hundreds of them — not from a rulebook about fur and tails."],
+  ["This wave is generative", "The current boom is 'generative AI' — it creates new text, images or code by predicting what plausibly comes next.", "Layer 3 · what's new", "Your keyboard suggesting the next word as you text — now scaled up to whole emails and pictures."],
+  ["The engine is a 'model'", "A model is one giant math function with billions of adjustable numbers (parameters) tuned to be good at prediction.", "Layer 4 · the object", "Picture billions of tiny volume knobs, each nudged a hair until the output comes out right."],
+  ["Training set those numbers", "It read enormous amounts of text/images and slowly adjusted those numbers to make fewer mistakes. That's 'training'.", "Layer 5 · where it came from", "Like shooting free throws for years — every miss tweaks your aim until you rarely miss."],
+  ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does", "“Bread and ___” and your brain says butter. It makes that guess, endlessly, at lightning speed."],
+  ["It has no memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — once the chat closes, it forgets you completely."],
+  ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat", "That friend who'd rather give a smooth, confident answer than admit “honestly, I don't know.”"],
+  ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood", "Same idea as a bicycle — then strap on a jet engine and endless fuel, and suddenly it flies."],
+  ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor", "It's a power tool, not a colleague — dazzling in skilled hands, lost on its own."]
 ];
 
 /* ---------- peel-to-the-core stack ----------
@@ -415,7 +427,9 @@ const plCards = LAYERS.map((l, i) => {
      <div class="pl-head"><div class="pl-num">${i + 1}</div>
        <div>${core ? '<div class="pl-core-label">The core · aha</div>' : ''}<div class="pl-title">${l[0]}</div></div>
      </div>
-     <div class="pl-body"><p>${l[1]}</p><span class="pl-tag">${l[2]}</span></div>`;
+     <div class="pl-body"><p>${l[1]}</p>
+       <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>${l[3]}</div>
+       <span class="pl-tag">${l[2]}</span></div>`;
   el.querySelector('.pl-num').style.backgroundPositionX = (i / (N - 1) * 100) + '%';
   // tapping a peeking upcoming card peels down to it
   el.addEventListener('click', () => { const d = i - cur; if (d > 0) { cur = i; layout(true); } });

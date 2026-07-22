@@ -96,6 +96,10 @@ for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="card
 (/is-core/.test(html) && /pl-core-label/.test(html) && /@keyframes plBurst/.test(html))
   ? ok('peel core reveal + burst animation present')
   : bad('peel core "boom" (is-core / core label / burst) missing');
+// each layer carries an everyday example
+(/class="pl-eg"/.test(html) && /pl-eg-tag/.test(html))
+  ? ok('per-layer everyday example callout present')
+  : bad('everyday example callout (pl-eg) missing');
 
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')

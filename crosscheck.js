@@ -105,6 +105,8 @@ function assertionExpr(expected) {
     const plCards = [...document.querySelectorAll('.pl-card')];
     const plCurrent = document.querySelectorAll('.pl-card.is-current').length;
     const plHasCore = plCards.length ? plCards[plCards.length - 1].querySelector('.pl-core-label') != null : false;
+    // every layer must carry an everyday example (non-empty)
+    const plExamples = plCards.filter(c => { const e = c.querySelector('.pl-eg'); return e && e.textContent.replace(/everyday/i, '').trim().length > 0; }).length;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
     const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row']];
@@ -126,6 +128,7 @@ function assertionExpr(expected) {
       plCardCount: plCards.length,
       plCurrent: plCurrent,
       plHasCore: plHasCore,
+      plExamples: plExamples,
       maxAsym: maxAsym,
       worstBlock: worstBlock,
       missingCount: missing.length,
@@ -210,9 +213,9 @@ async function main() {
       const tag = `[${c.name}]`;
       r.overflow <= 0        ? ok(`${tag} no horizontal overflow`)            : bad(`${tag} horizontal overflow: ${r.overflow}px`);
       r.zeroHeightCards === 0? ok(`${tag} no zero-height cards`)              : bad(`${tag} ${r.zeroHeightCards} zero-height card(s)`);
-      (r.plCardCount === 10 && r.plCurrent === 1 && r.plHasCore)
-        ? ok(`${tag} peel stack: 10 cards, one current, core wired`)
-        : bad(`${tag} peel stack broken: ${r.plCardCount} cards, ${r.plCurrent} current, core=${r.plHasCore}`);
+      (r.plCardCount === 10 && r.plCurrent === 1 && r.plHasCore && r.plExamples === 10)
+        ? ok(`${tag} peel stack: 10 cards, one current, core wired, 10 examples`)
+        : bad(`${tag} peel stack broken: ${r.plCardCount} cards, ${r.plCurrent} current, core=${r.plHasCore}, examples=${r.plExamples}`);
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);

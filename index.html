@@ -206,6 +206,9 @@ footer .line { max-width: 520px; }
 
 /* ---------- mobile: tighter rhythm, not just desktop scaled down ----------
    (placed last so these overrides win by source order) */
+/* progress dots for the mobile swipe decks — hidden on desktop */
+.dots { display: none; }
+
 @media (max-width: 560px) {
   .wrap { padding: 0 18px; }
   .hero { padding: 44px 0 30px; }
@@ -216,6 +219,37 @@ footer .line { max-width: 520px; }
      visual track stays 6px — padding just widens the invisible hit area */
   .pill { min-height: 44px; display: inline-flex; align-items: center; }
   input[type=range] { box-sizing: content-box; height: 6px; padding: 19px 0; background-clip: content-box; }
+
+  /* ---------- mobile swipe decks (hlur.ai pattern) ----------
+     Each section's items become a horizontal scroll-snap deck; the next
+     card peeks at the edge, native momentum scroll, progress dots below. */
+  #layerList, .cols, #cards {
+    display: flex; grid-template-columns: none;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+    align-items: flex-start; gap: 12px;
+    margin-inline: -18px; padding: 2px 18px 8px;   /* full-bleed to viewport edges */
+    scrollbar-width: none;
+  }
+  #layerList::-webkit-scrollbar, .cols::-webkit-scrollbar, #cards::-webkit-scrollbar { display: none; }
+  #layerList > *, .cols > *, #cards > * {
+    scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
+  }
+
+  /* layers: no slider on mobile — swipe through all 10 instead of revealing */
+  .depthbar { display: none; }
+  #layerList .layer {
+    opacity: 1; max-height: none; overflow: visible;
+    border-width: 0.5px; padding: 16px 18px; margin: 0;
+  }
+
+  /* progress dots */
+  .dots { display: flex; gap: 7px; justify-content: center; margin-top: 14px; }
+  .dots i {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--border-med);
+    transition: width .2s ease, background .2s ease;
+  }
+  .dots i.on { width: 18px; background: var(--accent); }
 }
 </style>
 </head>
@@ -440,6 +474,7 @@ const CLUSTERS = [
 const cardEls = [...document.querySelectorAll('#cards details.card')];
 const pillWrap = document.getElementById('pills');
 function countFor(key){ return key === 'all' ? cardEls.length : cardEls.filter(c => c.dataset.cluster === key).length; }
+let cardsDeck = null; // swipe-deck controller (mobile), assigned below
 function filterCards(key){
   cardEls.forEach(c => { c.style.display = (key === 'all' || c.dataset.cluster === key) ? '' : 'none'; });
   [...pillWrap.children].forEach(p => {
@@ -447,6 +482,10 @@ function filterCards(key){
     p.classList.toggle('active', on);
     p.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  // filtered subset changes the deck — reset scroll and rebuild dots
+  const cardsEl = document.getElementById('cards');
+  cardsEl.scrollLeft = 0;
+  if (cardsDeck) cardsDeck.refresh();
 }
 pillWrap.setAttribute('role', 'group');
 pillWrap.setAttribute('aria-label', 'Filter topics by theme');
@@ -459,6 +498,40 @@ CLUSTERS.forEach((cl, i) => {
   b.addEventListener('click', () => filterCards(cl[0]));
   pillWrap.appendChild(b);
 });
+
+/* ---------- mobile swipe decks: progress dots ---------- */
+/* Adds a dots row after a scroll container and tracks the snapped card.
+   Inert on desktop (the container is a grid there, never scrolls sideways;
+   dots are hidden via CSS). */
+function initDeck(container){
+  if (!container) return null;
+  const dots = document.createElement('div');
+  dots.className = 'dots';
+  dots.setAttribute('aria-hidden', 'true'); // decorative; the cards themselves are the content
+  container.after(dots);
+  let items = [], raf = null;
+  function visible(){ return [...container.children].filter(el => el.nodeType === 1 && getComputedStyle(el).display !== 'none'); }
+  function update(){
+    raf = null;
+    if (items.length < 2) return;
+    const contLeft = container.getBoundingClientRect().left + parseFloat(getComputedStyle(container).paddingLeft) || 0;
+    let best = 0, bd = Infinity;
+    items.forEach((it, i) => { const d = Math.abs(it.getBoundingClientRect().left - contLeft); if (d < bd) { bd = d; best = i; } });
+    [...dots.children].forEach((d, i) => d.classList.toggle('on', i === best));
+  }
+  function refresh(){
+    items = visible();
+    dots.innerHTML = items.map(() => '<i></i>').join('');
+    update();
+  }
+  container.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+  window.addEventListener('resize', refresh);
+  refresh();
+  return { refresh };
+}
+initDeck(document.getElementById('layerList'));
+initDeck(document.querySelector('.cols'));
+cardsDeck = initDeck(document.getElementById('cards'));
 </script>
 </body>
 </html>

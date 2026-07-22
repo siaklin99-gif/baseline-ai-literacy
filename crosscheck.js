@@ -97,16 +97,21 @@ function assertionExpr(expected) {
     ['.hero .wrap', '#layerList', '.depthbar', '.cols', '#pills', '#cards'].forEach(sel => {
       const e = document.querySelector(sel); if (!e) return;
       const r = e.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return; // skip hidden (e.g. slider is display:none on mobile)
       const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
+    });
+    // on mobile, each section's items should be a horizontal scroll-snap deck
+    const decksScroll = ['#layerList', '.cols', '#cards'].every(sel => {
+      const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
     const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['#depth','depth slider'], ['details.card > summary','card tap-row']];
     const taps = PRIMARY.map(([sel,name]) => {
-      const els = [...document.querySelectorAll(sel)];
-      if (!els.length) return null;
-      const boxes = els.map(e => e.getBoundingClientRect());
+      // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
+      const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
+      if (!boxes.length) return null;
       return { name, minW: Math.round(Math.min(...boxes.map(b => b.width))), minH: Math.round(Math.min(...boxes.map(b => b.height))) };
     }).filter(Boolean);
     const bodyText = document.body.innerText;
@@ -128,6 +133,7 @@ function assertionExpr(expected) {
       wrapW: wrapW,
       usedPct: usedPct,
       cardsPerRow: cardsPerRow,
+      decksScroll: decksScroll,
       taps: taps
     };
   })()`;
@@ -209,7 +215,7 @@ async function main() {
       r.cardCount === 8      ? ok(`${tag} 8 topic cards present`)             : bad(`${tag} expected 8 cards, got ${r.cardCount}`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
-        r.cardsPerRow === 1  ? ok(`${tag} cards single-column (mobile)`)      : bad(`${tag} expected 1 card/row on mobile, got ${r.cardsPerRow}`);
+        r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);
       } else {
         r.usedPct >= 68      ? ok(`${tag} container uses ${r.usedPct}% of width (efficient)`) : bad(`${tag} only ${r.usedPct}% of width used — too narrow`);
         r.cardsPerRow === 2  ? ok(`${tag} topic cards are 2-up`)              : bad(`${tag} expected 2 cards/row on desktop, got ${r.cardsPerRow}`);

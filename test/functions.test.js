@@ -24,8 +24,9 @@ function stubEl() {
   return new Proxy(t, {
     get(o, k) {
       if (k in o) return o[k];
-      if (['appendChild','addEventListener','removeAttribute','setAttribute','toggleAttribute','scrollIntoView','click','remove'].includes(k)) return () => {};
+      if (['appendChild','addEventListener','removeAttribute','setAttribute','toggleAttribute','scrollIntoView','click','remove','after','before','append','prepend'].includes(k)) return () => {};
       if (k === 'getAttribute') return () => null;
+      if (k === 'getBoundingClientRect') return () => ({ left: 0, right: 0, top: 0, width: 0, height: 0 });
       if (k === 'querySelector') return () => stubEl();
       if (k === 'querySelectorAll') return () => [];
       return undefined;
@@ -46,6 +47,9 @@ const sandbox = {
               querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl() },
   localStorage: { getItem: () => null, setItem() {} },
   console: { log() {}, warn() {}, error() {} },
+  getComputedStyle: () => ({ paddingLeft: '0px', display: 'block' }),
+  requestAnimationFrame: () => 0,
+  addEventListener: () => {},
   Date, JSON, Math, parseInt, parseFloat,
 };
 sandbox.window = sandbox;

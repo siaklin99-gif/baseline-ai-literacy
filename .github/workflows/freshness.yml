@@ -40,13 +40,11 @@ jobs:
           COUNT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
                     --search "\"$TITLE\" in:title" --json number --jq length)
           if [ "$COUNT" = "0" ]; then
-            gh issue create --repo "$GITHUB_REPOSITORY" \
-              --title "$TITLE" \
-              --body "The monthly freshness run of \`verify.js\` failed — most likely a \`data.js\` card is >90 days old (the public page shows amber at 120d).
-
-**To fix:** re-verify the facts, update the card content and its \`asOf\` date in \`data.js\`, run \`./selfcheck\`, commit and push.
-
-Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            BODY=$(printf '%s\n\n%s\n\n%s' \
+              "The monthly freshness run of \`verify.js\` failed — most likely a \`data.js\` card is >90 days old (the public page shows amber at 120d)." \
+              "**To fix:** re-verify the facts, update the card content and its \`asOf\` date in \`data.js\`, run \`./selfcheck\`, commit and push." \
+              "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID")
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
           else
             echo "An open watchdog issue already exists — not duplicating."
           fi

@@ -98,8 +98,8 @@ function assertionExpr(expected) {
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
     // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack;
-    // the glossary is a table, not a deck)
-    const decksScroll = ['.cols', '#cards', '#bodymap'].every(sel => {
+    // the glossary shows a swipe deck on mobile, a table on desktop)
+    const decksScroll = ['.cols', '#cards', '#bodymap', '.gl-deck'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;

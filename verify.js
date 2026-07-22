@@ -140,7 +140,7 @@ const quizBlock = html.match(/const QUIZ = \[([\s\S]*?)\n\];/);
 if (!quizBlock) bad('QUIZ array missing');
 else {
   const nq = (quizBlock[1].match(/\n\s*\["/g) || []).length;
-  nq === 5 ? ok('self-quiz has exactly 5 questions') : bad(`expected 5 quiz questions, found ${nq}`);
+  nq === 6 ? ok('self-quiz has exactly 6 questions') : bad(`expected 6 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // reality check: three honest tiers — good / unreliable (check it) / can't (don't ask).

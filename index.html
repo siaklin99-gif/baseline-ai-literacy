@@ -343,8 +343,9 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px; font-size: 14px; font-weight: 700;
   background: var(--grad); background-size: 500% 100%; color: #fff;
   display: flex; align-items: center; justify-content: center; }
-.qz:nth-child(2) .qz-n { background-position-x: 25%; } .qz:nth-child(3) .qz-n { background-position-x: 50%; }
-.qz:nth-child(4) .qz-n { background-position-x: 75%; } .qz:nth-child(5) .qz-n { background-position-x: 100%; }
+.qz:nth-child(2) .qz-n { background-position-x: 20%; } .qz:nth-child(3) .qz-n { background-position-x: 40%; }
+.qz:nth-child(4) .qz-n { background-position-x: 60%; } .qz:nth-child(5) .qz-n { background-position-x: 80%; }
+.qz:nth-child(6) .qz-n { background-position-x: 100%; }
 .qz-q { flex: 1; font-weight: 620; font-size: 15.5px; }
 .qz-hint { font-size: 12px; color: var(--text-ter); white-space: nowrap; }
 .qz[open] .qz-hint { display: none; }
@@ -553,7 +554,7 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Before you go</div>
     <h2 class="stitle">Check your baseline</h2>
-    <div class="ssub">Five quick questions. Answer in your head, then tap to check. Get all five and you're ahead of most of the internet.</div>
+    <div class="ssub">Six quick questions. Answer in your head, then tap to check. Get all six and you're ahead of most of the internet.</div>
     <div id="quiz"></div>
   </div>
 </section>
@@ -899,7 +900,9 @@ const QUIZ = [
   ["Is it thinking, like a person does?",
    "No.", "It's an extraordinary next-word predictor — no understanding, no beliefs, no intentions. The skill is in how you steer it.", "Layer 10 · the core"],
   ["Is the most expensive model always the best choice?",
-   "No.", "Match the model to the task: flagship models for hard reasoning, smaller/cheaper ones for quick, simple jobs.", "Pick the right model"]
+   "No.", "Match the model to the task: flagship models for hard reasoning, smaller/cheaper ones for quick, simple jobs.", "Pick the right model"],
+  ["If it gets something wrong, whose fault is that?",
+   "Yours.", "There's no one home to take responsibility — the person who uses the answer owns the answer. That's why you verify before you act on it.", "Use it · own it"]
 ];
 const quiz = document.getElementById('quiz');
 QUIZ.forEach((q, i) => {

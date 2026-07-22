@@ -343,9 +343,9 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px; font-size: 14px; font-weight: 700;
   background: var(--grad); background-size: 500% 100%; color: #fff;
   display: flex; align-items: center; justify-content: center; }
-.qz:nth-child(2) .qz-n { background-position-x: 20%; } .qz:nth-child(3) .qz-n { background-position-x: 40%; }
-.qz:nth-child(4) .qz-n { background-position-x: 60%; } .qz:nth-child(5) .qz-n { background-position-x: 80%; }
-.qz:nth-child(6) .qz-n { background-position-x: 100%; }
+.qz:nth-child(2) .qz-n { background-position-x: 17%; } .qz:nth-child(3) .qz-n { background-position-x: 33%; }
+.qz:nth-child(4) .qz-n { background-position-x: 50%; } .qz:nth-child(5) .qz-n { background-position-x: 67%; }
+.qz:nth-child(6) .qz-n { background-position-x: 83%; } .qz:nth-child(7) .qz-n { background-position-x: 100%; }
 .qz-q { flex: 1; font-weight: 620; font-size: 15.5px; }
 .qz-hint { font-size: 12px; color: var(--text-ter); white-space: nowrap; }
 .qz[open] .qz-hint { display: none; }
@@ -554,7 +554,7 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Before you go</div>
     <h2 class="stitle">Check your baseline</h2>
-    <div class="ssub">Six quick questions. Answer in your head, then tap to check. Get all six and you're ahead of most of the internet.</div>
+    <div class="ssub">Seven quick questions. Answer in your head, then tap to check. Get all seven and you're ahead of most of the internet.</div>
     <div id="quiz"></div>
   </div>
 </section>
@@ -710,6 +710,23 @@ const CARDS = [
      <div class="prompt">Draft a short, friendly message to [who] about [what]. Keep it under 100 words.</div>
      <p><strong>3 · Catch it being wrong — on day one.</strong> Ask it <em>"How sure are you? What should I double-check?"</em> and verify one fact yourself. That habit — use it, then check it — is the whole skill.</p>
      <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "choose"],
+  ["🗓️", "What it can do for your day", "Real life, any background · copy, paste, fill the [brackets]",
+    `<p><strong>Household &amp; paperwork</strong></p>
+     <div class="prompt">Plan 5 weeknight dinners around [chicken, rice, spinach] — one grocery list, nothing fancy.</div>
+     <div class="prompt">Explain this [lease / insurance letter / phone bill] in plain English and flag anything unusual: [paste]</div>
+     <p><strong>Words &amp; messages</strong></p>
+     <div class="prompt">Rewrite this to sound friendly but firm: [paste]</div>
+     <div class="prompt">Draft a short complaint to [company] about [problem] — polite, and asks for [a refund].</div>
+     <p><strong>Learning &amp; family</strong></p>
+     <div class="prompt">Explain [photosynthesis] to a 10-year-old, then quiz them with 3 fun questions.</div>
+     <div class="prompt">I have 20 minutes a day. Build me a 2-week plan to learn [basic Excel].</div>
+     <p><strong>Decisions</strong></p>
+     <div class="prompt">Compare [option A] vs [option B] for [my situation] — pros, cons, and hidden costs in a table.</div>
+     <div class="prompt">Here's my rough monthly spending: [paste] — where are the easy savings?</div>
+     <p><strong>Work</strong></p>
+     <div class="prompt">Turn these messy notes into 5 clear bullet points for my boss: [paste]</div>
+     <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
+     <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose"],
   ["🧭", "Pick the right model for the job", "Topic 3–4 · which LLM, and when", {data:"models"}, "choose"],
   ["💻", "Local vs cloud LLMs", "Topic 5 · where the model runs",
     `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>
@@ -729,6 +746,16 @@ const CARDS = [
   ["🏢", "Why work won't train you", "Topic 11 · the corporate gap",
     `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
      <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
+  ["🚴", "Will AI take my job?", "The big fear · answered honestly",
+    `<p>Not the way you've heard it. <strong>AI doesn't replace people — people who use AI replace people who don't.</strong></p>
+     <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Think of a bicycle. It never replaced the walker — but the person who learned to ride commutes farther, faster, and arrives fresher. Same destination, different speed. AI is that bicycle for everyday work.</div>
+     <p>Every big tool has worked this way: calculators didn't end accountants, and spreadsheets didn't either — the boring half of the work shrank while the judgment half grew.</p>
+     <p>So the move isn't to out-run the bicycle. It's to get on. The <strong>Your first 15 minutes</strong> card above is your first ride.</p>`, "learn"],
+  ["🔍", "Common myths, busted", "Heard everywhere · true nowhere",
+    `<p><strong>"AI will take all our jobs."</strong> It takes <em>tasks</em>, not jobs — and the advantage moves to whoever uses it. See the bicycle card above.</p>
+     <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots and biases — the math just delivers them fluently. Treat its take as one voice, not the referee.</p>
+     <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
+     <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`, "learn"],
   ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"],
   ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
@@ -902,7 +929,9 @@ const QUIZ = [
   ["Is the most expensive model always the best choice?",
    "No.", "Match the model to the task: flagship models for hard reasoning, smaller/cheaper ones for quick, simple jobs.", "Pick the right model"],
   ["If it gets something wrong, whose fault is that?",
-   "Yours.", "There's no one home to take responsibility — the person who uses the answer owns the answer. That's why you verify before you act on it.", "Use it · own it"]
+   "Yours.", "There's no one home to take responsibility — the person who uses the answer owns the answer. That's why you verify before you act on it.", "Use it · own it"],
+  ["Will AI take your job?",
+   "Not by itself.", "Tasks get automated; the advantage moves to whoever uses the tool. The bicycle never replaced the walker — the rider just arrives first. Get on the bicycle.", "Ride it · don't race it"]
 ];
 const quiz = document.getElementById('quiz');
 QUIZ.forEach((q, i) => {

@@ -140,9 +140,19 @@ const quizBlock = html.match(/const QUIZ = \[([\s\S]*?)\n\];/);
 if (!quizBlock) bad('QUIZ array missing');
 else {
   const nq = (quizBlock[1].match(/\n\s*\["/g) || []).length;
-  nq === 6 ? ok('self-quiz has exactly 6 questions') : bad(`expected 6 quiz questions, found ${nq}`);
+  nq === 7 ? ok('self-quiz has exactly 7 questions') : bad(`expected 7 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// GOAL LOCKS (2026-07-23 cold audit): the six stated goals' key content must stay on the page
+html.includes('people who use AI replace people who don') && html.includes('Will AI take my job?')
+  ? ok('goal 6: replacement thesis + bicycle card present')
+  : bad('goal 6 MISSING: "people who use AI replace..." thesis / jobs card gone');
+html.includes('Common myths, busted') && html.includes('is only a few years old')
+  ? ok('goal 5: myths card present (jobs, objectivity, too-late, always-right)')
+  : bad('goal 5 MISSING: myths card gone or gutted');
+const nPrompts = (html.match(/class="prompt"/g) || []).length;
+nPrompts >= 13 ? ok(`goal 3: ${nPrompts} copy-paste prompts on the page (3 starter + 10 daily)`)
+               : bad(`goal 3: only ${nPrompts} prompts — daily-life card gone or gutted (want >= 13)`);
 // reality check: three honest tiers — good / unreliable (check it) / can't (don't ask).
 // "can't do" and "weak at" are different claims; never re-merge them.
 (html.includes('✓ Good at') && html.includes('⚠ Unreliable at') && html.includes("✗ Can't do"))

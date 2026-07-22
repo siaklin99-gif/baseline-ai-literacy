@@ -31,9 +31,11 @@ step "universal invariants"               node test/invariants.js
 # heavy / live path — opt-in
 if [ "${1:-}" = "--full" ]; then
   step "rendered crosscheck (headless Chrome, 4 combos)" node crosscheck.js
+elif [ "${1:-}" = "--live" ]; then
+  step "source⇄live parity (fetches the deployed site)" node parity.js
 else
   echo ""
-  echo "  (skipping rendered crosscheck — run './selfcheck --full' for the browser pass)"
+  echo "  (skipping browser/live passes — './selfcheck --full' renders, './selfcheck --live' checks the deploy)"
 fi
 
 echo ""

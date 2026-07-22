@@ -24,7 +24,12 @@ No `npm install` — all Node built-ins.
 ```sh
 ./selfcheck          # fast, offline: static + units + invariants  (safe for pre-commit)
 ./selfcheck --full   # also renders in headless Chrome and saves screenshots
+./selfcheck --live   # fetches the deployed site and checks it matches local source
 ```
+
+Deployed via **GitHub Pages** from `main` (root). `parity.js` proves the live
+site matches local: `data.js` must be byte-identical (SHA-256) and every key
+structural marker in `index.html` must survive the deploy.
 
 `selfcheck` exits non-zero if anything fails, and **fails closed** (a missing tool or
 unreadable file blocks rather than passing). After `--full`, read the PNGs in

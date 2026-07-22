@@ -103,7 +103,7 @@ function assertionExpr(expected) {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
-    const glCount = document.querySelectorAll('#glossary .gl-table tbody tr').length;
+    const glCount = document.querySelectorAll('#glossary .gl-card').length;
     const qzCount = document.querySelectorAll('#quiz details.qz').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
     const plCards = [...document.querySelectorAll('.pl-card')];

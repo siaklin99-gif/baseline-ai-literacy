@@ -220,10 +220,7 @@ section { padding: 30px 0; }
 
 /* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
 #cards, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
-@media (min-width: 760px) {
-  #cards, #bodymap { grid-template-columns: 1fr 1fr; }
-  #cards details.card.wide { grid-column: 1 / -1; }   /* glossary table needs the full row */
-}
+@media (min-width: 760px) { #cards, #bodymap { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- body map ---------- */
 .bm-item { display: flex; gap: 14px; align-items: flex-start;
@@ -234,28 +231,9 @@ section { padding: 30px 0; }
 .bm-eq b { font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .bm-txt p { font-size: 14px; color: var(--text-sec); line-height: 1.5; }
 
-/* ---------- glossary table ---------- */
-.gl-wrap { overflow-x: auto; border: 0.5px solid var(--border-med); border-radius: var(--radius); }
-.gl-table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 14.5px; background: var(--surface); }
-.gl-table thead th {
-  text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--text-ter); font-weight: 700; padding: 12px 16px; background: var(--surface2);
-  border-bottom: 1px solid var(--border-med); white-space: nowrap;
-}
-.gl-table tbody th {
-  text-align: left; font-weight: 700; white-space: nowrap; vertical-align: top;
-  padding: 13px 16px; background: var(--surface); position: sticky; left: 0;   /* keep the term visible while scrolling */
-}
-.gl-table thead th:first-child { position: sticky; left: 0; z-index: 1; }
-.gl-table tbody th .gt {
-  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.gl-table td { padding: 13px 16px; color: var(--text-sec); line-height: 1.5; vertical-align: top; }
-.gl-table .gl-a { color: var(--text-ter); }
-.gl-table tbody tr + tr th, .gl-table tbody tr + tr td { border-top: 1px solid var(--border); }
-/* mobile swipe-deck version of the glossary (table is desktop-only) */
-.gl-deck { display: none; }
-.gl-card { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 15px 17px; }
+/* ---------- glossary: entry stack (vertical in-card on desktop, swipe deck on mobile) ---------- */
+.gl-deck { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 4px; }
+.gl-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 13px 15px; }
 .gl-cterm { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
 .gl-cterm .gt { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .gl-cdef { font-size: 14.5px; color: var(--text-sec); line-height: 1.5; margin-bottom: 10px; }
@@ -382,7 +360,6 @@ footer .line { max-width: 520px; }
   .cols > *, #cards > *, #bodymap > *, .gl-deck > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
   }
-  .gl-wrap { display: none; }   /* on mobile the glossary is the swipe deck, not the table */
 
   /* progress dots */
   .dots { display: flex; gap: 7px; justify-content: center; margin-top: 14px; }
@@ -661,13 +638,13 @@ const CARDS = [
   ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"],
   ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
-     <div id="glossary"></div>`, "learn", "wide"]
+     <div id="glossary"></div>`, "learn"]
 ];
 const cards = document.getElementById('cards');
 CARDS.forEach((c) => {
   const content = (typeof c[3] === 'string') ? c[3] : dataCard(c[3].data);
   const d = document.createElement('details');
-  d.className = 'card' + (c[5] === 'wide' ? ' wide' : '');   // wide = spans both grid columns
+  d.className = 'card';
   d.dataset.cluster = c[4] || '';
   d.innerHTML = `<summary>
       <div class="idx">${c[0]}</div>
@@ -779,20 +756,14 @@ const GLOSSARY = [
   ["Inference", "The model actually generating an answer (as opposed to training).", "sitting the exam, not studying for it"]
 ];
 const glossary = document.getElementById('glossary');
-const glRows = GLOSSARY.map(g =>
-  `<tr><th scope="row"><span class="gt">${g[0]}</span></th><td>${g[1]}</td><td class="gl-a">${g[2]}</td></tr>`
-).join('');
+/* one entry per term: vertical stack inside the card on desktop,
+   horizontal swipe deck on mobile */
 const glCards = GLOSSARY.map(g =>
   `<div class="gl-card"><div class="gl-cterm"><span class="gt">${g[0]}</span></div>
      <p class="gl-cdef">${g[1]}</p>
      <div class="gl-eg"><span class="pl-eg-tag">Like</span>${g[2]}</div></div>`
 ).join('');
-glossary.innerHTML =
-  `<div class="gl-wrap"><table class="gl-table">
-     <thead><tr><th>Term</th><th>In plain English</th><th>Like…</th></tr></thead>
-     <tbody>${glRows}</tbody>
-   </table></div>
-   <div class="gl-deck">${glCards}</div>`;
+glossary.innerHTML = `<div class="gl-deck">${glCards}</div>`;
 initDeck(document.querySelector('#glossary .gl-deck'));
 
 /* ---------- self-quiz: answer in your head, tap to check ---------- */

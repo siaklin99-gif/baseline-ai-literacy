@@ -59,7 +59,7 @@ async function get(url) {
   // index.html: assert the key structure survived the deploy
   if (liveIndex) {
     const html = liveIndex.toString();
-    const markers = ['id="peel"', 'id="bodymap"', 'id="glossary"', 'class="gl-table"',
+    const markers = ['id="peel"', 'id="bodymap"', 'id="glossary"', 'gl-deck',
       'What is AI', 'AI jargon in plain English', '--grad',
       'property="og:image"', 'meta name="description"'];
     markers.forEach(m => html.includes(m) ? ok(`live index has: ${m}`) : bad(`live index MISSING: ${m}`));

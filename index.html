@@ -97,53 +97,74 @@ section { padding: 30px 0; }
    and everything shares one left edge — a deliberate calm focal module,
    narrower than the full-width sections below it. */
 #layers .wrap { max-width: 720px; }
-.depthbar {
-  position: sticky; top: 0; z-index: 5; background: var(--bg);
-  padding: 14px 0 12px; margin-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.depthbar .lbl { display:flex; justify-content: space-between; align-items:baseline; margin-bottom: 9px; }
-.depthbar .lbl span:first-child { font-size: 13px; color: var(--text-sec); font-weight: 500; }
-.depthbar .lbl span:last-child { font-size: 13px; color: var(--accent); font-weight: 700; }
-input[type=range] {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
-  background: var(--surface2); border-radius: 999px; outline: none;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; width: 26px; height: 26px;
-  border-radius: 50%; background: var(--accent); cursor: pointer;
-  border: 3px solid var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-}
-input[type=range]::-moz-range-thumb {
-  width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
-  cursor: pointer; border: 3px solid var(--surface);
-}
+/* ---------- peel-to-the-core stack ---------- */
+#peel { position: relative; }
+.pl-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.pl-bar { flex: 1; height: 6px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+.pl-bar > span { display: block; height: 100%; width: 10%; background: var(--grad);
+  border-radius: 999px; transition: width .55s cubic-bezier(.22,.9,.24,1); }
+.pl-count { font-size: 13px; color: var(--text-sec); font-weight: 550; white-space: nowrap; }
 
-.layer {
-  background: var(--surface); border: 0.5px solid var(--border-med);
-  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px;
-  display: flex; gap: 14px; align-items: flex-start;
-  opacity: 0; max-height: 0; overflow: hidden; padding-top: 0; padding-bottom: 0;
-  border-width: 0; margin-bottom: 0;
-  transition: opacity .35s ease, max-height .4s ease, padding .35s ease, margin .35s ease;
+.pl-stage { position: relative; transition: height .55s cubic-bezier(.22,.9,.24,1); }
+.pl-card {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius);
+  padding: 18px 20px; transform-origin: 50% 0;
+  box-shadow: 0 8px 26px -18px rgba(0,0,0,.45);
+  transition: transform .55s cubic-bezier(.22,.9,.24,1), opacity .4s ease, box-shadow .4s ease;
+  will-change: transform, opacity;
 }
-.layer.on {
-  opacity: 1; max-height: 600px; padding-top: 16px; padding-bottom: 16px;
-  border-width: 0.5px; margin-bottom: 10px;
-}
-.layer .num {
-  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
-  /* one slice of the AI gradient per layer (set in JS) — colour = depth */
+.pl-head { display: flex; gap: 14px; align-items: center; }
+.pl-num {
+  flex: 0 0 auto; width: 36px; height: 36px; border-radius: 11px;
   background: var(--grad); background-size: 1000% 100%; background-position-x: 0%;
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
+  color: #fff; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 15px;
 }
-.layer .body h4 { font-size: 16.5px; font-weight: 650; margin-bottom: 3px; }
-.layer .body p { font-size: 15px; color: var(--text-sec); }
-.layer .body .tag {
-  display:inline-block; font-size: 11px; letter-spacing:.04em; text-transform:uppercase;
-  color: var(--text-ter); font-weight:600; margin-top: 8px;
+.pl-title { font-weight: 650; font-size: 17px; line-height: 1.25; }
+.pl-body { display: none; margin-top: 12px; }
+.pl-card.is-current .pl-body { display: block; }
+.pl-body p { font-size: 15.5px; color: var(--text-sec); }
+.pl-tag { display: inline-block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--text-ter); font-weight: 700; margin-top: 12px; }
+
+.pl-btn {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 22px; min-height: 44px;
+  background: var(--grad); color: #fff; border: none; cursor: pointer;
+  font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 999px;
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--g2) 70%, transparent);
+  transition: transform .15s ease;
+}
+.pl-btn:active { transform: scale(.97); }
+.pl-btn.restart { background: transparent; color: var(--text); border: 1px solid var(--border-med); box-shadow: none; }
+
+/* the core: the 'boom' + aha */
+.pl-card.is-core {
+  border-color: transparent;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--g2) 55%, transparent),
+              0 16px 44px -18px color-mix(in srgb, var(--g2) 60%, transparent);
+}
+.pl-card.is-core::after {
+  content: ''; position: absolute; inset: -2px; border-radius: inherit; z-index: -1;
+  background: var(--grad); opacity: .15;
+}
+.pl-core-label {
+  display: inline-block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text;
+  color: transparent; margin-bottom: 5px;
+}
+.pl-burst {
+  position: absolute; left: 30px; top: 30px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--g2); pointer-events: none; opacity: 0;
+}
+.pl-card.is-core.boom .pl-burst { animation: plBurst .75s ease-out forwards; }
+@keyframes plBurst {
+  0%   { opacity: .55; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(30); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-card, .pl-stage, .pl-bar > span, .pl-btn { transition: none; }
+  .pl-card.is-core.boom .pl-burst { animation: none; }
 }
 
 /* ---------- can / cannot ---------- */
@@ -248,12 +269,12 @@ footer .line { max-width: 520px; }
   /* touch targets >= 44px (Apple HIG / WCAG): fatter pills + a grabbable slider,
      visual track stays 6px — padding just widens the invisible hit area */
   .pill { min-height: 44px; display: inline-flex; align-items: center; }
-  input[type=range] { box-sizing: content-box; height: 6px; padding: 19px 0; background-clip: content-box; }
 
   /* ---------- mobile swipe decks (hlur.ai pattern) ----------
-     Each section's items become a horizontal scroll-snap deck; the next
-     card peeks at the edge, native momentum scroll, progress dots below. */
-  #layerList, .cols, #cards {
+     Can/Can't and Topics become horizontal scroll-snap decks; the next
+     card peeks at the edge, native momentum scroll, progress dots below.
+     (The layers use the peel-stack, which already works vertically.) */
+  .cols, #cards {
     display: flex; grid-template-columns: none;
     overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
@@ -261,16 +282,9 @@ footer .line { max-width: 520px; }
     margin-inline: -18px; padding: 2px 18px 8px;   /* full-bleed to viewport edges */
     scrollbar-width: none;
   }
-  #layerList::-webkit-scrollbar, .cols::-webkit-scrollbar, #cards::-webkit-scrollbar { display: none; }
-  #layerList > *, .cols > *, #cards > * {
+  .cols::-webkit-scrollbar, #cards::-webkit-scrollbar { display: none; }
+  .cols > *, #cards > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
-  }
-
-  /* layers: no slider on mobile — swipe through all 10 instead of revealing */
-  .depthbar { display: none; }
-  #layerList .layer {
-    opacity: 1; max-height: none; overflow: visible;
-    border-width: 0.5px; padding: 16px 18px; margin: 0;
   }
 
   /* progress dots */
@@ -300,15 +314,16 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">The one idea to get first</div>
     <div class="stitle">What is AI — in 10 layers</div>
-    <div class="ssub">Slide right to go deeper. Stop wherever it stops being useful to you. There's no wrong depth.</div>
+    <div class="ssub">Peel it back one layer at a time — from the outer skin to the core of what AI really is. Stop wherever it stops being useful, or go all the way in.</div>
 
-    <div class="depthbar">
-      <div class="lbl"><span>Drag to reveal depth</span><span id="depthCount">Layer 1 of 10</span></div>
-      <input id="depth" type="range" min="1" max="10" value="1" step="1"
-             aria-label="Reveal explanation depth, layer 1 to 10" />
+    <div id="peel">
+      <div class="pl-progress">
+        <div class="pl-bar"><span></span></div>
+        <div class="pl-count" aria-live="polite">Layer 1 of 10</div>
+      </div>
+      <div class="pl-stage"></div>
+      <button class="pl-btn" type="button">Peel deeper <span aria-hidden="true">↓</span></button>
     </div>
-
-    <div id="layerList"></div>
   </div>
 </section>
 
@@ -379,40 +394,69 @@ const LAYERS = [
   ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor"]
 ];
 
-const list = document.getElementById('layerList');
-LAYERS.forEach((l, i) => {
-  const el = document.createElement('div');
-  el.className = 'layer' + (i === 0 ? ' on' : '');
-  el.innerHTML = `<div class="num">${i+1}</div><div class="body">
-    <h4>${l[0]}</h4><p>${l[1]}</p><span class="tag">${l[2]}</span></div>`;
-  // colour the badge with its slice of the AI gradient (layer 1 blue -> layer 10 teal)
-  el.querySelector('.num').style.backgroundPositionX = (i / (LAYERS.length - 1) * 100) + '%';
-  list.appendChild(el);
+/* ---------- peel-to-the-core stack ----------
+   The 10 layers are a stack you peel one at a time, from the outer skin
+   (layer 1) to the core (layer 10 = the aha). Only the current layer shows
+   its body; the next layers peek beneath like onion skins. */
+const N = LAYERS.length;
+const stage = document.querySelector('.pl-stage');
+const bar = document.querySelector('.pl-bar > span');
+const plCount = document.querySelector('.pl-count');
+const plBtn = document.querySelector('.pl-btn');
+let cur = 0;
+try { cur = Math.min(N - 1, Math.max(0, parseInt(localStorage.getItem('baseline_peel'), 10) || 0)); } catch (e) {}
+
+const plCards = LAYERS.map((l, i) => {
+  const el = document.createElement('article');
+  el.className = 'pl-card';
+  const core = (i === N - 1);
+  el.innerHTML =
+    `<span class="pl-burst"></span>
+     <div class="pl-head"><div class="pl-num">${i + 1}</div>
+       <div>${core ? '<div class="pl-core-label">The core · aha</div>' : ''}<div class="pl-title">${l[0]}</div></div>
+     </div>
+     <div class="pl-body"><p>${l[1]}</p><span class="pl-tag">${l[2]}</span></div>`;
+  el.querySelector('.pl-num').style.backgroundPositionX = (i / (N - 1) * 100) + '%';
+  // tapping a peeking upcoming card peels down to it
+  el.addEventListener('click', () => { const d = i - cur; if (d > 0) { cur = i; layout(true); } });
+  stage.appendChild(el);
+  return el;
 });
-const depth = document.getElementById('depth');
-const count = document.getElementById('depthCount');
-const layerEls = [...document.querySelectorAll('.layer')];
-function applyDepth(n){
-  n = Math.min(10, Math.max(1, n|0));
-  depth.value = n;
-  depth.setAttribute('aria-valuetext', `Layer ${n} of 10`);
-  count.textContent = `Layer ${n} of 10`;
-  layerEls.forEach((el, i) => {
-    const shown = i < n;
-    el.classList.toggle('on', shown);
-    // hide un-revealed layers from screen readers & find-in-page, not just visually
-    if (shown) el.removeAttribute('aria-hidden');
-    else el.setAttribute('aria-hidden', 'true');
+
+function layout(save){
+  plCards.forEach((c, i) => c.classList.toggle('is-current', i === cur));
+  const curH = plCards[cur].offsetHeight;
+  const headH = (plCards[cur + 1] || plCards[cur]).offsetHeight; // collapsed head height
+  plCards.forEach((c, i) => {
+    const d = i - cur;
+    let ty, sc = 1, op = 1, z = 200 - Math.abs(d);
+    if (d < 0)       { ty = -46 - (-d - 1) * 8; sc = .96; op = 0; }
+    else if (d === 0){ ty = 0; sc = 1; op = 1; z = 200; }
+    else if (d <= 3) { ty = curH - 6 + (d - 1) * 8; sc = 1 - d * 0.02; op = d === 1 ? 1 : (d === 2 ? .55 : .28); z = 200 - d; }
+    else             { ty = curH - 6 + 16; sc = .94; op = 0; z = 190; }
+    c.style.transform = `translateY(${ty}px) scale(${sc})`;
+    c.style.opacity = op; c.style.zIndex = z;
+    c.style.pointerEvents = (d === 0 || d === 1) ? 'auto' : 'none';
   });
+  const peeks = Math.min(N - 1 - cur, 3);
+  stage.style.height = (peeks ? (curH - 6 + headH + 20) : curH) + 'px';
+
+  bar.style.width = ((cur + 1) / N * 100) + '%';
+  const isCore = (cur === N - 1);
+  plCount.textContent = isCore ? 'You reached the core · 10 of 10' : `Layer ${cur + 1} of 10 · peeling to the core`;
+  plBtn.textContent = isCore ? '↺ Peel again from the top' : 'Peel deeper ↓';
+  plBtn.classList.toggle('restart', isCore);
+
+  // the 'boom' when the core is reached — replay the burst each arrival
+  const coreCard = plCards[N - 1];
+  coreCard.classList.toggle('is-core', isCore);
+  coreCard.classList.remove('boom');
+  if (isCore) { void coreCard.offsetWidth; coreCard.classList.add('boom'); }
+
+  if (save) { try { localStorage.setItem('baseline_peel', String(cur)); } catch (e) {} }
 }
-depth.addEventListener('input', () => {
-  applyDepth(+depth.value);
-  try { localStorage.setItem('baseline_depth', depth.value); } catch(e){}
-});
-/* restore last depth the reader reached (falls back to 1) */
-let savedDepth = 1;
-try { savedDepth = parseInt(localStorage.getItem('baseline_depth'), 10) || 1; } catch(e){}
-applyDepth(savedDepth);
+plBtn.addEventListener('click', () => { cur = (cur >= N - 1) ? 0 : cur + 1; layout(true); });
+layout(false);
 
 /* ---------- freshness helper: turns a data.js entry into a stamp ---------- */
 const STALE_DAYS = 120;
@@ -561,7 +605,6 @@ function initDeck(container){
   refresh();
   return { refresh };
 }
-initDeck(document.getElementById('layerList'));
 initDeck(document.querySelector('.cols'));
 cardsDeck = initDeck(document.getElementById('cards'));
 </script>

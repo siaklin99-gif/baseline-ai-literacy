@@ -89,9 +89,13 @@ dupIds.length ? bad('duplicate id(s): ' + [...new Set(dupIds)].join(', '))
               : ok('no duplicate element IDs');
 
 // required hooks the JS depends on
-for (const need of ['id="layerList"', 'id="depth"', 'id="depthCount"', 'id="cards"', 'id="pills"']) {
+for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="cards"', 'id="pills"']) {
   html.includes(need) ? ok('has ' + need) : bad('missing ' + need);
 }
+// the peel core "boom" (aha) must be wired
+(/is-core/.test(html) && /pl-core-label/.test(html) && /@keyframes plBurst/.test(html))
+  ? ok('peel core reveal + burst animation present')
+  : bad('peel core "boom" (is-core / core label / burst) missing');
 
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')
@@ -129,12 +133,9 @@ const g = (cond, m) => cond ? ok(m) : bad(m);
 g(/function esc\(/.test(html), 'esc() escaping helper present (fix #4)');
 g(html.includes("'name'  in x") || html.includes("'name' in x"), 'renderList uses `in` type-detection (fix #3)');
 g(/Malformed row/.test(html), 'renderList renders a visible fallback for mistyped rows (fix #3)');
-g(/aria-hidden/.test(html) && /el\.setAttribute\('aria-hidden'/.test(html), 'layers toggle aria-hidden by depth (fix #1)');
-g(/aria-label="Reveal explanation depth/.test(html), 'depth slider has an aria-label (fix #2)');
-g(/aria-valuetext/.test(html), 'depth slider sets aria-valuetext (fix #2)');
 g(/aria-pressed/.test(html), 'filter pills expose aria-pressed state (fix #2)');
+g(/prefers-reduced-motion/.test(html), 'peel animations respect prefers-reduced-motion');
 g(/Invalid date/.test(html), 'invalid asOf is distinguished from empty (fix #5)');
-g(/max-height: 600px/.test(html), 'revealed layer max-height raised to reduce clipping (fix #6)');
 // escaping means no field should ship pre-escaped &amp; entities in data.js text
 if (DATA) {
   const leaked = ['models','pricing','books'].some(k =>

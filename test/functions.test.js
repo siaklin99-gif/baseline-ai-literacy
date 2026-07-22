@@ -27,6 +27,7 @@ function stubEl() {
       if (['appendChild','addEventListener','removeAttribute','setAttribute','toggleAttribute','scrollIntoView','click','remove','after','before','append','prepend'].includes(k)) return () => {};
       if (k === 'getAttribute') return () => null;
       if (k === 'getBoundingClientRect') return () => ({ left: 0, right: 0, top: 0, width: 0, height: 0 });
+      if (k === 'offsetHeight' || k === 'offsetWidth') return 0;
       if (k === 'querySelector') return () => stubEl();
       if (k === 'querySelectorAll') return () => [];
       return undefined;

@@ -74,13 +74,9 @@ function assertionExpr(expected) {
     st.textContent = '*{transition:none!important;animation:none!important}';
     document.head.appendChild(st);
     // expand EVERYTHING so the screenshot and parity check see all content
-    document.querySelectorAll('.layer').forEach(l => l.classList.add('on'));
     document.querySelectorAll('details.card').forEach(d => d.open = true);
     void document.body.offsetHeight; // force reflow after class/style changes
     const cs = document.documentElement;
-    const layers = [...document.querySelectorAll('.layer.on')];
-    // true clip test: content taller than the layer's rendered box (transitions now off)
-    const clipped = layers.filter(el => el.scrollHeight > el.clientHeight + 1).length;
     const cards = [...document.querySelectorAll('#cards details.card')];
     const zeroCards = cards.filter(c => c.getBoundingClientRect().height < 2).length;
     const wrapW = Math.round((document.querySelector('.wrap')||{getBoundingClientRect:()=>({width:0})}).getBoundingClientRect().width);
@@ -94,20 +90,24 @@ function assertionExpr(expected) {
     //  intentionally different widths, e.g. the centered layers column)
     const vw = window.innerWidth;
     let maxAsym = 0, worstBlock = '';
-    ['.hero .wrap', '#layerList', '.depthbar', '.cols', '#pills', '#cards'].forEach(sel => {
+    ['.hero .wrap', '#peel', '.pl-stage', '.cols', '#pills', '#cards'].forEach(sel => {
       const e = document.querySelector(sel); if (!e) return;
       const r = e.getBoundingClientRect();
-      if (r.width < 1 || r.height < 1) return; // skip hidden (e.g. slider is display:none on mobile)
+      if (r.width < 1 || r.height < 1) return; // skip hidden elements
       const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
-    // on mobile, each section's items should be a horizontal scroll-snap deck
-    const decksScroll = ['#layerList', '.cols', '#cards'].every(sel => {
+    // on mobile, Can/Can't and Topics are horizontal scroll-snap decks (layers use the peel stack)
+    const decksScroll = ['.cols', '#cards'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
+    // peel integrity: exactly 10 cards, exactly one current, core wired
+    const plCards = [...document.querySelectorAll('.pl-card')];
+    const plCurrent = document.querySelectorAll('.pl-card.is-current').length;
+    const plHasCore = plCards.length ? plCards[plCards.length - 1].querySelector('.pl-core-label') != null : false;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
-    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['#depth','depth slider'], ['details.card > summary','card tap-row']];
+    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row']];
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
@@ -122,8 +122,10 @@ function assertionExpr(expected) {
       w: window.innerWidth,
       pageHeight: Math.ceil(document.documentElement.scrollHeight),
       overflow: cs.scrollWidth - cs.clientWidth,
-      clippedLayers: clipped,
       zeroHeightCards: zeroCards,
+      plCardCount: plCards.length,
+      plCurrent: plCurrent,
+      plHasCore: plHasCore,
       maxAsym: maxAsym,
       worstBlock: worstBlock,
       missingCount: missing.length,
@@ -207,8 +209,10 @@ async function main() {
       // invariants
       const tag = `[${c.name}]`;
       r.overflow <= 0        ? ok(`${tag} no horizontal overflow`)            : bad(`${tag} horizontal overflow: ${r.overflow}px`);
-      r.clippedLayers === 0  ? ok(`${tag} no clipped layers`)                 : bad(`${tag} ${r.clippedLayers} layer(s) clipped by max-height`);
       r.zeroHeightCards === 0? ok(`${tag} no zero-height cards`)              : bad(`${tag} ${r.zeroHeightCards} zero-height card(s)`);
+      (r.plCardCount === 10 && r.plCurrent === 1 && r.plHasCore)
+        ? ok(`${tag} peel stack: 10 cards, one current, core wired`)
+        : bad(`${tag} peel stack broken: ${r.plCardCount} cards, ${r.plCurrent} current, core=${r.plHasCore}`);
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);

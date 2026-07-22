@@ -224,6 +224,40 @@ section { padding: 30px 0; }
 #cards, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
 @media (min-width: 760px) { #cards { grid-template-columns: 1fr 1fr; } }
 
+/* ---------- learning circle ---------- */
+.lc-wrap { display: grid; grid-template-columns: 1fr; gap: 22px; }
+#lcSvg { width: min(230px, 64vw); margin: 0 auto; display: block; }
+@media (min-width: 760px) {
+  .lc-wrap { grid-template-columns: 280px 1fr; gap: 36px; align-items: center; }
+  #lcSvg { width: 100%; margin: 0; }
+}
+.lc-node { cursor: pointer; }
+.lc-node circle { fill: var(--surface); stroke: var(--border-med); stroke-width: 1.5;
+  transition: fill .2s ease, stroke .2s ease; }
+.lc-node text { font-size: 13px; font-weight: 700; fill: var(--text-sec); pointer-events: none; }
+.lc-node.done circle { fill: url(#cgrad); stroke: transparent; }
+.lc-node.done text { fill: #fff; }
+.lc-row {
+  display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 48px;
+  background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius);
+  padding: 9px 14px; margin-bottom: 8px; transition: border-color .2s ease, box-shadow .2s ease;
+}
+.lc-row:hover { border-color: var(--text-ter); }
+.lc-check {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 9px; cursor: pointer;
+  border: 1.5px solid var(--border-med); background: var(--surface2);
+  color: transparent; font-size: 15px; font-weight: 700; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.lc-row.done .lc-check { background: var(--grad); border-color: transparent; color: #fff; }
+.lc-t { flex: 1; line-height: 1.35; }
+.lc-t b { display: block; font-size: 15px; font-weight: 620; }
+.lc-t span { font-size: 12.5px; color: var(--text-ter); }
+.lc-row.done .lc-t b { color: var(--text-sec); }
+.lc-go { color: var(--text-ter); flex: 0 0 auto; }
+@media (max-width: 560px) { .lc-check { width: 44px; height: 44px; border-radius: 11px; } }
+
 /* ---------- body diagram + list ---------- */
 .bm-wrap { display: grid; grid-template-columns: 1fr; gap: 20px; }
 #bodySvg { width: min(230px, 60vw); margin: 0 auto; display: block; }
@@ -415,6 +449,34 @@ footer .line { max-width: 520px; }
   </div>
 </header>
 
+<!-- ============ LEARNING CIRCLE ============ -->
+<section id="circle">
+  <div class="wrap">
+    <div class="slabel">The path</div>
+    <h2 class="stitle">Your learning circle</h2>
+    <div class="ssub">Six steps from "what is AI?" to riding it daily. Tap a step to jump there; tick it when it clicks. Progress stays on this device.</div>
+    <div class="lc-wrap">
+      <svg id="lcSvg" viewBox="0 0 240 240" role="img" aria-label="Learning circle: a progress ring with six steps around it">
+        <defs>
+          <linearGradient id="cgrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" style="stop-color:var(--g1)"/>
+            <stop offset=".52" style="stop-color:var(--g2)"/>
+            <stop offset="1" style="stop-color:var(--g3)"/>
+          </linearGradient>
+        </defs>
+        <circle cx="120" cy="120" r="95" fill="none" stroke="var(--surface2)" stroke-width="7"/>
+        <circle id="lcArc" cx="120" cy="120" r="95" fill="none" stroke="url(#cgrad)" stroke-width="7"
+                stroke-linecap="round" transform="rotate(-90 120 120)" stroke-dasharray="0 596.9"
+                style="transition: stroke-dasharray .5s cubic-bezier(.22,.9,.24,1)"/>
+        <text id="lcCount" x="120" y="114" text-anchor="middle" font-size="32" font-weight="700" fill="var(--text)">0/6</text>
+        <text id="lcSub" x="120" y="140" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="1.5" fill="var(--text-ter)">TICKED</text>
+        <g id="lcNodes"></g>
+      </svg>
+      <div id="lcList"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ 10 LAYERS ============ -->
 <section id="layers">
   <div class="wrap">
@@ -495,7 +557,7 @@ footer .line { max-width: 520px; }
 </section>
 
 <!-- ============ CAN / CANNOT ============ -->
-<section>
+<section id="reality">
   <div class="wrap">
     <div class="slabel">Reality check</div>
     <h2 class="stitle">What AI can &amp; can't do</h2>
@@ -709,7 +771,7 @@ const CARDS = [
      <div class="prompt">Summarize this in 3 bullet points: [paste any letter, email or article]</div>
      <div class="prompt">Draft a short, friendly message to [who] about [what]. Keep it under 100 words.</div>
      <p><strong>3 · Catch it being wrong — on day one.</strong> Ask it <em>"How sure are you? What should I double-check?"</em> and verify one fact yourself. That habit — use it, then check it — is the whole skill.</p>
-     <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "choose"],
+     <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "choose", "card-15min"],
   ["🗓️", "What it can do for your day", "Real life, any background · copy, paste, fill the [brackets]",
     `<p><strong>Household &amp; paperwork</strong></p>
      <div class="prompt">Plan 5 weeknight dinners around [chicken, rice, spinach] — one grocery list, nothing fancy.</div>
@@ -726,7 +788,7 @@ const CARDS = [
      <p><strong>Work</strong></p>
      <div class="prompt">Turn these messy notes into 5 clear bullet points for my boss: [paste]</div>
      <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
-     <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose"],
+     <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose", "card-daily"],
   ["🧭", "Pick the right model for the job", "Topic 3–4 · which LLM, and when", {data:"models"}, "choose"],
   ["💻", "Local vs cloud LLMs", "Topic 5 · where the model runs",
     `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>
@@ -767,6 +829,7 @@ CARDS.forEach((c) => {
   const d = document.createElement('details');
   d.className = 'card';
   d.dataset.cluster = c[4] || '';
+  if (c[5]) d.id = c[5];   // anchor for the learning circle
   d.innerHTML = `<summary>
       <div class="idx">${c[0]}</div>
       <div class="head"><div class="t">${c[1]}</div><div class="s">${c[2]}</div></div>
@@ -942,6 +1005,71 @@ QUIZ.forEach((q, i) => {
     <div class="qz-a"><b>${q[1]}</b> ${q[2]} <span class="qz-src">${q[3]}</span></div>`;
   quiz.appendChild(d);
 });
+
+/* ---------- learning circle: six steps, tap to jump, tick to track ---------- */
+const CIRCLE = [
+  ["Peel what AI is", "10 layers to the core", "#layers"],
+  ["Map the system", "AI as a body", "#bodysec"],
+  ["Learn its limits", "can · unreliable · can't", "#reality"],
+  ["Take the first ride", "15 minutes of doing", "#card-15min"],
+  ["Make it daily", "10 real-life prompts", "#card-daily"],
+  ["Own the mindset", "myths busted · quiz passed", "#quizsec"]
+];
+const LC_C = 2 * Math.PI * 95;   // ring circumference
+let lcDone = Array(CIRCLE.length).fill(false);
+try {
+  const saved = JSON.parse(localStorage.getItem('baseline_circle') || '[]');
+  if (Array.isArray(saved)) saved.forEach((v, i) => { if (i < lcDone.length) lcDone[i] = !!v; });
+} catch (e) {}
+
+const lcNodes = document.getElementById('lcNodes');
+const lcList = document.getElementById('lcList');
+function lcNavigate(i) {
+  const t = document.querySelector(CIRCLE[i][2]);
+  if (!t) return;
+  if (t.tagName === 'DETAILS') t.open = true;
+  t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+CIRCLE.forEach((s, i) => {
+  const a = (-90 + i * 60) * Math.PI / 180;
+  const x = 120 + 95 * Math.cos(a), y = 120 + 95 * Math.sin(a);
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('class', 'lc-node');
+  g.innerHTML = `<circle cx="${x}" cy="${y}" r="16"></circle>
+    <text x="${x}" y="${y + 4.5}" text-anchor="middle">${i + 1}</text>`;
+  g.addEventListener('click', () => lcNavigate(i));
+  lcNodes.appendChild(g);
+
+  const row = document.createElement('div');
+  row.className = 'lc-row';
+  row.innerHTML = `<button class="lc-check" type="button" aria-pressed="false"
+      aria-label="Mark step ${i + 1}, ${s[0]}, as done">✓</button>
+    <div class="lc-t"><b>${i + 1} · ${s[0]}</b><span>${s[1]}</span></div>
+    <span class="lc-go" aria-hidden="true">→</span>`;
+  row.addEventListener('click', () => lcNavigate(i));
+  row.querySelector('.lc-check').addEventListener('click', (e) => {
+    e.stopPropagation();
+    lcDone[i] = !lcDone[i];
+    try { localStorage.setItem('baseline_circle', JSON.stringify(lcDone)); } catch (err) {}
+    lcUpdate();
+  });
+  lcList.appendChild(row);
+});
+function lcUpdate() {
+  const n = lcDone.filter(Boolean).length;
+  document.getElementById('lcArc').setAttribute('stroke-dasharray', `${LC_C * n / CIRCLE.length} ${LC_C}`);
+  document.getElementById('lcCount').textContent = `${n}/${CIRCLE.length}`;
+  document.getElementById('lcSub').textContent = n === CIRCLE.length ? "YOU'RE ON THE BICYCLE" : 'TICKED';
+  [...lcNodes.children].forEach((g, i) => {
+    g.classList.toggle('done', lcDone[i]);
+    g.querySelector('text').textContent = lcDone[i] ? '✓' : String(i + 1);
+  });
+  [...lcList.children].forEach((row, i) => {
+    row.classList.toggle('done', lcDone[i]);
+    row.querySelector('.lc-check').setAttribute('aria-pressed', lcDone[i] ? 'true' : 'false');
+  });
+}
+lcUpdate();
 
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));

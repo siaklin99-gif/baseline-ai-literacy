@@ -44,7 +44,7 @@ if (!m) { console.log('\x1b[31mCould not locate inline script in index.html\x1b[
 // load data.js (defines window.BASELINE_DATA), then the page script, in one sandbox
 const dataSrc = fs.readFileSync(path.join(__dirname, '..', 'data.js'), 'utf8');
 const sandbox = {
-  document: { getElementById: () => stubEl(), createElement: () => stubEl(),
+  document: { getElementById: () => stubEl(), createElement: () => stubEl(), createElementNS: () => stubEl(),
               querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl() },
   localStorage: { getItem: () => null, setItem() {} },
   console: { log() {}, warn() {}, error() {} },

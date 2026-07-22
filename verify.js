@@ -130,8 +130,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 5 ? ok('all 5 section titles are real <h2> headings (glossary lives in a topic card now)')
-          : bad(`expected 5 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 6 ? ok('all 6 section titles are real <h2> headings (incl. learning circle)')
+          : bad(`expected 6 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -143,6 +143,19 @@ else {
   nq === 7 ? ok('self-quiz has exactly 7 questions') : bad(`expected 7 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// learning circle: 6 steps, and every step's jump target must exist
+const circleBlock = html.match(/const CIRCLE = \[([\s\S]*?)\n\];/);
+if (!circleBlock) bad('CIRCLE array missing');
+else {
+  const steps = (circleBlock[1].match(/\n\s*\["/g) || []).length;
+  steps === 6 ? ok('learning circle has exactly 6 steps') : bad(`expected 6 circle steps, found ${steps}`);
+  const anchors = [...circleBlock[1].matchAll(/"#([\w-]+)"/g)].map(m => m[1]);
+  const missing = anchors.filter(a => !html.includes(`id="${a}"`) && !html.includes(`"${a}"`));
+  missing.length === 0 ? ok('every circle step jumps to an existing anchor')
+                       : bad('circle anchors with no target: ' + missing.join(', '));
+}
+html.includes('id="circle"') ? ok('has id="circle"') : bad('missing id="circle"');
+
 // GOAL LOCKS (2026-07-23 cold audit): the six stated goals' key content must stay on the page
 html.includes('people who use AI replace people who don') && html.includes('Will AI take my job?')
   ? ok('goal 6: replacement thesis + bicycle card present')

@@ -106,6 +106,8 @@ function assertionExpr(expected) {
     const bpDots = document.querySelectorAll('#bodySvg .bp-dot').length;
     const glCount = document.querySelectorAll('#glossary .gl-card').length;
     const qzCount = document.querySelectorAll('#quiz details.qz').length;
+    const lcNodeCount = document.querySelectorAll('#lcNodes .lc-node').length;
+    const lcRowCount = document.querySelectorAll('#lcList .lc-row').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
     const plCards = [...document.querySelectorAll('.pl-card')];
     const plCurrent = document.querySelectorAll('.pl-card.is-current').length;
@@ -114,7 +116,7 @@ function assertionExpr(expected) {
     const plExamples = plCards.filter(c => { const e = c.querySelector('.pl-eg'); return e && e.textContent.replace(/everyday/i, '').trim().length > 0; }).length;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
-    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row']];
+    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row'], ['.lc-row','circle step row']];
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
@@ -138,6 +140,8 @@ function assertionExpr(expected) {
       bpDots: bpDots,
       glCount: glCount,
       qzCount: qzCount,
+      lcNodeCount: lcNodeCount,
+      lcRowCount: lcRowCount,
       maxAsym: maxAsym,
       worstBlock: worstBlock,
       missingCount: missing.length,
@@ -229,9 +233,9 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 13     ? ok(`${tag} 13 topic cards present (incl. jobs, myths, daily-prompts)`) : bad(`${tag} expected 13 cards, got ${r.cardCount}`);
-      (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 7)
-        ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (7) rendered`)
-        : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 7)`);
+      (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 7 && r.lcNodeCount === 6 && r.lcRowCount === 6)
+        ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (7) + circle (6) rendered`)
+        : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 7), circle=${r.lcNodeCount}/${r.lcRowCount} (want 6)`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
         r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);

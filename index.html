@@ -13,8 +13,12 @@
   --red: #a32d2d; --red-bg: #fcebeb;
   --amber: #854f0b; --amber-bg: #faeeda;
   --blue: #185fa5; --blue-bg: #e6f1fb;
+  --violet: #6d4bd8; --violet-bg: #efeaff;
   --radius: 14px; --radius-sm: 8px;
-  --accent: #185fa5;
+  --accent: #2f6bff;
+  /* AI gradient identity: electric blue -> violet -> teal */
+  --g1: #2f6bff; --g2: #7a5cff; --g3: #12b8a6;
+  --grad: linear-gradient(115deg, var(--g1), var(--g2) 52%, var(--g3));
   --wrap: 940px;   /* outer container: uses wide screens without going edge-to-edge */
   --read: 640px;   /* readable prose column cap (~78 chars max) — text never stretches past this */
 }
@@ -27,7 +31,9 @@
     --red: #f09595; --red-bg: #501313;
     --amber: #ef9f27; --amber-bg: #412402;
     --blue: #85b7eb; --blue-bg: #042c53;
-    --accent: #85b7eb;
+    --violet: #b6a2f5; --violet-bg: #241a45;
+    --accent: #6f97ff;
+    --g1: #6f97ff; --g2: #a48cff; --g3: #3fd6c4;
   }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,27 +47,40 @@ body {
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 22px; }
 
 /* ---------- hero ---------- */
-.hero { padding: 64px 0 40px; text-align: center; }
+.hero { padding: 64px 0 40px; text-align: center; position: relative; overflow: hidden; }
+/* soft AI gradient glow behind the hero — colour without clutter */
+.hero::before {
+  content: ''; position: absolute; z-index: 0;
+  top: -40%; left: 50%; width: 120%; height: 130%; transform: translateX(-50%);
+  background:
+    radial-gradient(38% 50% at 32% 30%, color-mix(in srgb, var(--g1) 32%, transparent), transparent 70%),
+    radial-gradient(36% 46% at 68% 24%, color-mix(in srgb, var(--g2) 30%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 52% 44%, color-mix(in srgb, var(--g3) 26%, transparent), transparent 72%);
+  filter: blur(46px); opacity: .55; pointer-events: none;
+}
+.hero .wrap { position: relative; z-index: 1; }
 .eyebrow {
   font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--text-ter); font-weight: 600; margin-bottom: 18px;
+  font-weight: 700; margin-bottom: 18px;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .hero h1 {
   font-size: clamp(34px, 7vw, 52px); line-height: 1.08; letter-spacing: -0.02em;
   font-weight: 700; margin-bottom: 18px;
 }
 .hero h1 .grad {
-  background: linear-gradient(120deg, var(--accent), var(--green));
+  background: var(--grad);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .hero p { font-size: clamp(16px, 2.3vw, 19px); color: var(--text-sec); max-width: 540px; margin: 0 auto 30px; }
 .cta {
-  display: inline-block; background: var(--text); color: var(--bg);
+  display: inline-block; background: var(--grad); color: #fff;
   font-weight: 600; font-size: 15px; padding: 13px 26px; border-radius: 999px;
   text-decoration: none; transition: transform .15s ease, opacity .15s ease;
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--g2) 70%, transparent);
 }
 .cta:active { transform: scale(0.97); }
-.cta.ghost { background: transparent; color: var(--text); border: 1px solid var(--border-med); margin-left: 8px; }
+.cta.ghost { background: transparent; color: var(--text); border: 1px solid var(--border-med); margin-left: 8px; box-shadow: none; }
 
 /* ---------- section ---------- */
 section { padding: 30px 0; }
@@ -114,7 +133,9 @@ input[type=range]::-moz-range-thumb {
 }
 .layer .num {
   flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
-  background: var(--surface2); color: var(--accent);
+  /* one slice of the AI gradient per layer (set in JS) — colour = depth */
+  background: var(--grad); background-size: 1000% 100%; background-position-x: 0%;
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 15px;
 }
@@ -146,7 +167,7 @@ input[type=range]::-moz-range-thumb {
   cursor: pointer; transition: all .15s ease; -webkit-tap-highlight-color: transparent;
 }
 .pill:hover { border-color: var(--text-ter); }
-.pill.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.pill.active { background: var(--grad); color: #fff; border-color: transparent; }
 .pill .n { opacity: .6; font-weight: 500; margin-left: 4px; }
 .pill.active .n { opacity: .7; }
 
@@ -169,6 +190,15 @@ details.card > summary::-webkit-details-marker { display: none; }
   background: var(--surface2); display:flex; align-items:center; justify-content:center;
   font-size: 15px;
 }
+/* cluster colour-coding: a quiet colour signature per topic group */
+details.card[data-cluster="choose"] { border-left: 3px solid var(--blue); }
+details.card[data-cluster="cost"]   { border-left: 3px solid var(--amber); }
+details.card[data-cluster="safety"] { border-left: 3px solid var(--green); }
+details.card[data-cluster="learn"]  { border-left: 3px solid var(--violet); }
+details.card[data-cluster="choose"] .idx { background: var(--blue-bg); }
+details.card[data-cluster="cost"]   .idx { background: var(--amber-bg); }
+details.card[data-cluster="safety"] .idx { background: var(--green-bg); }
+details.card[data-cluster="learn"]  .idx { background: var(--violet-bg); }
 .card .head { flex: 1; }
 .card .head .t { font-weight: 620; font-size: 16px; }
 .card .head .s { font-size: 13.5px; color: var(--text-ter); }
@@ -355,6 +385,8 @@ LAYERS.forEach((l, i) => {
   el.className = 'layer' + (i === 0 ? ' on' : '');
   el.innerHTML = `<div class="num">${i+1}</div><div class="body">
     <h4>${l[0]}</h4><p>${l[1]}</p><span class="tag">${l[2]}</span></div>`;
+  // colour the badge with its slice of the AI gradient (layer 1 blue -> layer 10 teal)
+  el.querySelector('.num').style.backgroundPositionX = (i / (LAYERS.length - 1) * 100) + '%';
   list.appendChild(el);
 });
 const depth = document.getElementById('depth');

@@ -97,6 +97,14 @@ for (const need of ['id="layerList"', 'id="depth"', 'id="depthCount"', 'id="card
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')
                                             : bad('no dark-mode block');
 
+// AI gradient identity: defined and actually used
+(/--grad\s*:/.test(html) && /var\(--grad\)/.test(html)) ? ok('AI gradient identity defined and used')
+                                                        : bad('AI gradient (--grad) missing or unused');
+// cluster colour-coding present for all four groups
+['choose','cost','safety','learn'].every(c => html.includes(`data-cluster="${c}"`))
+  ? ok('all four topic clusters colour-coded')
+  : bad('a topic cluster is missing its colour rule');
+
 // LAYERS array should have exactly 10 entries (the "10 layers" promise)
 const layerBlock = html.match(/const LAYERS = \[([\s\S]*?)\];/);
 if (layerBlock) {

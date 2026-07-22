@@ -97,12 +97,13 @@ function assertionExpr(expected) {
       const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
-    // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack)
-    const decksScroll = ['.cols', '#cards', '#bodymap', '#glossary'].every(sel => {
+    // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack;
+    // the glossary is a table, not a deck)
+    const decksScroll = ['.cols', '#cards', '#bodymap'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
-    const glCount = document.querySelectorAll('#glossary .gl-item').length;
+    const glCount = document.querySelectorAll('#glossary .gl-table tbody tr').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
     const plCards = [...document.querySelectorAll('.pl-card')];
     const plCurrent = document.querySelectorAll('.pl-card.is-current').length;

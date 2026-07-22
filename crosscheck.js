@@ -97,10 +97,12 @@ function assertionExpr(expected) {
       const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
-    // on mobile, Can/Can't and Topics are horizontal scroll-snap decks (layers use the peel stack)
-    const decksScroll = ['.cols', '#cards'].every(sel => {
+    // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack)
+    const decksScroll = ['.cols', '#cards', '#bodymap', '#glossary'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
+    const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
+    const glCount = document.querySelectorAll('#glossary .gl-item').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
     const plCards = [...document.querySelectorAll('.pl-card')];
     const plCurrent = document.querySelectorAll('.pl-card.is-current').length;
@@ -129,6 +131,8 @@ function assertionExpr(expected) {
       plCurrent: plCurrent,
       plHasCore: plHasCore,
       plExamples: plExamples,
+      bmCount: bmCount,
+      glCount: glCount,
       maxAsym: maxAsym,
       worstBlock: worstBlock,
       missingCount: missing.length,
@@ -220,6 +224,9 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 8      ? ok(`${tag} 8 topic cards present`)             : bad(`${tag} expected 8 cards, got ${r.cardCount}`);
+      (r.bmCount === 8 && r.glCount === 12)
+        ? ok(`${tag} body map (8) + glossary (12) rendered`)
+        : bad(`${tag} body map=${r.bmCount} (want 8), glossary=${r.glCount} (want 12)`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
         r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);

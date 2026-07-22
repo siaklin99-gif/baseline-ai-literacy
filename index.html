@@ -204,8 +204,25 @@ section { padding: 30px 0; }
 .pill.active .n { opacity: .7; }
 
 /* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
-#cards { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
-@media (min-width: 760px) { #cards { grid-template-columns: 1fr 1fr; } }
+#cards, #bodymap, #glossary { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
+@media (min-width: 760px) { #cards, #bodymap, #glossary { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- body map ---------- */
+.bm-item { display: flex; gap: 14px; align-items: flex-start;
+  background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 14px 16px; }
+.bm-emoji { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; font-size: 22px;
+  background: color-mix(in srgb, var(--g2) 9%, var(--surface2)); display: flex; align-items: center; justify-content: center; }
+.bm-eq { font-size: 15.5px; margin-bottom: 3px; }
+.bm-eq b { font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.bm-txt p { font-size: 14px; color: var(--text-sec); line-height: 1.5; }
+
+/* ---------- glossary ---------- */
+.gl-item { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 15px 17px; }
+.gl-term { font-weight: 700; font-size: 16px; margin-bottom: 5px;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gl-def { font-size: 14.5px; color: var(--text-sec); line-height: 1.5; margin-bottom: 10px; }
+.gl-eg { font-size: 13.5px; color: var(--text-ter); line-height: 1.45;
+  background: color-mix(in srgb, var(--g2) 6%, var(--surface2)); border-radius: 9px; padding: 8px 11px; }
 
 /* ---------- accordion clusters ---------- */
 details.card {
@@ -285,7 +302,7 @@ footer .line { max-width: 520px; }
      Can/Can't and Topics become horizontal scroll-snap decks; the next
      card peeks at the edge, native momentum scroll, progress dots below.
      (The layers use the peel-stack, which already works vertically.) */
-  .cols, #cards {
+  .cols, #cards, #bodymap, #glossary {
     display: flex; grid-template-columns: none;
     overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
@@ -293,8 +310,9 @@ footer .line { max-width: 520px; }
     margin-inline: -18px; padding: 2px 18px 8px;   /* full-bleed to viewport edges */
     scrollbar-width: none;
   }
-  .cols::-webkit-scrollbar, #cards::-webkit-scrollbar { display: none; }
-  .cols > *, #cards > * {
+  .cols::-webkit-scrollbar, #cards::-webkit-scrollbar,
+  #bodymap::-webkit-scrollbar, #glossary::-webkit-scrollbar { display: none; }
+  .cols > *, #cards > *, #bodymap > *, #glossary > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
   }
 
@@ -338,6 +356,16 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
+<!-- ============ BODY MAP ============ -->
+<section id="bodysec">
+  <div class="wrap">
+    <div class="slabel">The whole system, in one picture</div>
+    <div class="stitle">AI, mapped to a body</div>
+    <div class="ssub">The pieces you keep hearing about aren't rivals — they're body parts that work together. Here's who does what.</div>
+    <div id="bodymap"></div>
+  </div>
+</section>
+
 <!-- ============ CAN / CANNOT ============ -->
 <section>
   <div class="wrap">
@@ -368,6 +396,16 @@ footer .line { max-width: 520px; }
         </ul>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ GLOSSARY ============ -->
+<section id="glossec">
+  <div class="wrap">
+    <div class="slabel">The words, decoded</div>
+    <div class="stitle">AI jargon in plain English</div>
+    <div class="ssub">Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</div>
+    <div id="glossary"></div>
   </div>
 </section>
 
@@ -619,7 +657,53 @@ function initDeck(container){
   refresh();
   return { refresh };
 }
+/* ---------- AI mapped to a body ---------- */
+const BODYMAP = [
+  ["🧠", "LLM", "the brain", "Does the thinking and the talking — generates language by predicting what comes next."],
+  ["📚", "RAG", "brain + a bookshelf", "Looks things up in your own documents before answering, so it stays current and grounded."],
+  ["✋", "AI agent", "hands", "Doesn't just talk — it takes actions: send, book, search, run code."],
+  ["🕸️", "MCP", "the nervous system", "The standard wiring that lets the brain reach tools and data the same way everywhere."],
+  ["⏳", "Context window", "short-term memory", "What it can hold in mind right now — everything older quietly falls away."],
+  ["👂", "API", "ears and mouth", "How other apps hand it a request and hear the answer back."],
+  ["🎓", "Training", "growing up", "How it learned everything — once, in the past, from enormous piles of text."],
+  ["🚦", "Guardrails", "manners and rules", "The limits on what it's allowed to say or do."]
+];
+const bodymap = document.getElementById('bodymap');
+BODYMAP.forEach(b => {
+  const el = document.createElement('div');
+  el.className = 'bm-item';
+  el.innerHTML = `<div class="bm-emoji">${b[0]}</div>
+    <div class="bm-txt"><div class="bm-eq"><b>${b[1]}</b> = ${b[2]}</div><p>${b[3]}</p></div>`;
+  bodymap.appendChild(el);
+});
+
+/* ---------- glossary: term · plain meaning · analogy ---------- */
+const GLOSSARY = [
+  ["LLM", "Large Language Model — the AI 'brain' that generates text by predicting words.", "super-autocomplete that read the whole internet"],
+  ["Token", "The chunk of text AI reads and writes in (about ¾ of a word). You pay per token.", "syllables ticking on a taxi meter"],
+  ["Context window", "How much it can keep in mind at once, in one conversation.", "its desk — only so much fits before older notes drop off the edge"],
+  ["Prompt", "The instruction or question you give it.", "the brief you hand an assistant"],
+  ["Hallucination", "When it states something false with total confidence.", "a student bluffing an exam answer"],
+  ["RAG", "Retrieval-Augmented Generation — it looks up your documents before answering.", "an open-book exam instead of answering from memory"],
+  ["AI agent", "An AI that can take actions and use tools, not just chat.", "an intern who actually sends the email, not just drafts it"],
+  ["MCP", "Model Context Protocol — a standard plug for connecting AI to tools and data.", "USB-C for AI: one connector fits many tools"],
+  ["API", "How one program asks another for something and gets an answer back.", "a waiter carrying your order to the kitchen and back"],
+  ["SDK", "A ready-made toolkit for developers to build on a service.", "a flat-pack with all the parts and instructions, instead of carving the wood"],
+  ["Fine-tuning", "Extra training that specializes a general model for one job.", "a family doctor doing a specialty residency"],
+  ["Inference", "The model actually generating an answer (as opposed to training).", "sitting the exam, not studying for it"]
+];
+const glossary = document.getElementById('glossary');
+GLOSSARY.forEach(g => {
+  const el = document.createElement('div');
+  el.className = 'gl-item';
+  el.innerHTML = `<div class="gl-term">${g[0]}</div><p class="gl-def">${g[1]}</p>
+    <div class="gl-eg"><span class="pl-eg-tag">Like</span>${g[2]}</div>`;
+  glossary.appendChild(el);
+});
+
 initDeck(document.querySelector('.cols'));
+initDeck(document.getElementById('bodymap'));
+initDeck(document.getElementById('glossary'));
 cardsDeck = initDeck(document.getElementById('cards'));
 </script>
 </body>

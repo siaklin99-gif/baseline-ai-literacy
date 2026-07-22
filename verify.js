@@ -89,7 +89,7 @@ dupIds.length ? bad('duplicate id(s): ' + [...new Set(dupIds)].join(', '))
               : ok('no duplicate element IDs');
 
 // required hooks the JS depends on
-for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="cards"', 'id="pills"']) {
+for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="cards"', 'id="pills"', 'id="bodymap"', 'id="glossary"']) {
   html.includes(need) ? ok('has ' + need) : bad('missing ' + need);
 }
 // the peel core "boom" (aha) must be wired

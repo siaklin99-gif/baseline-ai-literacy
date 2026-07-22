@@ -16,7 +16,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const SITE = (process.env.SITE_URL || 'https://siaklin99-gif.github.io/baseline-ai-literacy').replace(/\/+$/, '');
+/* canonical home is hlur.ai/baseline; the github.io copy is dev/staging —
+   check it with: SITE_URL=https://siaklin99-gif.github.io/baseline-ai-literacy node parity.js */
+const SITE = (process.env.SITE_URL || 'https://hlur.ai/baseline').replace(/\/+$/, '');
 let fails = 0, checks = 0;
 const ok  = (m) => { checks++; console.log('  \x1b[32m✓\x1b[0m ' + m); };
 const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b[0m'); };

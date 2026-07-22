@@ -143,6 +143,16 @@ else {
   nq === 5 ? ok('self-quiz has exactly 5 questions') : bad(`expected 5 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// body diagram: 8 markers, and every list item's part has a matching dot on the figure
+const dotParts = [...html.matchAll(/class="bp-dot" data-part="(\w+)"/g)].map(m => m[1]);
+dotParts.length === 8 ? ok('body figure has 8 tappable markers') : bad(`expected 8 bp-dots, found ${dotParts.length}`);
+const bmBlock = html.match(/const BODYMAP = \[([\s\S]*?)\n\];/);
+if (bmBlock) {
+  const itemParts = [...bmBlock[1].matchAll(/, "(\w+)"\]/g)].map(m => m[1]);
+  const unmatched = itemParts.filter(p => !dotParts.includes(p)).concat(dotParts.filter(p => !itemParts.includes(p)));
+  unmatched.length === 0 ? ok('figure markers and body-map items are 1:1')
+                         : bad('figure/list mismatch: ' + unmatched.join(', '));
+} else bad('BODYMAP array not found');
 
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')

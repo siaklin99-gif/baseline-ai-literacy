@@ -103,6 +103,7 @@ function assertionExpr(expected) {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     });
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
+    const bpDots = document.querySelectorAll('#bodySvg .bp-dot').length;
     const glCount = document.querySelectorAll('#glossary .gl-card').length;
     const qzCount = document.querySelectorAll('#quiz details.qz').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
@@ -134,6 +135,7 @@ function assertionExpr(expected) {
       plHasCore: plHasCore,
       plExamples: plExamples,
       bmCount: bmCount,
+      bpDots: bpDots,
       glCount: glCount,
       qzCount: qzCount,
       maxAsym: maxAsym,
@@ -227,9 +229,9 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 10     ? ok(`${tag} 10 topic cards present (incl. glossary card)`) : bad(`${tag} expected 10 cards, got ${r.cardCount}`);
-      (r.bmCount === 8 && r.glCount === 12 && r.qzCount === 5)
-        ? ok(`${tag} body map (8) + glossary (12) + quiz (5) rendered`)
-        : bad(`${tag} body map=${r.bmCount} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 5)`);
+      (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 5)
+        ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (5) rendered`)
+        : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 5)`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
         r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);

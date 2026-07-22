@@ -220,7 +220,36 @@ section { padding: 30px 0; }
 
 /* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
 #cards, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
-@media (min-width: 760px) { #cards, #bodymap { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 760px) { #cards { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- body diagram + list ---------- */
+.bm-wrap { display: grid; grid-template-columns: 1fr; gap: 20px; }
+#bodySvg { width: min(230px, 60vw); margin: 0 auto; display: block; }
+@media (min-width: 760px) {
+  .bm-wrap { grid-template-columns: 320px 1fr; gap: 30px; align-items: center; }
+  #bodySvg { width: 100%; margin: 0; position: sticky; top: 20px; }
+}
+.bp-dot {
+  fill: url(#bgrad); cursor: pointer; stroke: var(--surface); stroke-width: 2;
+  transition: r .2s ease, filter .2s ease;
+  animation: bpPulse 2.6s ease-in-out infinite;
+}
+.bp-dots .bp-dot:nth-child(2) { animation-delay: .3s; }  .bp-dots .bp-dot:nth-child(3) { animation-delay: .6s; }
+.bp-dots .bp-dot:nth-child(4) { animation-delay: .9s; }  .bp-dots .bp-dot:nth-child(5) { animation-delay: 1.2s; }
+.bp-dots .bp-dot:nth-child(6) { animation-delay: 1.5s; } .bp-dots .bp-dot:nth-child(7) { animation-delay: 1.8s; }
+.bp-dots .bp-dot:nth-child(8) { animation-delay: 2.1s; }
+@keyframes bpPulse { 0%,100% { opacity: .75; } 50% { opacity: 1; } }
+.bp-dot.lit { r: 12; animation: none; opacity: 1;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--g2) 80%, transparent)); }
+.bp-part { transition: opacity .2s ease, filter .2s ease; }
+.bp-part.lit { opacity: 1 !important;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--g2) 85%, transparent)); }
+.bm-item { transition: border-color .2s ease, box-shadow .2s ease; }
+.bm-item.lit { border-color: transparent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--g2) 60%, transparent),
+              0 10px 26px -16px color-mix(in srgb, var(--g2) 55%, transparent); }
+.bp-hit { fill: transparent; cursor: pointer; }   /* thumb-sized invisible hit areas */
+@media (prefers-reduced-motion: reduce) { .bp-dot { animation: none; } }
 
 /* ---------- body map ---------- */
 .bm-item { display: flex; gap: 14px; align-items: flex-start;
@@ -406,8 +435,59 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">The whole system, in one picture</div>
     <h2 class="stitle">AI, mapped to a body</h2>
-    <div class="ssub">The pieces you keep hearing about aren't rivals — they're body parts that work together. Here's who does what.</div>
-    <div id="bodymap"></div>
+    <div class="ssub">The pieces you keep hearing about aren't rivals — they're body parts that work together. Tap a glowing point on the figure to see who does what.</div>
+    <div class="bm-wrap">
+      <svg id="bodySvg" viewBox="0 0 300 540" role="img"
+           aria-label="A human figure with eight glowing points mapping AI parts to body parts: brain, temple, ear, heart, spine, a held book, an open hand, and the legs">
+        <defs>
+          <linearGradient id="bgrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0"   style="stop-color:var(--g1)"/>
+            <stop offset=".52" style="stop-color:var(--g2)"/>
+            <stop offset="1"   style="stop-color:var(--g3)"/>
+          </linearGradient>
+        </defs>
+        <!-- figure (own line-art: calm, medical-diagram inspired) -->
+        <g class="bp-fig" fill="none" stroke="var(--text-ter)" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="150" cy="64" r="36" fill="var(--surface)"/>
+          <path d="M143 100 h14 v14 h-14 Z" fill="var(--surface)"/>
+          <rect x="108" y="114" width="84" height="152" rx="26" fill="var(--surface)"/>
+          <path d="M112 132 C 92 168, 82 200, 76 228"/>
+          <path d="M188 132 C 208 166, 218 192, 226 212"/>
+          <rect x="58" y="228" width="30" height="22" rx="3" fill="var(--surface)"/>
+          <path d="M63 239 h20" stroke-width="1"/>
+          <circle cx="230" cy="220" r="9" fill="var(--surface)"/>
+          <path d="M136 266 v106 M164 266 v106"/>
+          <path d="M136 372 h-12 M164 372 h12"/>
+        </g>
+        <!-- inner anatomy: brain, nervous system, heart -->
+        <g class="bp-anatomy">
+          <path class="bp-part bp-brain" d="M132 52 q4 -16 18 -16 q14 0 18 16 q2 10 -6 14 q-12 6 -24 0 q-8 -4 -6 -14 Z" fill="url(#bgrad)" opacity=".85"/>
+          <path class="bp-part bp-nerves" d="M150 116 V 266 M150 140 L 118 130 M150 140 L 182 130 M150 200 L 122 214 M150 200 L 178 214 M150 264 L 136 276 M150 264 L 164 276"
+                stroke="url(#bgrad)" stroke-width="1.6" fill="none" stroke-dasharray="4 4" opacity=".75"/>
+          <path class="bp-part bp-heart" d="M160 164 q6 -8 12 -2 q6 6 -2 14 l-10 9 l-10 -9 q-8 -8 -2 -14 q6 -6 12 2 Z" fill="url(#bgrad)" opacity=".9"/>
+        </g>
+        <!-- tappable markers (order matches the list); bp-hit = invisible thumb-sized hit areas -->
+        <g class="bp-dots">
+          <circle class="bp-dot" data-part="brain"  cx="150" cy="48"  r="9"/>
+          <circle class="bp-dot" data-part="memory" cx="184" cy="60"  r="9"/>
+          <circle class="bp-dot" data-part="api"    cx="112" cy="68"  r="9"/>
+          <circle class="bp-dot" data-part="heart"  cx="160" cy="176" r="9"/>
+          <circle class="bp-dot" data-part="nerves" cx="150" cy="232" r="9"/>
+          <circle class="bp-dot" data-part="book"   cx="73"  cy="239" r="9"/>
+          <circle class="bp-dot" data-part="hand"   cx="230" cy="220" r="9"/>
+          <circle class="bp-dot" data-part="legs"   cx="150" cy="330" r="9"/>
+          <circle class="bp-hit" data-part="brain"  cx="150" cy="48"  r="22"/>
+          <circle class="bp-hit" data-part="memory" cx="184" cy="60"  r="22"/>
+          <circle class="bp-hit" data-part="api"    cx="112" cy="68"  r="22"/>
+          <circle class="bp-hit" data-part="heart"  cx="160" cy="176" r="22"/>
+          <circle class="bp-hit" data-part="nerves" cx="150" cy="232" r="22"/>
+          <circle class="bp-hit" data-part="book"   cx="73"  cy="239" r="22"/>
+          <circle class="bp-hit" data-part="hand"   cx="230" cy="220" r="22"/>
+          <circle class="bp-hit" data-part="legs"   cx="150" cy="330" r="22"/>
+        </g>
+      </svg>
+      <div id="bodymap"></div>
+    </div>
   </div>
 </section>
 
@@ -720,24 +800,53 @@ function initDeck(container){
   refresh();
   return { refresh };
 }
-/* ---------- AI mapped to a body ---------- */
+/* ---------- AI mapped to a body (order matches the figure, head to toe) ---------- */
 const BODYMAP = [
-  ["🧠", "LLM", "the brain", "Does the thinking and the talking — generates language by predicting what comes next."],
-  ["📚", "RAG", "brain + a bookshelf", "Looks things up in your own documents before answering, so it stays current and grounded."],
-  ["✋", "AI agent", "hands", "Doesn't just talk — it takes actions: send, book, search, run code."],
-  ["🕸️", "MCP", "the nervous system", "The standard wiring that lets the brain reach tools and data the same way everywhere."],
-  ["⏳", "Context window", "short-term memory", "What it can hold in mind right now — everything older quietly falls away."],
-  ["👂", "API", "ears and mouth", "How other apps hand it a request and hear the answer back."],
-  ["🎓", "Training", "growing up", "How it learned everything — once, in the past, from enormous piles of text."],
-  ["🚦", "Guardrails", "manners and rules", "The limits on what it's allowed to say or do."]
+  ["🧠", "LLM", "the brain", "Does the thinking and the talking — generates language by predicting what comes next.", "brain"],
+  ["⏳", "Context window", "short-term memory", "What it can hold in mind right now — everything older quietly falls away.", "memory"],
+  ["👂", "API", "ears and mouth", "How other apps hand it a request and hear the answer back.", "api"],
+  ["🚦", "Guardrails", "the heart", "The values it carries — limits on what it will say or do, wherever it's asked.", "heart"],
+  ["🕸️", "MCP", "the nervous system", "The standard wiring that lets the brain reach tools and data the same way everywhere.", "nerves"],
+  ["📚", "RAG", "a book in hand", "Looks things up in your own documents before answering, so it stays current and grounded.", "book"],
+  ["✋", "AI agent", "the hands", "Doesn't just talk — it takes actions: send, book, search, run code.", "hand"],
+  ["🎓", "Training", "the legs", "How it learned to stand and walk — millions of examples, adjusted one step at a time.", "legs"]
 ];
 const bodymap = document.getElementById('bodymap');
 BODYMAP.forEach(b => {
   const el = document.createElement('div');
   el.className = 'bm-item';
+  el.dataset.part = b[4];
   el.innerHTML = `<div class="bm-emoji">${b[0]}</div>
     <div class="bm-txt"><div class="bm-eq"><b>${b[1]}</b> = ${b[2]}</div><p>${b[3]}</p></div>`;
   bodymap.appendChild(el);
+});
+
+/* figure <-> list wiring: tap a glowing dot to light its explanation (and scroll
+   the mobile deck to it); hovering an item lights its body part */
+const bodySvg = document.getElementById('bodySvg');
+function lightPart(part, on) {
+  bodySvg.querySelectorAll(`.bp-dot[data-part="${part}"], .bp-${part}`)
+    .forEach(e => e.classList.toggle('lit', on));
+  document.querySelectorAll(`#bodymap .bm-item[data-part="${part}"]`)
+    .forEach(e => e.classList.toggle('lit', on));
+}
+bodySvg.querySelectorAll('.bp-dot, .bp-hit').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const part = dot.dataset.part;
+    const was = bodySvg.querySelector(`.bp-dot[data-part="${part}"]`).classList.contains('lit');
+    BODYMAP.forEach(b => lightPart(b[4], false));
+    if (!was) {
+      lightPart(part, true);
+      const item = document.querySelector(`#bodymap .bm-item[data-part="${part}"]`);
+      if (item && getComputedStyle(bodymap).overflowX === 'auto') {
+        bodymap.scrollTo({ left: item.offsetLeft - 18, behavior: 'smooth' });  // mobile deck
+      }
+    }
+  });
+});
+document.querySelectorAll('#bodymap .bm-item').forEach(item => {
+  item.addEventListener('mouseenter', () => lightPart(item.dataset.part, true));
+  item.addEventListener('mouseleave', () => lightPart(item.dataset.part, false));
 });
 
 /* ---------- glossary: term · plain meaning · analogy ---------- */

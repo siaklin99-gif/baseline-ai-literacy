@@ -29,8 +29,11 @@ try {
 }
 
 if (DATA) {
-  const today = new Date('2026-07-21');          // fixed reference for reproducibility
+  // REAL current date — the whole point of this check is to catch decay over time.
+  // (A pinned date here once made the staleness guard pass forever: cold-audit find.)
+  const today = new Date();
   const STALE_DAYS = 120;
+  const WARN_DAYS = 90;                          // nag before the public page goes amber at 120
   for (const key of ['models', 'pricing', 'books']) {
     const d = DATA[key];
     if (!d) { bad(`data.js missing section "${key}"`); continue; }
@@ -43,7 +46,8 @@ if (DATA) {
     } else {
       const age = Math.floor((today - Date.parse(d.asOf)) / 86400000);
       if (age < 0)            bad(`${key}: asOf "${d.asOf}" is in the future (${age}d)`);
-      else if (age > STALE_DAYS) bad(`${key}: asOf "${d.asOf}" is stale (${age}d > ${STALE_DAYS}) — refresh it`);
+      else if (age > STALE_DAYS) bad(`${key}: asOf "${d.asOf}" is stale (${age}d > ${STALE_DAYS}) — the PUBLIC page shows amber; refresh data.js`);
+      else if (age > WARN_DAYS)  bad(`${key}: asOf "${d.asOf}" is ${age}d old — refresh before it goes amber at ${STALE_DAYS}d`);
       else                    ok(`${key}: verified ${d.asOf} (${age}d old, fresh)`);
     }
 
@@ -60,6 +64,10 @@ if (DATA) {
         if (!nonEmpty(r[type])) { rowErr++; bad(`${key}[${i}]: "${type}" is empty`); }
         for (const f of REQUIRED[type]) {
           if (!nonEmpty(r[f])) { rowErr++; bad(`${key}[${i}] (${type} row): field "${f}" is missing/empty — would render blank`); }
+        }
+        // book/course rows must link somewhere real (a recommendation with no link is a dead end)
+        if (type === 'title' && !/^https:\/\/[^\s"]+$/.test(r.url || '')) {
+          rowErr++; bad(`${key}[${i}] ("${r.title}"): missing/malformed url — readers can't reach it`);
         }
       });
       if (!rowErr) ok(`${key}: all ${d.list.length} rows have a valid type and non-empty fields`);
@@ -100,6 +108,14 @@ for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="card
 (/class="pl-eg"/.test(html) && /pl-eg-tag/.test(html))
   ? ok('per-layer everyday example callout present')
   : bad('everyday example callout (pl-eg) missing');
+
+// shareability: description, social cards, favicon, canonical (cold-audit W1a)
+for (const tag of ['meta name="description"', 'property="og:title"', 'property="og:image"',
+                   'name="twitter:card"', 'rel="icon"', 'rel="canonical"']) {
+  html.includes(tag) ? ok('share/head tag present: ' + tag) : bad('MISSING head tag: ' + tag);
+}
+fs.existsSync(path.join(__dirname, 'og.png')) ? ok('og.png share image exists')
+                                              : bad('og.png missing — social cards will show no image');
 
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')

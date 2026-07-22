@@ -4,6 +4,21 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Baseline — reset your AI literacy</title>
+<meta name="description" content="What AI really is, in 10 peelable layers — plus what it can and can't do, the jargon decoded, and honest, dated facts on models, costs and books. No jargon, no hype, no background required." />
+<link rel="canonical" href="https://siaklin99-gif.github.io/baseline-ai-literacy/" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>" />
+<!-- social share cards -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Baseline — reset your AI literacy" />
+<meta property="og:description" content="What AI really is, in 10 peelable layers. No jargon, no hype, no background required." />
+<meta property="og:url" content="https://siaklin99-gif.github.io/baseline-ai-literacy/" />
+<meta property="og:image" content="https://siaklin99-gif.github.io/baseline-ai-literacy/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Baseline — reset your AI literacy" />
+<meta name="twitter:description" content="What AI really is, in 10 peelable layers. No jargon, no hype, no background required." />
+<meta name="twitter:image" content="https://siaklin99-gif.github.io/baseline-ai-literacy/og.png" />
 <style>
 :root {
   --bg: #f9f8f6; --surface: #ffffff; --surface2: #f1f0ec;
@@ -294,6 +309,8 @@ details.card[open] .chev { transform: rotate(90deg); }
 .dlist li { padding: 9px 0; border-top: 1px solid var(--border); }
 .dlist li:first-child { border-top: 0; }
 .dlist .dn { font-weight: 620; color: var(--text); }
+.dlist a.dn-link { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border-med); }
+.dlist a.dn-link:hover { text-decoration-color: var(--accent); color: var(--accent); }
 .dlist .dk { font-size: 11px; text-transform: uppercase; letter-spacing:.04em; color: var(--text-ter); font-weight:600; margin-left:7px; }
 .dlist .db { display:block; font-size: 14px; color: var(--text-sec); }
 @media (max-width: 560px) { .card .content { padding-left: 18px; } }
@@ -548,7 +565,11 @@ function renderList(items){
   const rows = items.map((x, i) => {
     if ('name'  in x) return `<li><span class="dn">${esc(x.name)}</span><span class="dk">${esc(x.kind)}</span><span class="db">${esc(x.best)}</span></li>`;
     if ('plan'  in x) return `<li><span class="dn">${esc(x.plan)}</span><span class="dk">${esc(x.cost)}</span><span class="db">${esc(x.notes)}</span></li>`;
-    if ('title' in x) return `<li><span class="dn">${esc(x.title)}</span><span class="dk">${esc(x.kind)}</span><span class="db">${x.author ? esc(x.author)+' — ' : ''}${esc(x.why)}</span></li>`;
+    if ('title' in x) {
+      const t = x.url ? `<a class="dn dn-link" href="${encodeURI(x.url)}" target="_blank" rel="noopener">${esc(x.title)} ↗</a>`
+                      : `<span class="dn">${esc(x.title)}</span>`;
+      return `<li>${t}<span class="dk">${esc(x.kind)}</span><span class="db">${x.author ? esc(x.author)+' — ' : ''}${esc(x.why)}</span></li>`;
+    }
     // mistyped row (e.g. a book entered with name: instead of title:) — show it, don't drop it
     console.warn('Baseline data.js: list row', i, 'has no name/plan/title key — rendering fallback', x);
     return `<li><span class="dn" style="color:var(--amber)">⚠ Malformed row ${i+1} in data.js</span><span class="db">Needs a <code>name</code>, <code>plan</code>, or <code>title</code> field.</span></li>`;

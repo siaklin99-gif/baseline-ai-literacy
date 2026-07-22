@@ -38,6 +38,13 @@ async function get(url) {
   catch (e) { bad('cannot reach live index.html: ' + e.message + ' (is it deployed yet?)'); }
   try { liveData = await get(SITE + '/data.js'); ok('fetched live data.js'); }
   catch (e) { bad('cannot reach live data.js: ' + e.message); }
+  // the social-share image must actually be served (a card with a broken image is worse than none)
+  try {
+    const og = await get(SITE + '/og.png');
+    const localOg = fs.readFileSync(path.join(__dirname, 'og.png'));
+    sha(og) === sha(localOg) ? ok(`og.png live == local (sha ${sha(og)})`)
+                             : bad(`og.png DIFFERS live vs local`);
+  } catch (e) { bad('og.png not reachable live: ' + e.message); }
 
   // data.js must be byte-identical (static host serves .js as-is)
   if (liveData) {
@@ -51,7 +58,8 @@ async function get(url) {
   if (liveIndex) {
     const html = liveIndex.toString();
     const markers = ['id="peel"', 'id="bodymap"', 'id="glossary"', 'class="gl-table"',
-      'What is AI', 'AI jargon in plain English', '--grad'];
+      'What is AI', 'AI jargon in plain English', '--grad',
+      'property="og:image"', 'meta name="description"'];
     markers.forEach(m => html.includes(m) ? ok(`live index has: ${m}`) : bad(`live index MISSING: ${m}`));
     // the local source's markers must all be present live (nothing dropped)
     const local = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');

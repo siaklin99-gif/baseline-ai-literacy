@@ -81,19 +81,26 @@ window.BASELINE_DATA = {
          These are ordered gentlest first:</p>`,
     list: [
       {title:"You Look Like a Thing and I Love You", author:"Janelle Shane", kind:"Book",
-       why:"Gentlest start: funny, no math — why AI 'thinks' weirdly and makes mistakes."},
+       why:"Gentlest start: funny, no math — why AI 'thinks' weirdly and makes mistakes.",
+       url:"https://www.janelleshane.com/book-you-look-like-a-thing"},
       {title:"Artificial Intelligence: A Guide for Thinking Humans", author:"Melanie Mitchell", kind:"Book",
-       why:"Clear, hype-free tour of what AI really can and can't do. Fundamentals that age well."},
+       why:"Clear, hype-free tour of what AI really can and can't do. Fundamentals that age well.",
+       url:"https://melaniemitchell.me/aibook/"},
       {title:"AI for Everyone", author:"Andrew Ng · DeepLearning.AI", kind:"Course",
-       why:"Trusted no-background course (free to audit): what AI is, its limits and ethics."},
+       why:"Trusted no-background course (free to audit): what AI is, its limits and ethics.",
+       url:"https://www.coursera.org/learn/ai-for-everyone"},
       {title:"Elements of AI", author:"University of Helsinki & MinnaLearn", kind:"Course",
-       why:"Free, self-paced, no math or coding — built for ordinary citizens. 2M+ learners."},
+       why:"Free, self-paced, no math or coding — built for ordinary citizens. 2M+ learners.",
+       url:"https://www.elementsofai.com/"},
       {title:"Co-Intelligence: Living and Working with AI", author:"Ethan Mollick", kind:"Book",
-       why:"Practical, day-to-day use of AI. Readable, but a bit more time-bound than the rest."},
+       why:"Practical, day-to-day use of AI. Readable, but a bit more time-bound than the rest.",
+       url:"https://www.penguinrandomhouse.com/books/741805/co-intelligence-by-ethan-mollick/"},
       {title:"The Alignment Problem", author:"Brian Christian", kind:"Book",
-       why:"Deeper: why it's hard to make AI do what we intend, and where bias comes from."},
+       why:"Deeper: why it's hard to make AI do what we intend, and where bias comes from.",
+       url:"https://brianchristian.org/the-alignment-problem/"},
       {title:"What Is ChatGPT Doing … and Why Does It Work?", author:"Stephen Wolfram", kind:"Book",
-       why:"Deepest, but short and free online: how a model actually predicts words under the hood."}
+       why:"Deepest, but short and free online: how a model actually predicts words under the hood.",
+       url:"https://writings.stephenwolfram.com/2023/02/what-is-chatgpt-doing-and-why-does-it-work/"}
     ]
   }
 

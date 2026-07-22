@@ -1,0 +1,52 @@
+name: freshness-watchdog
+# Runs the project's own verify.js on a monthly schedule. verify.js turns red
+# when any data.js card is >90 days old (before the PUBLIC page goes amber at
+# 120d) — this workflow then auto-opens a GitHub issue so the refresh happens
+# on a nudge, not on memory.
+on:
+  schedule:
+    - cron: '0 8 1 * *'      # 08:00 UTC on the 1st of every month
+  workflow_dispatch:
+    inputs:
+      force_fail:
+        description: 'Force a failure to test the issue-creation path'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run guard (verify.js, real dates)
+        run: |
+          if [ "${{ inputs.force_fail }}" = "true" ]; then
+            echo "force_fail requested — simulating a guard failure"; exit 1
+          fi
+          node verify.js
+      - name: Open an issue if the guard is red (no duplicates)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Data refresh needed — freshness watchdog is red"
+          COUNT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+                    --search "\"$TITLE\" in:title" --json number --jq length)
+          if [ "$COUNT" = "0" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --body "The monthly freshness run of \`verify.js\` failed — most likely a \`data.js\` card is >90 days old (the public page shows amber at 120d).
+
+**To fix:** re-verify the facts, update the card content and its \`asOf\` date in \`data.js\`, run \`./selfcheck\`, commit and push.
+
+Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          else
+            echo "An open watchdog issue already exists — not duplicating."
+          fi

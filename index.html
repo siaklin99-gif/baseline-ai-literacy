@@ -292,6 +292,12 @@ details.card[open] .chev { transform: rotate(90deg); }
 .card .content p { margin-bottom: 10px; }
 .card .content p:last-child { margin-bottom: 0; }
 .card .content strong { color: var(--text); font-weight: 620; }
+/* copy-paste starter prompts in the first-15-minutes card */
+.prompt {
+  background: var(--surface2); border-left: 3px solid var(--accent);
+  border-radius: 8px; padding: 9px 12px; margin: 8px 0;
+  font-size: 14px; line-height: 1.5; color: var(--text);
+}
 .card .content .flag {
   display:inline-block; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
   font-weight:700; color: var(--amber); background: var(--amber-bg);
@@ -380,7 +386,7 @@ footer .line { max-width: 520px; }
 <section id="layers">
   <div class="wrap">
     <div class="slabel">The one idea to get first</div>
-    <div class="stitle">What is AI — in 10 layers</div>
+    <h2 class="stitle">What is AI — in 10 layers</h2>
     <div class="ssub">Peel it back one layer at a time — from the outer skin to the core of what AI really is. Stop wherever it stops being useful, or go all the way in.</div>
 
     <div id="peel">
@@ -398,7 +404,7 @@ footer .line { max-width: 520px; }
 <section id="bodysec">
   <div class="wrap">
     <div class="slabel">The whole system, in one picture</div>
-    <div class="stitle">AI, mapped to a body</div>
+    <h2 class="stitle">AI, mapped to a body</h2>
     <div class="ssub">The pieces you keep hearing about aren't rivals — they're body parts that work together. Here's who does what.</div>
     <div id="bodymap"></div>
   </div>
@@ -408,7 +414,7 @@ footer .line { max-width: 520px; }
 <section>
   <div class="wrap">
     <div class="slabel">Reality check</div>
-    <div class="stitle">What AI can &amp; can't do</div>
+    <h2 class="stitle">What AI can &amp; can't do</h2>
     <div class="ssub">Roughly, versus a capable human today. The gap is narrower than the hype and wider than the fear.</div>
     <div class="cols">
       <div class="col can">
@@ -441,7 +447,7 @@ footer .line { max-width: 520px; }
 <section id="glossec">
   <div class="wrap">
     <div class="slabel">The words, decoded</div>
-    <div class="stitle">AI jargon in plain English</div>
+    <h2 class="stitle">AI jargon in plain English</h2>
     <div class="ssub">Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</div>
     <div id="glossary"></div>
   </div>
@@ -451,7 +457,7 @@ footer .line { max-width: 520px; }
 <section id="topics">
   <div class="wrap">
     <div class="slabel">Go further, one tap at a time</div>
-    <div class="stitle">The rest, when you're ready</div>
+    <h2 class="stitle">The rest, when you're ready</h2>
     <div class="ssub">Tap any card to open it. Close it and move on. Nothing here needs to be read in order.</div>
     <div id="pills" class="pills"></div>
     <div id="cards"></div>
@@ -462,6 +468,9 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <p class="line">Baseline is a starting point, not the last word. It's built to be honest about what's still uncertain — including where the numbers change too fast to hard-code.</p>
     <p>v1 prototype · concepts are evergreen · market-data cards marked <strong style="color:var(--amber)">Needs live check</strong> are placeholders.</p>
+    <p>Spotted something stale, wrong, or confusing?
+       <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
+          style="color:var(--accent); text-underline-offset:3px;">Tell us here</a> — honest corrections are the point.</p>
   </div>
 </footer>
 
@@ -598,6 +607,14 @@ function dataCard(key){
    c[3] as {data:"key"} = pulled live from data.js with a freshness stamp. */
 /* each card: [emoji, title, sub, content, cluster] */
 const CARDS = [
+  ["🚀", "Your first 15 minutes", "Start here · from reading to doing",
+    `<p><strong>1 · Pick one tool.</strong> ChatGPT, Claude or Gemini — all have a free tier that runs in your browser. No card details needed.</p>
+     <p><strong>2 · Sign up</strong> with your email, open the chat box, and try these three — just replace the [brackets]:</p>
+     <div class="prompt">Explain [a term you keep hearing] like I'm completely new to this, in 5 short sentences.</div>
+     <div class="prompt">Summarize this in 3 bullet points: [paste any letter, email or article]</div>
+     <div class="prompt">Draft a short, friendly message to [who] about [what]. Keep it under 100 words.</div>
+     <p><strong>3 · Catch it being wrong — on day one.</strong> Ask it <em>"How sure are you? What should I double-check?"</em> and verify one fact yourself. That habit — use it, then check it — is the whole skill.</p>
+     <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "choose"],
   ["🧭", "Pick the right model for the job", "Topic 3–4 · which LLM, and when", {data:"models"}, "choose"],
   ["💻", "Local vs cloud LLMs", "Topic 5 · where the model runs",
     `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>

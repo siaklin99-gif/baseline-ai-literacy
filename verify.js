@@ -117,6 +117,18 @@ for (const tag of ['meta name="description"', 'property="og:title"', 'property="
 fs.existsSync(path.join(__dirname, 'og.png')) ? ok('og.png share image exists')
                                               : bad('og.png missing — social cards will show no image');
 
+// cold-audit batch 2 guards: doing-layer card, feedback channel, heading semantics
+html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter card present')
+                                       : bad('starter card missing — site teaches about AI but not doing');
+html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
+                                             : bad('no feedback channel — readers cannot report stale content');
+const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
+h2s === 5 ? ok('all 5 section titles are real <h2> headings')
+          : bad(`expected 5 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
+  ? ok('freshness watchdog workflow present')
+  : bad('freshness watchdog workflow missing');
+
 // theming: both light and dark variable blocks present
 html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')
                                             : bad('no dark-mode block');

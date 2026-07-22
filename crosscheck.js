@@ -224,7 +224,7 @@ async function main() {
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
-      r.cardCount === 8      ? ok(`${tag} 8 topic cards present`)             : bad(`${tag} expected 8 cards, got ${r.cardCount}`);
+      r.cardCount === 9      ? ok(`${tag} 9 topic cards present (incl. first-15-minutes)`) : bad(`${tag} expected 9 cards, got ${r.cardCount}`);
       (r.bmCount === 8 && r.glCount === 12)
         ? ok(`${tag} body map (8) + glossary (12) rendered`)
         : bad(`${tag} body map=${r.bmCount} (want 8), glossary=${r.glCount} (want 12)`);

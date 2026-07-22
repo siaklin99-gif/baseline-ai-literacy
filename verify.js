@@ -143,6 +143,11 @@ else {
   nq === 5 ? ok('self-quiz has exactly 5 questions') : bad(`expected 5 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// reality check: three honest tiers — good / unreliable (check it) / can't (don't ask).
+// "can't do" and "weak at" are different claims; never re-merge them.
+(html.includes('✓ Good at') && html.includes('⚠ Unreliable at') && html.includes("✗ Can't do"))
+  ? ok('reality check keeps good/unreliable/can\'t as three distinct tiers')
+  : bad('reality-check tiers missing or re-merged (weak-at is not can\'t-do)');
 // body diagram: 8 markers, and every list item's part has a matching dot on the figure
 const dotParts = [...html.matchAll(/class="bp-dot" data-part="(\w+)"/g)].map(m => m[1]);
 dotParts.length === 8 ? ok('body figure has 8 tappable markers') : bad(`expected 8 bp-dots, found ${dotParts.length}`);

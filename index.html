@@ -194,10 +194,12 @@ section { padding: 30px 0; }
 }
 
 /* ---------- can / cannot ---------- */
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .col { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 16px 16px 6px; }
-.col h4 { font-size: 15px; margin-bottom: 12px; display:flex; align-items:center; gap:7px; }
+.col h4 { font-size: 15px; margin-bottom: 3px; display:flex; align-items:center; gap:7px; }
+.col-sub { font-size: 12.5px; color: var(--text-ter); margin-bottom: 10px; }
 .col.can h4 { color: var(--green); }
+.col.warn h4 { color: var(--amber); }
 .col.cant h4 { color: var(--red); }
 .col ul { list-style: none; }
 .col li { font-size: 14.5px; color: var(--text-sec); padding: 7px 0; border-top: 1px solid var(--border); }
@@ -496,10 +498,12 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Reality check</div>
     <h2 class="stitle">What AI can &amp; can't do</h2>
-    <div class="ssub">Roughly, versus a capable human today. The gap is narrower than the hype and wider than the fear.</div>
+    <div class="ssub">Roughly, versus a capable human today. The middle column is the one people miss:
+      <em>unreliable</em> means check its work — <em>can't</em> means don't ask.</div>
     <div class="cols">
       <div class="col can">
         <h4>✓ Good at</h4>
+        <p class="col-sub">Lean on it here.</p>
         <ul>
           <li>Drafting, rewriting &amp; summarizing text</li>
           <li>Explaining things at any level you ask</li>
@@ -509,15 +513,24 @@ footer .line { max-width: 520px; }
           <li>Pulling structure out of messy notes</li>
         </ul>
       </div>
-      <div class="col cant">
-        <h4>✗ Weak / unreliable at</h4>
+      <div class="col warn">
+        <h4>⚠ Unreliable at</h4>
+        <p class="col-sub">It will do these — check the work.</p>
         <ul>
-          <li>Knowing what's true — it can sound sure and be wrong</li>
-          <li>Fresh facts after its training cutoff</li>
-          <li>Exact math &amp; counting, without tools</li>
-          <li>Remembering you between chats (by default)</li>
-          <li>Real judgment, ethics, accountability</li>
-          <li>Anything where a confident guess is dangerous</li>
+          <li>Telling truth from plausible — it can sound sure and be wrong</li>
+          <li>Exact math &amp; counting (without a calculator tool)</li>
+          <li>Niche or local facts — the rarer the topic, the more it guesses</li>
+          <li>High-stakes advice — anywhere a confident guess is dangerous</li>
+        </ul>
+      </div>
+      <div class="col cant">
+        <h4>✗ Can't do</h4>
+        <p class="col-sub">No clever prompt changes these.</p>
+        <ul>
+          <li>Know what happened after its training — unless the app adds web search</li>
+          <li>Remember you between chats (by default)</li>
+          <li>Take responsibility — there's no one home to be accountable</li>
+          <li>Truly understand or care — it predicts, it doesn't think</li>
         </ul>
       </div>
     </div>

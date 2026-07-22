@@ -130,8 +130,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 6 ? ok('all 6 section titles are real <h2> headings')
-          : bad(`expected 6 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 5 ? ok('all 5 section titles are real <h2> headings (glossary lives in a topic card now)')
+          : bad(`expected 5 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');

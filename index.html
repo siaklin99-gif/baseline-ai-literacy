@@ -220,7 +220,10 @@ section { padding: 30px 0; }
 
 /* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
 #cards, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
-@media (min-width: 760px) { #cards, #bodymap { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 760px) {
+  #cards, #bodymap { grid-template-columns: 1fr 1fr; }
+  #cards details.card.wide { grid-column: 1 / -1; }   /* glossary table needs the full row */
+}
 
 /* ---------- body map ---------- */
 .bm-item { display: flex; gap: 14px; align-items: flex-start;
@@ -464,16 +467,6 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
-<!-- ============ GLOSSARY ============ -->
-<section id="glossec">
-  <div class="wrap">
-    <div class="slabel">The words, decoded</div>
-    <h2 class="stitle">AI jargon in plain English</h2>
-    <div class="ssub">Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</div>
-    <div id="glossary"></div>
-  </div>
-</section>
-
 <!-- ============ TOPIC CLUSTERS ============ -->
 <section id="topics">
   <div class="wrap">
@@ -665,13 +658,16 @@ const CARDS = [
   ["🏢", "Why work won't train you", "Topic 11 · the corporate gap",
     `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
      <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
-  ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"]
+  ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"],
+  ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
+    `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
+     <div id="glossary"></div>`, "learn", "wide"]
 ];
 const cards = document.getElementById('cards');
 CARDS.forEach((c) => {
   const content = (typeof c[3] === 'string') ? c[3] : dataCard(c[3].data);
   const d = document.createElement('details');
-  d.className = 'card';
+  d.className = 'card' + (c[5] === 'wide' ? ' wide' : '');   // wide = spans both grid columns
   d.dataset.cluster = c[4] || '';
   d.innerHTML = `<summary>
       <div class="idx">${c[0]}</div>

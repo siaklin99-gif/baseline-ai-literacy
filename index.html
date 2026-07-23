@@ -52,6 +52,7 @@
   }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }   /* the attribute must win over display:flex/inline-flex */
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg); color: var(--text);
@@ -154,15 +155,19 @@ section { padding: 30px 0; }
   margin-right: 9px;
 }
 
+.pl-btns { display: flex; gap: 10px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
 .pl-btn {
-  display: inline-flex; align-items: center; gap: 7px; margin-top: 22px; min-height: 44px;
+  display: inline-flex; align-items: center; gap: 7px; min-height: 44px;
   background: var(--grad); color: #fff; border: none; cursor: pointer;
   font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 999px;
   box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--g2) 70%, transparent);
   transition: transform .15s ease;
 }
 .pl-btn:active { transform: scale(.97); }
-.pl-btn.restart { background: transparent; color: var(--text); border: 1px solid var(--border-med); box-shadow: none; }
+.pl-btn.restart, .pl-btn.pl-up {   /* secondary: ghost, so 'Peel deeper' stays the primary action */
+  background: transparent; color: var(--text-sec); border: 1px solid var(--border-med); box-shadow: none;
+}
+.pl-btn.pl-up:hover { color: var(--text); border-color: var(--text-ter); }
 
 /* the core: the 'boom' + aha */
 .pl-card.is-core {
@@ -220,9 +225,19 @@ section { padding: 30px 0; }
 .pill .n { opacity: .6; font-weight: 500; margin-left: 4px; }
 .pill.active .n { opacity: .7; }
 
-/* ---------- topic card grid: 2-up on wide screens, 1 column on mobile ---------- */
-#cards, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
-@media (min-width: 760px) { #cards { grid-template-columns: 1fr 1fr; } }
+/* ---------- topic groups + card grid: 2-up on wide screens, 1 column on mobile ---------- */
+.tg-deck, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
+@media (min-width: 760px) { .tg-deck { grid-template-columns: 1fr 1fr; } }
+.tg { margin-bottom: 26px; }
+.tg-head { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+.tg-badge {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff;
+  background: var(--grad); background-size: 300% 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.tg:nth-child(2) .tg-badge { background-position-x: 50%; } .tg:nth-child(3) .tg-badge { background-position-x: 100%; }
+.tg-t b { font-size: 16.5px; font-weight: 700; }
+.tg-t span { font-size: 13px; color: var(--text-ter); margin-left: 8px; }
 
 /* ---------- learning circle ---------- */
 .lc-wrap { display: grid; grid-template-columns: 1fr; gap: 22px; }
@@ -431,7 +446,7 @@ footer .line { max-width: 520px; }
      Can/Can't and Topics become horizontal scroll-snap decks; the next
      card peeks at the edge, native momentum scroll, progress dots below.
      (The layers use the peel-stack, which already works vertically.) */
-  .cols, #cards, #bodymap, .gl-deck {
+  .cols, .tg-deck, #bodymap, .gl-deck {
     display: flex; grid-template-columns: none;
     overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
@@ -439,9 +454,9 @@ footer .line { max-width: 520px; }
     margin-inline: -18px; padding: 2px 18px 8px;   /* full-bleed to viewport edges */
     scrollbar-width: none;
   }
-  .cols::-webkit-scrollbar, #cards::-webkit-scrollbar,
+  .cols::-webkit-scrollbar, .tg-deck::-webkit-scrollbar,
   #bodymap::-webkit-scrollbar, .gl-deck::-webkit-scrollbar { display: none; }
-  .cols > *, #cards > *, #bodymap > *, .gl-deck > * {
+  .cols > *, .tg-deck > *, #bodymap > *, .gl-deck > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
   }
 
@@ -510,7 +525,10 @@ footer .line { max-width: 520px; }
         <div class="pl-count" aria-live="polite">Layer 1 of 10</div>
       </div>
       <div class="pl-stage"></div>
-      <button class="pl-btn" type="button">Peel deeper <span aria-hidden="true">↓</span></button>
+      <div class="pl-btns">
+        <button class="pl-btn pl-up" type="button" hidden>Peel back up <span aria-hidden="true">↑</span></button>
+        <button class="pl-btn" type="button">Peel deeper <span aria-hidden="true">↓</span></button>
+      </div>
     </div>
   </div>
 </section>
@@ -625,8 +643,7 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Go further, one tap at a time</div>
     <h2 class="stitle">The rest, when you're ready</h2>
-    <div class="ssub">Tap any card to open it. Close it and move on. Nothing here needs to be read in order.</div>
-    <div id="pills" class="pills"></div>
+    <div class="ssub">Grouped by where you are, not by what it's called. Start at Beginner; drop into the others when you're curious. Tap any card to open it.</div>
     <div id="cards"></div>
   </div>
 </section>
@@ -676,7 +693,8 @@ const N = LAYERS.length;
 const stage = document.querySelector('.pl-stage');
 const bar = document.querySelector('.pl-bar > span');
 const plCount = document.querySelector('.pl-count');
-const plBtn = document.querySelector('.pl-btn');
+const plBtn = document.querySelector('.pl-btn:not(.pl-up)');   // the primary "deeper" button
+const plUp  = document.querySelector('.pl-up');
 let cur = 0;
 try { cur = Math.min(N - 1, Math.max(0, parseInt(localStorage.getItem('baseline_peel'), 10) || 0)); } catch (e) {}
 
@@ -722,6 +740,7 @@ function layout(save){
   plCount.textContent = isCore ? 'You reached the core · 10 of 10' : `Layer ${cur + 1} of 10 · peeling to the core`;
   plBtn.textContent = isCore ? '↺ Peel again from the top' : 'Peel deeper ↓';
   plBtn.classList.toggle('restart', isCore);
+  plUp.hidden = (cur === 0);   // nothing to peel back up from the outer skin
 
   // the 'boom' when the core is reached — replay the burst each arrival
   const coreCard = plCards[N - 1];
@@ -732,6 +751,7 @@ function layout(save){
   if (save) { try { localStorage.setItem('baseline_peel', String(cur)); } catch (e) {} }
 }
 plBtn.addEventListener('click', () => { cur = (cur >= N - 1) ? 0 : cur + 1; layout(true); });
+plUp.addEventListener('click', () => { if (cur > 0) { cur -= 1; layout(true); } });
 layout(false);
 
 /* ---------- freshness helper: turns a data.js entry into a stamp ---------- */
@@ -843,55 +863,37 @@ const CARDS = [
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
      <div id="glossary"></div>`, "learn"]
 ];
-const cards = document.getElementById('cards');
-CARDS.forEach((c) => {
+/* ---------- topics grouped by level (beginner / intermediate / advanced) ---------- */
+const LEVELS = [
+  ['beginner',     'Beginner',     'New to AI — start right here'],
+  ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
+  ['advanced',     'Going deeper',  'The bigger picture']
+];
+// level per card, in CARDS order (5 / 5 / 3)
+const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate','intermediate',
+                     'advanced','beginner','advanced','beginner','beginner','advanced','intermediate'];
+const cardsRoot = document.getElementById('cards');
+const levelDeck = {};
+LEVELS.forEach(([key, label, sub], gi) => {
+  const g = document.createElement('div');
+  g.className = 'tg';
+  g.innerHTML = `<div class="tg-head"><span class="tg-badge">${gi + 1}</span>
+      <div class="tg-t"><b>${label}</b><span>${sub}</span></div></div>
+    <div class="tg-deck" data-level="${key}"></div>`;
+  cardsRoot.appendChild(g);
+  levelDeck[key] = g.querySelector('.tg-deck');
+});
+CARDS.forEach((c, i) => {
   const content = (typeof c[3] === 'string') ? c[3] : dataCard(c[3].data);
   const d = document.createElement('details');
   d.className = 'card';
-  d.dataset.cluster = c[4] || '';
   if (c[5]) d.id = c[5];   // anchor for the learning circle
   d.innerHTML = `<summary>
       <div class="idx">${c[0]}</div>
       <div class="head"><div class="t">${c[1]}</div><div class="s">${c[2]}</div></div>
       <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </summary><div class="content">${content}</div>`;
-  cards.appendChild(d);
-});
-
-/* ---------- cluster filter pills ---------- */
-const CLUSTERS = [
-  ["all", "All topics"],
-  ["choose", "Choose tools"],
-  ["cost", "Cost & tokens"],
-  ["safety", "Stay safe"],
-  ["learn", "Learn well"]
-];
-const cardEls = [...document.querySelectorAll('#cards details.card')];
-const pillWrap = document.getElementById('pills');
-function countFor(key){ return key === 'all' ? cardEls.length : cardEls.filter(c => c.dataset.cluster === key).length; }
-let cardsDeck = null; // swipe-deck controller (mobile), assigned below
-function filterCards(key){
-  cardEls.forEach(c => { c.style.display = (key === 'all' || c.dataset.cluster === key) ? '' : 'none'; });
-  [...pillWrap.children].forEach(p => {
-    const on = p.dataset.key === key;
-    p.classList.toggle('active', on);
-    p.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  // filtered subset changes the deck — reset scroll and rebuild dots
-  const cardsEl = document.getElementById('cards');
-  cardsEl.scrollLeft = 0;
-  if (cardsDeck) cardsDeck.refresh();
-}
-pillWrap.setAttribute('role', 'group');
-pillWrap.setAttribute('aria-label', 'Filter topics by theme');
-CLUSTERS.forEach((cl, i) => {
-  const b = document.createElement('button');
-  b.className = 'pill' + (i === 0 ? ' active' : '');
-  b.dataset.key = cl[0];
-  b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
-  b.innerHTML = `${cl[1]}<span class="n">${countFor(cl[0])}</span>`;
-  b.addEventListener('click', () => filterCards(cl[0]));
-  pillWrap.appendChild(b);
+  (levelDeck[CARD_LEVELS[i]] || cardsRoot).appendChild(d);
 });
 
 /* ---------- mobile swipe decks: progress dots ---------- */
@@ -1062,12 +1064,13 @@ const lcList = document.getElementById('lcList');
 function lcNavigate(i) {
   const t = document.querySelector(CIRCLE[i][2]);
   if (!t) return;
-  if (t.tagName === 'DETAILS') {
-    // a pill filter may be hiding this card — reset to "all" so the jump can land
-    if (getComputedStyle(t).display === 'none') filterCards('all');
-    t.open = true;
-  }
+  if (t.tagName === 'DETAILS') t.open = true;
   t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // if the target card sits in a horizontal deck (mobile), bring it into the deck's view too
+  const deck = t.closest && t.closest('.tg-deck');
+  if (deck && getComputedStyle(deck).overflowX === 'auto') {
+    deck.scrollTo({ left: Math.max(0, t.offsetLeft - 18), behavior: 'smooth' });
+  }
 }
 CIRCLE.forEach((s, i) => {
   const a = (-90 + i * 60) * Math.PI / 180;
@@ -1121,7 +1124,7 @@ lcUpdate();
 
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));
-cardsDeck = initDeck(document.getElementById('cards'));
+LEVELS.forEach(([key]) => initDeck(levelDeck[key]));   // one swipe deck per level group (mobile)
 </script>
 </body>
 </html>

@@ -104,7 +104,7 @@ dupIds.length ? bad('duplicate id(s): ' + [...new Set(dupIds)].join(', '))
               : ok('no duplicate element IDs');
 
 // required hooks the JS depends on
-for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="cards"', 'id="pills"', 'id="bodymap"', 'id="glossary"']) {
+for (const need of ['id="peel"', 'class="pl-stage"', 'class="pl-btn"', 'id="cards"', 'id="bodymap"', 'id="glossary"']) {
   html.includes(need) ? ok('has ' + need) : bad('missing ' + need);
 }
 // the peel core "boom" (aha) must be wired
@@ -193,10 +193,20 @@ html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')
 // AI gradient identity: defined and actually used
 (/--grad\s*:/.test(html) && /var\(--grad\)/.test(html)) ? ok('AI gradient identity defined and used')
                                                         : bad('AI gradient (--grad) missing or unused');
-// cluster colour-coding present for all four groups
-['choose','cost','safety','learn'].every(c => html.includes(`data-cluster="${c}"`))
-  ? ok('all four topic clusters colour-coded')
-  : bad('a topic cluster is missing its colour rule');
+// topics grouped by level: 3 groups defined, every card assigned, split adds to 13
+const levelBlock = html.match(/const LEVELS = \[([\s\S]*?)\n\];/);
+const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
+if (levelBlock && cardLevelsBlock) {
+  const nGroups = (levelBlock[1].match(/\['/g) || []).length;
+  const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
+  (nGroups === 3 && assigned === 13)
+    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 13)`);
+} else bad('LEVELS / CARD_LEVELS grouping arrays missing');
+// peel supports both directions
+html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)
+  ? ok('peel has both deeper and back-up controls')
+  : bad('peel "back up" control missing');
 
 // LAYERS array should have exactly 10 entries (the "10 layers" promise)
 const layerBlock = html.match(/const LAYERS = \[([\s\S]*?)\];/);
@@ -222,7 +232,7 @@ const g = (cond, m) => cond ? ok(m) : bad(m);
 g(/function esc\(/.test(html), 'esc() escaping helper present (fix #4)');
 g(html.includes("'name'  in x") || html.includes("'name' in x"), 'renderList uses `in` type-detection (fix #3)');
 g(/Malformed row/.test(html), 'renderList renders a visible fallback for mistyped rows (fix #3)');
-g(/aria-pressed/.test(html), 'filter pills expose aria-pressed state (fix #2)');
+g(/aria-pressed/.test(html), 'interactive toggles expose aria-pressed state');
 g(/prefers-reduced-motion/.test(html), 'peel animations respect prefers-reduced-motion');
 g(/Invalid date/.test(html), 'invalid asOf is distinguished from empty (fix #5)');
 // escaping means no field should ship pre-escaped &amp; entities in data.js text

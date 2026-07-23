@@ -90,7 +90,7 @@ function assertionExpr(expected) {
     //  intentionally different widths, e.g. the centered layers column)
     const vw = window.innerWidth;
     let maxAsym = 0, worstBlock = '';
-    ['.hero .wrap', '#peel', '.pl-stage', '.cols', '#pills', '#cards'].forEach(sel => {
+    ['.hero .wrap', '#peel', '.pl-stage', '.cols', '#cards'].forEach(sel => {
       const e = document.querySelector(sel); if (!e) return;
       const r = e.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) return; // skip hidden elements
@@ -99,9 +99,9 @@ function assertionExpr(expected) {
     });
     // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack;
     // the glossary shows a swipe deck on mobile, a table on desktop)
-    const decksScroll = ['.cols', '#cards', '#bodymap', '.gl-deck'].every(sel => {
+    const decksScroll = ['.cols', '#bodymap', '.gl-deck'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
-    });
+    }) && [...document.querySelectorAll('.tg-deck')].every(e => e.scrollWidth > e.clientWidth + 5);
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
     const bpDots = document.querySelectorAll('#bodySvg .bp-dot').length;
     const glCount = document.querySelectorAll('#glossary .gl-card').length;
@@ -116,7 +116,7 @@ function assertionExpr(expected) {
     const plExamples = plCards.filter(c => { const e = c.querySelector('.pl-eg'); return e && e.textContent.replace(/everyday/i, '').trim().length > 0; }).length;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
-    const PRIMARY = [['.cta','button'], ['.pill','filter pill'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row'], ['.lc-row','circle step row'], ['.lc-node','circle node'], ['.bp-hit','figure marker']];
+    const PRIMARY = [['.cta','button'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row'], ['.lc-row','circle step row'], ['.lc-node','circle node'], ['.bp-hit','figure marker']];
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);

@@ -43,7 +43,7 @@ window.BASELINE_DATA = {
       {name:"Grok", kind:"Paid · xAI", best:"Chat assistant with live access to the current web and X posts."},
       {name:"Llama", kind:"Open source · Meta", best:"Free to download and run yourself; solid general-purpose chat."},
       {name:"Qwen", kind:"Open source · Alibaba", best:"Free, well-rounded, strong at coding and 100+ languages."},
-      {name:"DeepSeek", kind:"Open source", best:"Free, especially good at step-by-step reasoning and math."},
+      {name:"DeepSeek", kind:"Open source · China", best:"Free, especially good at step-by-step reasoning and math."},
       {name:"Mistral", kind:"Open source · France", best:"European open-weight models you can self-host with no per-use fees."}
     ]
   },

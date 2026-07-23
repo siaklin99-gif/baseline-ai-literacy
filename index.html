@@ -89,6 +89,8 @@ body {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .hero p { font-size: clamp(16px, 2.3vw, 19px); color: var(--text-sec); max-width: 540px; margin: 0 auto 30px; }
+.hero-thesis { font-size: clamp(15.5px, 2vw, 17.5px); color: var(--text); max-width: 560px; margin: -14px auto 26px; font-weight: 500; }
+.hero-thesis b { font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .cta {
   display: inline-block; background: var(--grad); color: #fff;
   font-weight: 600; font-size: 15px; padding: 13px 26px; border-radius: 999px;
@@ -97,6 +99,14 @@ body {
 }
 .cta:active { transform: scale(0.97); }
 .cta.ghost { background: transparent; color: var(--text); border: 1px solid var(--border-med); margin-left: 8px; box-shadow: none; }
+
+/* ---------- trust strip ---------- */
+.trust .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding-top: 4px; padding-bottom: 4px; }
+.trust-pill { font-size: 12.5px; color: var(--text-sec); background: var(--surface2);
+  border: 0.5px solid var(--border); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+.trust-by { font-size: 12.5px; color: var(--text-ter); margin-left: auto; }
+.trust-by a { color: var(--text-sec); text-underline-offset: 2px; }
+@media (max-width: 560px) { .trust-by { margin-left: 0; width: 100%; } }
 
 /* ---------- do-one-thing action panel ---------- */
 #try { padding-top: 6px; }
@@ -114,6 +124,13 @@ body {
 }
 .try-tools a:nth-child(2) { background-position-x: 50%; } .try-tools a:nth-child(3) { background-position-x: 100%; }
 .try-free { font-size: 12.5px; color: var(--text-ter); }
+.try-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.try-tab { display: inline-flex; align-items: center; min-height: 40px; font-size: 13px; font-weight: 600;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--border-med);
+  background: var(--surface); color: var(--text-sec);
+  transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.try-tab.is-on { background: var(--grad); color: #fff; border-color: transparent; }
+.try-tab:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 .try-prompt {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
   background: var(--surface2); border-radius: 10px; padding: 12px 14px;
@@ -388,15 +405,6 @@ details.card > summary::-webkit-details-marker { display: none; }
   background: var(--surface2); display:flex; align-items:center; justify-content:center;
   font-size: 15px;
 }
-/* cluster colour-coding: a quiet colour signature per topic group */
-details.card[data-cluster="choose"] { border-left: 3px solid var(--blue); }
-details.card[data-cluster="cost"]   { border-left: 3px solid var(--amber); }
-details.card[data-cluster="safety"] { border-left: 3px solid var(--green); }
-details.card[data-cluster="learn"]  { border-left: 3px solid var(--violet); }
-details.card[data-cluster="choose"] .idx { background: var(--blue-bg); }
-details.card[data-cluster="cost"]   .idx { background: var(--amber-bg); }
-details.card[data-cluster="safety"] .idx { background: var(--green-bg); }
-details.card[data-cluster="learn"]  .idx { background: var(--violet-bg); }
 .card .head { flex: 1; }
 .card .head .t { font-weight: 620; font-size: 16px; }
 .card .head .s { font-size: 13.5px; color: var(--text-ter); }
@@ -511,10 +519,22 @@ footer .line { max-width: 520px; }
     <div class="eyebrow">Start on the same page</div>
     <h1>Reset your<br><span class="grad">AI literacy.</span></h1>
     <p>No jargon, no hype, no background required. One calm baseline everyone — young or old, techie or not — can start from. Then go as deep as you want.</p>
+    <p class="hero-thesis">You won't be replaced by AI — <b>but by someone who uses it.</b> Might as well be you.</p>
     <a href="#try" class="cta">Try it in 2&nbsp;minutes&nbsp;→</a>
     <a href="#layers" class="cta ghost">Or start with the basics</a>
   </div>
 </header>
+
+<!-- ============ TRUST STRIP (grounded in real properties, no invented authority) ============ -->
+<div class="trust" role="note" aria-label="Why you can trust this page">
+  <div class="wrap">
+    <span class="trust-pill">Free · no signup</span>
+    <span class="trust-pill">Nothing tracked</span>
+    <span class="trust-pill">No course to sell</span>
+    <span class="trust-pill">Every price &amp; book link dated and checked</span>
+    <span class="trust-by">Made at <a href="https://hlur.ai" target="_blank" rel="noopener">hlur.ai</a></span>
+  </div>
+</div>
 
 <!-- ============ DO ONE THING (action-first) ============ -->
 <section id="try">
@@ -528,6 +548,11 @@ footer .line { max-width: 520px; }
         <a href="https://claude.ai" target="_blank" rel="noopener">Claude ↗</a>
         <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini ↗</a>
         <span class="try-free">all free to start</span>
+      </div>
+      <div class="try-tabs" role="group" aria-label="Pick a starter prompt">
+        <button class="try-tab is-on" type="button" aria-pressed="true" data-prompt="Explain [something you keep hearing about] like I'm completely new to it, in 5 short sentences.">Learn something</button>
+        <button class="try-tab" type="button" aria-pressed="false" data-prompt="Write a warm, 3-line message to [person] to [what you want to say]. Keep it short and friendly.">Write a message</button>
+        <button class="try-tab" type="button" aria-pressed="false" data-prompt="Summarize this in 5 skimmable bullet points, then one line on what I should do next: [paste anything here]">Summarize something</button>
       </div>
       <div class="try-prompt">
         <span class="try-text" id="tryText">Explain [something you keep hearing about] like I'm completely new to it, in 5 short sentences.</span>
@@ -677,7 +702,7 @@ footer .line { max-width: 520px; }
           <li>Telling truth from plausible — it can sound sure and be wrong</li>
           <li>Exact math &amp; counting (without a calculator tool)</li>
           <li>Niche or local facts — the rarer the topic, the more it guesses</li>
-          <li>Being right 100% of the time — never trust it blindly; verify what matters</li>
+          <li>Citations &amp; quotes — it can invent real-looking sources that don't exist</li>
         </ul>
       </div>
       <div class="col cant">
@@ -735,7 +760,7 @@ const LAYERS = [
   ["The engine is a 'model'", "A model is one giant math function with billions of adjustable numbers (parameters) tuned to be good at prediction.", "Layer 4 · the object", "Picture billions of tiny volume knobs, each nudged a hair until the output comes out right."],
   ["Training set those numbers", "It read enormous amounts of text/images and slowly adjusted those numbers to make fewer mistakes. That's 'training'.", "Layer 5 · where it came from", "Like shooting free throws for years — every miss tweaks your aim until you rarely miss."],
   ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does", "“Bread and ___” and your brain says butter. It makes that guess, endlessly, at lightning speed."],
-  ["It has no memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — once the chat closes, it forgets you completely."],
+  ["It has no lasting memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window — working memory for this chat only.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — once the chat closes, it forgets you completely."],
   ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat", "That friend who'd rather give a smooth, confident answer than admit “honestly, I don't know.”"],
   ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood", "Same idea as a bicycle — then strap on a jet engine and endless fuel, and suddenly it flies."],
   ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor", "It's a power tool, not a colleague — dazzling in skilled hands, lost on its own."]
@@ -894,6 +919,14 @@ const CARDS = [
   ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
     `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
      <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`, "safety"],
+  ["🎭", "Spotting AI fakes &amp; scams", "When AI is used to fool you",
+    `<p>The same tools can be turned on you: a voice cloned from seconds of audio, a photo or video of something that never happened, and flawless scam messages written at scale.</p>
+     <p><strong>How not to get fooled:</strong></p>
+     <p>· Treat <strong>urgency + money or passwords</strong> as the warning sign — even in a familiar voice.</p>
+     <p>· Verify on a separate channel you already trust: hang up and call the known number back.</p>
+     <p>· A photo — or even a live-looking video call — is no longer proof it's real.</p>
+     <p>· Agree a <strong>family code word</strong> for real emergencies.</p>
+     <p>The old tell was bad spelling. The new tell is the <em>ask</em> — slow down whenever something pressures you to act fast.</p>`, "safety"],
   ["🏢", "Why work won't train you", "The corporate gap",
     `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
      <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
@@ -912,7 +945,7 @@ const CARDS = [
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
      <div id="glossary"></div>`, "learn"],
 
-  /* --- added cards (6/6/6) --- */
+  /* --- more cards --- */
   ["💬", "How to ask (so it actually helps)", "The one skill that changes everything",
     `<p>The gap between a useless answer and a great one is usually <strong>you</strong>, not the AI. Four moves cover most of it:</p>
      <p><strong>1 · Give context</strong> — who it's for, what the goal is. "Explain to my 70-year-old mum" beats "explain."</p>
@@ -935,7 +968,7 @@ const CARDS = [
      <p><strong>What to do:</strong> treat its answer as one well-read voice, not a neutral referee — especially on people, cultures, history and anything contested. Ask for other viewpoints, and notice what it leaves out.</p>`],
 
   ["🌍", "AI's real-world footprint", "The cost you don't see on screen",
-    `<p>Every answer runs on physical computers in data centres. Training a big model takes a lot of electricity up front; each query then costs a little energy, and that adds up across billions of uses. Those data centres also use water to stay cool.</p>
+    `<p>Every answer runs on physical computers in data centers. Training a big model takes a lot of electricity up front; each query then costs a little energy, and that adds up across billions of uses. Those data centers also use water to stay cool.</p>
      <p>Not a reason for guilt over a few chats — but it's real, and it's why "throw AI at everything" isn't free. Using the right-sized model for the job (not always the biggest) is greener as well as cheaper.</p>`],
 
   ["🔮", "What's next: agents &amp; AGI", "Hype vs the honest answer",
@@ -949,9 +982,9 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (6 / 5 / 5)
+// level per card, in CARDS order (7 / 5 / 5)
 const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate',
-                     'beginner','advanced','beginner','beginner','advanced','intermediate',
+                     'beginner','beginner','advanced','beginner','beginner','advanced','intermediate',
                      'beginner','intermediate','advanced','advanced','advanced'];
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
@@ -1010,7 +1043,7 @@ function initDeck(container){
 /* ---------- AI mapped to a body (order matches the figure, head to toe) ---------- */
 const BODYMAP = [
   ["🧠", "LLM", "the brain", "Does the thinking and the talking — generates language by predicting what comes next.", "brain"],
-  ["⏳", "Context window", "short-term memory", "What it can hold in mind right now — everything older quietly falls away.", "memory"],
+  ["⏳", "Context window", "working memory", "What it can hold in mind right now — everything older quietly falls away.", "memory"],
   ["👂", "API", "ears and mouth", "How other apps hand it a request and hear the answer back.", "api"],
   ["🚦", "Guardrails", "the heart", "The values it carries — limits on what it will say or do, wherever it's asked.", "heart"],
   ["🕸️", "MCP", "the nervous system", "The standard wiring that lets the brain reach tools and data the same way everywhere.", "nerves"],
@@ -1084,7 +1117,7 @@ const GLOSSARY = [
   ["Hallucination", "When it states something false with total confidence.", "a student bluffing an exam answer"],
   ["RAG", "Retrieval-Augmented Generation — it looks up your documents before answering.", "an open-book exam instead of answering from memory"],
   ["AI agent", "An AI that can take actions and use tools, not just chat.", "an intern who actually sends the email, not just drafts it"],
-  ["MCP", "Model Context Protocol — a standard plug for connecting AI to tools and data.", "USB-C for AI: one connector fits many tools"],
+  ["MCP", "Model Context Protocol — a standard plug for connecting AI to tools and data.", "one universal adapter, so any tool plugs into any AI"],
   ["API", "How one program asks another for something and gets an answer back.", "a waiter carrying your order to the kitchen and back"],
   ["SDK", "A ready-made toolkit for developers to build on a service.", "a flat-pack with all the parts and instructions, instead of carving the wood"],
   ["Fine-tuning", "Extra training that specializes a general model for one job.", "a family doctor doing a specialty residency"],
@@ -1251,6 +1284,16 @@ document.querySelectorAll('.try-copy').forEach(btn => {
     const done = () => { btn.textContent = 'Copied ✓'; btn.classList.add('done'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1800); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
     else { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) {} t.remove(); done(); }
+  });
+});
+
+/* ---------- starter-prompt tabs: swap the copyable prompt ---------- */
+const tryTabs = document.querySelectorAll('.try-tab');
+tryTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tryTabs.forEach(t => { t.classList.remove('is-on'); t.setAttribute('aria-pressed', 'false'); });
+    tab.classList.add('is-on'); tab.setAttribute('aria-pressed', 'true');
+    document.getElementById('tryText').textContent = tab.dataset.prompt;
   });
 });
 

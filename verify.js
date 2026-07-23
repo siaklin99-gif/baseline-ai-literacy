@@ -147,6 +147,16 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('class="qz-opt"') && html.includes('You got ${qzCorrect}') && html.includes('qzCorrect++')) ? ok('quiz is scored (answer buttons + running score)') : bad('quiz not scored');
 // action-first block: try panel with a copy-a-prompt button + tool links
 (html.includes('id="try"') && html.includes('try-copy') && html.includes('chatgpt.com')) ? ok('above-fold action panel (copy prompt + tool links) present') : bad('action panel missing');
+// multiple starter prompts (not one generic line) so a beginner sees a use that fits them
+((html.match(/class="try-tab/g) || []).length >= 3 && html.includes('data-prompt=')) ? ok('action panel offers 3+ swappable starter prompts') : bad('only one starter prompt (add variety)');
+// trust signal grounded in real properties (no invented authority) + honest maker attribution
+(html.includes('class="trust"') && html.includes('trust-pill') && html.includes('>hlur.ai<')) ? ok('trust strip present (real properties + hlur.ai attribution)') : bad('trust strip missing');
+// core thesis surfaced in the hero (was buried in a collapsed card)
+(html.includes('class="hero-thesis"') && /someone who uses it/.test(html)) ? ok('replacement thesis surfaced in the hero') : bad('thesis not in hero');
+// AI-deception safety card (biggest content gap in the cold audit)
+(html.includes('Spotting AI fakes') && html.includes('family code word')) ? ok('AI-fakes/scams safety card present') : bad('safety card missing');
+// IP: MCP analogy must be our own expression, not Anthropic's "USB-C for AI" line
+(!html.includes('USB-C')) ? ok('MCP analogy is original (no lifted "USB-C" line)') : bad('MCP still uses the "USB-C" marketing phrasing');
 // keyboard a11y: the custom (non-native) controls must be operable without a mouse
 (html.includes("el.setAttribute('role', 'button')") && html.includes("el.setAttribute('tabindex', '0')") && /item\.addEventListener\('keydown'/.test(html))
   ? ok('body-map items are keyboard-operable (role=button + tabindex + Enter/Space handler)') : bad('body-map items not keyboard-operable');
@@ -210,9 +220,9 @@ const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
 if (levelBlock && cardLevelsBlock) {
   const nGroups = (levelBlock[1].match(/\['/g) || []).length;
   const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
-  (nGroups === 3 && assigned === 16)
-    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (6/5/5)`)
-    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 16)`);
+  (nGroups === 3 && assigned === 17)
+    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (7/5/5)`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 17)`);
 } else bad('LEVELS / CARD_LEVELS grouping arrays missing');
 // peel supports both directions
 html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)

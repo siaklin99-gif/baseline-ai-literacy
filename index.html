@@ -34,6 +34,8 @@
   /* AI gradient identity: electric blue -> violet -> teal */
   --g1: #2f6bff; --g2: #7a5cff; --g3: #12b8a6;
   --grad: linear-gradient(115deg, var(--g1), var(--g2) 52%, var(--g3));
+  /* AA-safe gradient for small MEANINGFUL text (no teal; both stops >=5.6:1 on light) */
+  --grad-text: linear-gradient(115deg, #2456c9, #5b3bd6);
   --wrap: 940px;   /* outer container: uses wide screens without going edge-to-edge */
   --read: 640px;   /* readable prose column cap (~78 chars max) — text never stretches past this */
 }
@@ -49,6 +51,7 @@
     --violet: #b6a2f5; --violet-bg: #241a45;
     --accent: #6f97ff;
     --g1: #6f97ff; --g2: #a48cff; --g3: #3fd6c4;
+    --grad-text: linear-gradient(115deg, #85b7eb, #b9a5ff);   /* light stops for dark bg (>=6.6:1) */
   }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -386,7 +389,7 @@ section { padding: 30px 0; }
 .gl-deck { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 4px; }
 .gl-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 13px 15px; }
 .gl-cterm { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
-.gl-cterm .gt { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gl-cterm .gt { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .gl-cdef { font-size: 14.5px; color: var(--text-sec); line-height: 1.5; margin-bottom: 10px; }
 .gl-eg { font-size: 13.5px; color: var(--text-ter); line-height: 1.45;
   background: color-mix(in srgb, var(--g2) 6%, var(--surface2)); border-radius: 9px; padding: 8px 11px; }
@@ -465,7 +468,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz.done .qz-a { display: block; }
 .qz-a b { color: var(--text); }
 .qz-src { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
-  font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  font-weight: 700; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @media (max-width: 560px) { .qz-opts, .qz-a { margin-left: 0; } }
 
 /* ---------- footer ---------- */
@@ -951,7 +954,7 @@ const CARDS = [
      <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
      <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`, "learn"],
   ["📚", "Real foundations, not shots in the dark", "Books &amp; classes worth it", {data:"books"}, "learn"],
-  ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
+  ["🔤", "AI jargon in plain English", "The words, decoded · 14 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
      <div id="glossary"></div>`, "learn"],
 
@@ -1130,8 +1133,10 @@ const GLOSSARY = [
   ["MCP", "Model Context Protocol — a standard plug for connecting AI to tools and data.", "one universal adapter, so any tool plugs into any AI"],
   ["API", "How one program asks another for something and gets an answer back.", "a waiter carrying your order to the kitchen and back"],
   ["SDK", "A ready-made toolkit for developers to build on a service.", "a flat-pack with all the parts and instructions, instead of carving the wood"],
+  ["Training", "The one-time phase where the model learns patterns from huge amounts of text — before you ever chat with it.", "years of study crammed in before the exam; after that, it just answers"],
   ["Fine-tuning", "Extra training that specializes a general model for one job.", "a family doctor doing a specialty residency"],
-  ["Inference", "The model actually generating an answer (as opposed to training).", "sitting the exam, not studying for it"]
+  ["Inference", "The model actually generating an answer (as opposed to training).", "sitting the exam, not studying for it"],
+  ["Guardrails", "The built-in limits on what it will say or do — what keeps it from helping with clearly harmful requests.", "the railing on a mountain road: there so a wrong turn doesn't become a disaster"]
 ];
 const glossary = document.getElementById('glossary');
 /* one entry per term: vertical stack inside the card on desktop,

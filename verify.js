@@ -165,6 +165,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('Spotting AI fakes') && html.includes('family code word')) ? ok('AI-fakes/scams safety card present') : bad('safety card missing');
 // IP: MCP analogy must be our own expression, not Anthropic's "USB-C for AI" line
 (!html.includes('USB-C')) ? ok('MCP analogy is original (no lifted "USB-C" line)') : bad('MCP still uses the "USB-C" marketing phrasing');
+// small MEANINGFUL gradient text uses the AA-safe (no-teal) gradient, not the display gradient
+(html.includes('--grad-text') && /\.gl-cterm \.gt \{ background: var\(--grad-text\)/.test(html) && /\.qz-src[^}]*var\(--grad-text\)/.test(html))
+  ? ok('glossary terms + quiz source use AA-safe text gradient (WCAG contrast)') : bad('small meaningful text still on the low-contrast display gradient');
 // keyboard a11y: the custom (non-native) controls must be operable without a mouse
 (html.includes("el.setAttribute('role', 'button')") && html.includes("el.setAttribute('tabindex', '0')") && /item\.addEventListener\('keydown'/.test(html))
   ? ok('body-map items are keyboard-operable (role=button + tabindex + Enter/Space handler)') : bad('body-map items not keyboard-operable');

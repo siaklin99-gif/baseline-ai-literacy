@@ -147,6 +147,13 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('class="qz-opt"') && html.includes('You got ${qzCorrect}') && html.includes('qzCorrect++')) ? ok('quiz is scored (answer buttons + running score)') : bad('quiz not scored');
 // action-first block: try panel with a copy-a-prompt button + tool links
 (html.includes('id="try"') && html.includes('try-copy') && html.includes('chatgpt.com')) ? ok('above-fold action panel (copy prompt + tool links) present') : bad('action panel missing');
+// keyboard a11y: the custom (non-native) controls must be operable without a mouse
+(html.includes("el.setAttribute('role', 'button')") && html.includes("el.setAttribute('tabindex', '0')") && /item\.addEventListener\('keydown'/.test(html))
+  ? ok('body-map items are keyboard-operable (role=button + tabindex + Enter/Space handler)') : bad('body-map items not keyboard-operable');
+(/<a class="lc-t" href="\$\{s\[2\]\}">/.test(html))
+  ? ok('learning-circle steps navigate via a real in-page link (keyboard-reachable)') : bad('circle nav is not a keyboard-reachable link');
+(html.includes("qzScore.setAttribute('aria-live', 'polite')"))
+  ? ok('quiz score is announced to screen readers (aria-live)') : bad('quiz score missing aria-live');
 // quiz must mix yes and no answers (not an 'always say no' reflex)
 (/"Yes.",/.test(html) && /"No.",/.test(html)) ? ok('quiz has both yes- and no-answer questions') : bad('quiz missing a yes-answer question (lopsided)');
 // learning circle has a reset control

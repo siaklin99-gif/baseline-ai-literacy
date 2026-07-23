@@ -140,9 +140,13 @@ const quizBlock = html.match(/const QUIZ = \[([\s\S]*?)\n\];/);
 if (!quizBlock) bad('QUIZ array missing');
 else {
   const nq = (quizBlock[1].match(/\n\s*\["/g) || []).length;
-  nq === 7 ? ok('self-quiz has exactly 7 questions') : bad(`expected 7 quiz questions, found ${nq}`);
+  nq === 9 ? ok('self-quiz has exactly 9 questions') : bad(`expected 9 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// quiz must mix yes and no answers (not an 'always say no' reflex)
+(/"Yes.",/.test(html) && /"No.",/.test(html)) ? ok('quiz has both yes- and no-answer questions') : bad('quiz missing a yes-answer question (lopsided)');
+// learning circle has a reset control
+html.includes('id="lcReset"') ? ok('learning circle reset button present') : bad('no reset for the learning circle');
 // learning circle: 6 steps, and every step's jump target must exist
 const circleBlock = html.match(/const CIRCLE = \[([\s\S]*?)\n\];/);
 if (!circleBlock) bad('CIRCLE array missing');

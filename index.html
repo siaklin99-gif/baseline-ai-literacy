@@ -257,6 +257,13 @@ section { padding: 30px 0; }
 .lc-t span { font-size: 12.5px; color: var(--text-ter); }
 .lc-row.done .lc-t b { color: var(--text-sec); }
 .lc-go { color: var(--text-ter); flex: 0 0 auto; }
+.lc-reset {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; min-height: 40px;
+  background: transparent; color: var(--text-sec); border: 1px solid var(--border-med);
+  border-radius: 999px; padding: 8px 18px; font-size: 13.5px; font-weight: 550; cursor: pointer;
+  transition: border-color .15s ease, color .15s ease;
+}
+.lc-reset:hover { border-color: var(--text-ter); color: var(--text); }
 @media (max-width: 560px) { .lc-check { width: 44px; height: 44px; border-radius: 11px; } }
 
 /* ---------- body diagram + list ---------- */
@@ -376,9 +383,10 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px; font-size: 14px; font-weight: 700;
   background: var(--grad); background-size: 500% 100%; color: #fff;
   display: flex; align-items: center; justify-content: center; }
-.qz:nth-child(2) .qz-n { background-position-x: 17%; } .qz:nth-child(3) .qz-n { background-position-x: 33%; }
-.qz:nth-child(4) .qz-n { background-position-x: 50%; } .qz:nth-child(5) .qz-n { background-position-x: 67%; }
-.qz:nth-child(6) .qz-n { background-position-x: 83%; } .qz:nth-child(7) .qz-n { background-position-x: 100%; }
+.qz:nth-child(2) .qz-n { background-position-x: 12.5%; } .qz:nth-child(3) .qz-n { background-position-x: 25%; }
+.qz:nth-child(4) .qz-n { background-position-x: 37.5%; } .qz:nth-child(5) .qz-n { background-position-x: 50%; }
+.qz:nth-child(6) .qz-n { background-position-x: 62.5%; } .qz:nth-child(7) .qz-n { background-position-x: 75%; }
+.qz:nth-child(8) .qz-n { background-position-x: 87.5%; } .qz:nth-child(9) .qz-n { background-position-x: 100%; }
 .qz-q { flex: 1; font-weight: 620; font-size: 15.5px; }
 .qz-hint { font-size: 12px; color: var(--text-ter); white-space: nowrap; }
 .qz[open] .qz-hint { display: none; }
@@ -474,6 +482,7 @@ footer .line { max-width: 520px; }
       </svg>
       <div id="lcList"></div>
     </div>
+    <button id="lcReset" class="lc-reset" type="button" hidden>↺ Reset my progress</button>
   </div>
 </section>
 
@@ -560,7 +569,7 @@ footer .line { max-width: 520px; }
 <section id="reality">
   <div class="wrap">
     <div class="slabel">Reality check</div>
-    <h2 class="stitle">What AI can &amp; can't do</h2>
+    <h2 class="stitle">What AI can, can't &amp; is unreliable at</h2>
     <div class="ssub">Roughly, versus a capable human today. The middle column is the one people miss:
       <em>unreliable</em> means check its work — <em>can't</em> means don't ask.</div>
     <div class="cols">
@@ -616,7 +625,7 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Before you go</div>
     <h2 class="stitle">Check your baseline</h2>
-    <div class="ssub">Seven quick questions. Answer in your head, then tap to check. Get all seven and you're ahead of most of the internet.</div>
+    <div class="ssub">Nine quick questions — some yes, some no. Answer in your head, then tap to check. Get them all and you're ahead of most of the internet.</div>
     <div id="quiz"></div>
   </div>
 </section>
@@ -951,6 +960,17 @@ bodySvg.querySelectorAll('.bp-dot, .bp-hit').forEach(dot => {
 document.querySelectorAll('#bodymap .bm-item').forEach(item => {
   item.addEventListener('mouseenter', () => lightPart(item.dataset.part, true));
   item.addEventListener('mouseleave', () => lightPart(item.dataset.part, false));
+  // mobile has no hover: tapping the card lights its figure part (toggle)
+  item.addEventListener('click', () => {
+    const part = item.dataset.part;
+    const was = item.classList.contains('lit');
+    BODYMAP.forEach(b => lightPart(b[4], false));
+    if (!was) {
+      lightPart(part, true);
+      const svg = document.getElementById('bodySvg');
+      if (svg) svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
 });
 
 /* ---------- glossary: term · plain meaning · analogy ---------- */
@@ -981,6 +1001,10 @@ initDeck(document.querySelector('#glossary .gl-deck'));
 
 /* ---------- self-quiz: answer in your head, tap to check ---------- */
 const QUIZ = [
+  ["Can it explain almost anything at your level?",
+   "Yes.", "Ask it to explain something “like I'm 10,” or “like an expert” — matching the level to you is one of its strongest, most reliable skills.", "It's genuinely good at this"],
+  ["Can it save you real time on everyday tasks?",
+   "Yes.", "Drafting, summarizing, planning, rewriting — the boring half of a task shrinks from an hour to minutes. That's the whole point of getting behind the wheel.", "What it can do for your day"],
   ["Can it tell you about today's news?",
    "Not by itself.", "Its knowledge froze at training time. Some tools bolt on web search — but the model alone doesn't know what happened this morning.", "Layer 7 · no memory"],
   ["Does it remember you between chats?",
@@ -1075,7 +1099,13 @@ function lcUpdate() {
     row.classList.toggle('done', lcDone[i]);
     row.querySelector('.lc-check').setAttribute('aria-pressed', lcDone[i] ? 'true' : 'false');
   });
+  document.getElementById('lcReset').hidden = (n === 0);   // only show once there's something to reset
 }
+document.getElementById('lcReset').addEventListener('click', () => {
+  lcDone = Array(CIRCLE.length).fill(false);
+  try { localStorage.removeItem('baseline_circle'); } catch (e) {}
+  lcUpdate();
+});
 lcUpdate();
 
 initDeck(document.querySelector('.cols'));

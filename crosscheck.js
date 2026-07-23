@@ -233,9 +233,9 @@ async function main() {
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
       r.cardCount === 13     ? ok(`${tag} 13 topic cards present (incl. jobs, myths, daily-prompts)`) : bad(`${tag} expected 13 cards, got ${r.cardCount}`);
-      (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 7 && r.lcNodeCount === 6 && r.lcRowCount === 6)
-        ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (7) + circle (6) rendered`)
-        : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 7), circle=${r.lcNodeCount}/${r.lcRowCount} (want 6)`);
+      (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 9 && r.lcNodeCount === 6 && r.lcRowCount === 6)
+        ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (9) + circle (6) rendered`)
+        : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 9), circle=${r.lcNodeCount}/${r.lcRowCount} (want 6)`);
       // width-efficiency regression guards (lock the fix): desktop uses width + 2-up cards; mobile stays 1-up
       if (c.mobile) {
         r.decksScroll        ? ok(`${tag} sections are horizontal swipe decks`) : bad(`${tag} swipe decks not horizontally scrollable`);

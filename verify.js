@@ -199,9 +199,9 @@ const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
 if (levelBlock && cardLevelsBlock) {
   const nGroups = (levelBlock[1].match(/\['/g) || []).length;
   const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
-  (nGroups === 3 && assigned === 13)
-    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned`)
-    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 13)`);
+  (nGroups === 3 && assigned === 18)
+    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (6/6/6)`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 18)`);
 } else bad('LEVELS / CARD_LEVELS grouping arrays missing');
 // peel supports both directions
 html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)

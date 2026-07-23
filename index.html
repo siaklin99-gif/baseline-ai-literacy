@@ -861,7 +861,38 @@ const CARDS = [
   ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"],
   ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
-     <div id="glossary"></div>`, "learn"]
+     <div id="glossary"></div>`, "learn"],
+
+  /* --- added cards (6/6/6) --- */
+  ["💬", "How to ask (so it actually helps)", "The one skill that changes everything",
+    `<p>The gap between a useless answer and a great one is usually <strong>you</strong>, not the AI. Four moves cover most of it:</p>
+     <p><strong>1 · Give context</strong> — who it's for, what the goal is. "Explain to my 70-year-old mum" beats "explain."</p>
+     <p><strong>2 · Ask for a format</strong> — "in 3 bullets," "as a table," "under 100 words."</p>
+     <p><strong>3 · Show an example</strong> of what "good" looks like, if you have one.</p>
+     <p><strong>4 · Let it ask you</strong> — end with "Ask me anything you need first," and it fills its own gaps.</p>
+     <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Vague: "write a birthday message." Better: "Write a warm, funny 2-line birthday text for my brother who loves fishing — casual, no emojis."</div>
+     <p>No magic words, no "prompt engineering" course. Just tell it what you'd tell a capable assistant.</p>`],
+
+  ["🧩", "It's already in your apps", "You may not need a new app at all",
+    `<p>AI isn't only a separate chatbot — it's quietly built into tools you already use:</p>
+     <p><strong>Email &amp; docs:</strong> Gmail, Outlook, Google Docs and Word can draft, summarize and rewrite right where you're working.</p>
+     <p><strong>Your phone:</strong> newer iPhones and Android phones summarize notifications, tidy photos, and rewrite text you've typed.</p>
+     <p><strong>Search &amp; browsers:</strong> many now answer in plain language instead of only listing links.</p>
+     <p>So before signing up for anything, look for a sparkle or "AI" button in the app already on your screen — that's often the easiest first step.</p>`],
+
+  ["⚖️", "Bias — whose view is it?", "Objective math, subjective data",
+    `<p>AI learned from human writing and images, so it absorbs human blind spots, stereotypes and gaps — then delivers them in a confident, neutral-sounding voice.</p>
+     <p>It shows up as over-representing whatever was common in its training data, leaning toward certain cultures or viewpoints, and quietly missing perspectives that were written about less.</p>
+     <p><strong>What to do:</strong> treat its answer as one well-read voice, not a neutral referee — especially on people, cultures, history and anything contested. Ask for other viewpoints, and notice what it leaves out.</p>`],
+
+  ["🌍", "AI's real-world footprint", "The cost you don't see on screen",
+    `<p>Every answer runs on physical computers in data centres. Training a big model takes a lot of electricity up front; each query then costs a little energy, and that adds up across billions of uses. Those data centres also use water to stay cool.</p>
+     <p>Not a reason for guilt over a few chats — but it's real, and it's why "throw AI at everything" isn't free. Using the right-sized model for the job (not always the biggest) is greener as well as cheaper.</p>`],
+
+  ["🔮", "What's next: agents &amp; AGI", "Hype vs the honest answer",
+    `<p><strong>Agents</strong> are the near-term shift: AI that takes multi-step actions for you — book the trip, not just suggest it. Early and uneven, but coming fast. (That's <em>AI agent = the hands</em> from the body map.)</p>
+     <p><strong>AGI</strong> — a machine as generally capable as a person — is the big headline. Honest take: no one knows if or when. Today's AI is narrow and non-thinking despite the marketing, and confident predictions (for or against) are mostly guesses.</p>
+     <p><strong>Your move either way</strong> is the same: learn to use what's here now. That's the car you can drive today.</p>`]
 ];
 /* ---------- topics grouped by level (beginner / intermediate / advanced) ---------- */
 const LEVELS = [
@@ -869,9 +900,10 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (5 / 5 / 3)
+// level per card, in CARDS order (6 / 6 / 6)
 const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate','intermediate',
-                     'advanced','beginner','advanced','beginner','beginner','advanced','intermediate'];
+                     'advanced','beginner','advanced','beginner','beginner','advanced','intermediate',
+                     'beginner','intermediate','advanced','advanced','advanced'];   // +5: prompting / in-your-apps / bias / footprint / future
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {

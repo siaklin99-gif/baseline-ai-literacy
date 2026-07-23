@@ -829,23 +829,23 @@ const CARDS = [
      <div class="prompt">Turn these messy notes into 5 clear bullet points for my boss: [paste]</div>
      <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
      <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose", "card-daily"],
-  ["🧭", "Pick the right model for the job", "Topic 3–4 · which LLM, and when", {data:"models"}, "choose"],
-  ["💻", "Local vs cloud LLMs", "Topic 5 · where the model runs",
+  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}, "choose"],
+  ["💻", "Local vs cloud LLMs", "Where the model runs",
     `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>
      <p><strong>Local:</strong> the model runs on your own computer. Private and offline, but needs a capable machine and is usually smaller/weaker.</p>
      <p>Most people start in the cloud. Go local when privacy or offline use matters more than raw power.</p>`, "choose"],
-  ["💳", "Setup &amp; what it costs", "Topic 6 · closed vs open source", {data:"pricing"}, "cost"],
-  ["🎟️", "Tokens &amp; not burning money", "Topic 7–8 · input, output, cost, tracking",
+  ["💳", "Setup &amp; what it costs", "Closed vs open source", {data:"pricing"}, "cost"],
+  ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
     `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
      <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
      <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`, "cost"],
-  ["🎥", "Why so many AI 'gurus'?", "Topic 9 · guides everywhere",
+  ["🎥", "Why so many AI 'gurus'?", "Guides everywhere",
     `<p>Three honest reasons: the topic is new and genuinely confusing, attention is profitable, and selling a course is easier than the slow work of real skill.</p>
      <p>Signal over noise: prefer people who <strong>show real work</strong> and admit limits over anyone promising 'get rich with AI in a weekend'.</p>`, "learn"],
-  ["🔒", "Privacy &amp; protecting yourself", "Topic 10 · what leaves your device",
+  ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
     `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
      <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`, "safety"],
-  ["🏢", "Why work won't train you", "Topic 11 · the corporate gap",
+  ["🏢", "Why work won't train you", "The corporate gap",
     `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
      <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
   ["🚗", "Will AI take my job?", "The big fear · answered honestly",
@@ -858,7 +858,7 @@ const CARDS = [
      <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots and biases — the math just delivers them fluently. Treat its take as one voice, not the referee.</p>
      <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
      <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`, "learn"],
-  ["📚", "Real foundations, not shots in the dark", "Topic 12 · books &amp; classes worth it", {data:"books"}, "learn"],
+  ["📚", "Real foundations, not shots in the dark", "Books &amp; classes worth it", {data:"books"}, "learn"],
   ["🔤", "AI jargon in plain English", "The words, decoded · 12 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
      <div id="glossary"></div>`, "learn"],

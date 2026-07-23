@@ -232,10 +232,11 @@ section { padding: 30px 0; }
   #lcSvg { width: 100%; margin: 0; }
 }
 .lc-node { cursor: pointer; }
-.lc-node circle { fill: var(--surface); stroke: var(--border-med); stroke-width: 1.5;
+.lc-node circle:not(.lc-hit) { fill: var(--surface); stroke: var(--border-med); stroke-width: 1.5;
   transition: fill .2s ease, stroke .2s ease; }
+.lc-node .lc-hit { fill: transparent; }   /* invisible 44px tap ring */
 .lc-node text { font-size: 13px; font-weight: 700; fill: var(--text-sec); pointer-events: none; }
-.lc-node.done circle { fill: url(#cgrad); stroke: transparent; }
+.lc-node.done circle:not(.lc-hit) { fill: url(#cgrad); stroke: transparent; }
 .lc-node.done text { fill: #fff; }
 .lc-row {
   display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 48px;
@@ -285,6 +286,9 @@ section { padding: 30px 0; }
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--g2) 60%, transparent),
               0 10px 26px -16px color-mix(in srgb, var(--g2) 55%, transparent); }
 .bp-hit { fill: transparent; cursor: pointer; }   /* thumb-sized invisible hit areas */
+/* at the mobile SVG width (230px of a 300-unit viewBox) r=22 renders ~34px —
+   under the page's own 44px tap minimum; bump the invisible radius there */
+@media (max-width: 560px) { .bp-hit { r: 29.5px; } }
 @media (prefers-reduced-motion: reduce) { .bp-dot { animation: none; } }
 
 /* ---------- body map ---------- */
@@ -343,11 +347,6 @@ details.card[open] .chev { transform: rotate(90deg); }
   background: var(--surface2); border-left: 3px solid var(--accent);
   border-radius: 8px; padding: 9px 12px; margin: 8px 0;
   font-size: 14px; line-height: 1.5; color: var(--text);
-}
-.card .content .flag {
-  display:inline-block; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
-  font-weight:700; color: var(--amber); background: var(--amber-bg);
-  padding: 2px 8px; border-radius: 5px; margin-bottom: 8px;
 }
 /* freshness stamp on data-driven cards */
 .stamp { display:flex; align-items:center; gap:7px; margin-top: 12px; font-size: 12.5px; }
@@ -624,7 +623,7 @@ footer .line { max-width: 520px; }
 <footer>
   <div class="wrap">
     <p class="line">Baseline is a starting point, not the last word. It's built to be honest about what's still uncertain — including where the numbers change too fast to hard-code.</p>
-    <p>v1 prototype · concepts are evergreen · market-data cards marked <strong style="color:var(--amber)">Needs live check</strong> are placeholders.</p>
+    <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified — and flag themselves when they age.</p>
     <p>Spotted something stale, wrong, or confusing?
        <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
           style="color:var(--accent); text-underline-offset:3px;">Tell us here</a> — honest corrections are the point.</p>
@@ -1027,7 +1026,11 @@ const lcList = document.getElementById('lcList');
 function lcNavigate(i) {
   const t = document.querySelector(CIRCLE[i][2]);
   if (!t) return;
-  if (t.tagName === 'DETAILS') t.open = true;
+  if (t.tagName === 'DETAILS') {
+    // a pill filter may be hiding this card — reset to "all" so the jump can land
+    if (getComputedStyle(t).display === 'none') filterCards('all');
+    t.open = true;
+  }
   t.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 CIRCLE.forEach((s, i) => {
@@ -1035,7 +1038,8 @@ CIRCLE.forEach((s, i) => {
   const x = 120 + 95 * Math.cos(a), y = 120 + 95 * Math.sin(a);
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   g.setAttribute('class', 'lc-node');
-  g.innerHTML = `<circle cx="${x}" cy="${y}" r="16"></circle>
+  g.innerHTML = `<circle class="lc-hit" cx="${x}" cy="${y}" r="23.5" fill="transparent"></circle>
+    <circle cx="${x}" cy="${y}" r="16"></circle>
     <text x="${x}" y="${y + 4.5}" text-anchor="middle">${i + 1}</text>`;
   g.addEventListener('click', () => lcNavigate(i));
   lcNodes.appendChild(g);

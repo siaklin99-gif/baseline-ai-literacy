@@ -61,6 +61,7 @@ async function get(url) {
     const html = liveIndex.toString();
     const markers = ['id="peel"', 'id="bodymap"', 'id="glossary"', 'gl-deck',
       'What is AI', 'AI jargon in plain English', '--grad',
+      'id="try"', 'try-copy', 'class="qz-opt"',
       'property="og:image"', 'meta name="description"'];
     markers.forEach(m => html.includes(m) ? ok(`live index has: ${m}`) : bad(`live index MISSING: ${m}`));
     // the local source's markers must all be present live (nothing dropped)

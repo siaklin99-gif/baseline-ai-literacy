@@ -87,6 +87,14 @@ if (DATA) {
   }
 }
 
+/* ---------- 1b. honesty: downloadable models are "open weight", not OSI "open source" ---------- */
+{
+  const dsrc = read('data.js');
+  !/Open source/.test(dsrc)
+    ? ok('models labelled "open weight" (not overclaimed as OSI "open source")')
+    : bad('data.js still says "Open source" — Llama et al. are open-WEIGHT; fix the label');
+}
+
 /* ---------- 2. index.html structural invariants ---------- */
 const html = read('index.html');
 
@@ -183,7 +191,7 @@ html.includes('id="circle"') ? ok('has id="circle"') : bad('missing id="circle"'
 
 // GOAL LOCKS (2026-07-23 cold audit): the six stated goals' key content must stay on the page
 html.includes('people who use AI replace people who don') && html.includes('Will AI take my job?')
-  ? ok('goal 6: replacement thesis + bicycle card present')
+  ? ok('goal 6: replacement thesis + jobs card present')
   : bad('goal 6 MISSING: "people who use AI replace..." thesis / jobs card gone');
 html.includes('Common myths, busted') && html.includes('is only a few years old')
   ? ok('goal 5: myths card present (jobs, objectivity, too-late, always-right)')

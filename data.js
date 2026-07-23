@@ -35,20 +35,20 @@ window.BASELINE_DATA = {
          coding and nuance; use a smaller/cheaper one for quick, high-volume, simple jobs.</p>
       <p style="opacity:.8">These are the main families as of mid-2026. Exact version numbers change
          almost monthly — the products below don't. Start with a paid one; try an open one later.</p>`,
-    // { name, kind: "Paid"|"Open source", best }
+    // { name, kind: "Paid"|"Open weight", best }
     list: [
       {name:"ChatGPT", kind:"Paid · OpenAI", best:"Strong all-rounder for everyday writing, research and coding."},
       {name:"Claude", kind:"Paid · Anthropic", best:"Great for careful writing and coding where accuracy matters."},
       {name:"Gemini", kind:"Paid · Google", best:"Good all-rounder, ties into Google apps, handles very long documents."},
       {name:"Grok", kind:"Paid · xAI", best:"Chat assistant with live access to the current web and X posts."},
-      {name:"Llama", kind:"Open source · Meta", best:"Free to download and run yourself; solid general-purpose chat."},
-      {name:"Qwen", kind:"Open source · Alibaba", best:"Free, well-rounded, strong at coding and 100+ languages."},
-      {name:"DeepSeek", kind:"Open source · China", best:"Free, especially good at step-by-step reasoning and math."},
-      {name:"Mistral", kind:"Open source · France", best:"European open-weight models you can self-host with no per-use fees."}
+      {name:"Llama", kind:"Open weight · USA", best:"Meta's model — free to download and run yourself; solid general-purpose chat."},
+      {name:"Qwen", kind:"Open weight · China", best:"Alibaba's model — free, well-rounded, strong at coding and 100+ languages."},
+      {name:"DeepSeek", kind:"Open weight · China", best:"Free, especially good at step-by-step reasoning and math."},
+      {name:"Mistral", kind:"Open weight · France", best:"European model you can self-host with no per-use fees."}
     ]
   },
 
-  /* Topic 6 — setup & what it costs, closed vs open source */
+  /* Topic 6 — setup & what it costs, closed vs open weight */
   pricing: {
     asOf: "2026-07-21",
     source: "Vendor pricing pages (e.g. Claude's)",
@@ -56,15 +56,15 @@ window.BASELINE_DATA = {
     html: `
       <p><strong>Closed / paid:</strong> sign up, usually a free tier plus a monthly plan.
          No setup — it works in a browser or app straight away.</p>
-      <p><strong>Open source:</strong> the model is free to download, but <em>you</em> pay in
+      <p><strong>Open weight:</strong> the model is free to download, but <em>you</em> pay in
          hardware, setup time, and electricity to run it.</p>
       <p style="opacity:.8">Rough bands below (exact prices drift, so we don't pin decimals):</p>`,
     // { plan, cost, notes }
     list: [
       {plan:"Free tier", cost:"$0", notes:"Every major tool (ChatGPT, Claude, Gemini) has one, with tighter daily limits."},
-      {plan:"Typical paid plan", cost:"~$20/mo", notes:"ChatGPT Plus, Claude Pro, Gemini Pro — full access, higher limits. The usual pick."},
-      {plan:"Power-user tier", cost:"~$100–200/mo", notes:"ChatGPT Pro, Claude Max, Gemini Ultra — only if you hit the paid limits daily."},
-      {plan:"Run open-source yourself", cost:"$0 licence", notes:"No per-use fee, but you need a capable computer and pay for its power."}
+      {plan:"Typical paid plan", cost:"~$20/mo", notes:"ChatGPT Plus, Claude Pro, Google AI Pro — full access, higher limits. The usual pick."},
+      {plan:"Power-user tier", cost:"~$100–200/mo", notes:"ChatGPT Pro, Claude Max, Google AI Ultra — only if you hit the paid limits daily."},
+      {plan:"Run open-weight yourself", cost:"$0 licence", notes:"No per-use fee, but you need a capable computer and pay for its power."}
     ]
   },
 

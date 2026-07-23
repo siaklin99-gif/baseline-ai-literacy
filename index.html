@@ -23,7 +23,7 @@
 :root {
   --bg: #f9f8f6; --surface: #ffffff; --surface2: #f1f0ec;
   --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.15);
-  --text: #1a1a18; --text-sec: #5f5e5a; --text-ter: #888780;
+  --text: #1a1a18; --text-sec: #5f5e5a; --text-ter: #6e6d67;   /* AA-compliant on light bg (4.9:1); dark mode keeps #888780 */
   --green: #0f6e56; --green-bg: #e1f5ee;
   --red: #a32d2d; --red-bg: #fcebeb;
   --amber: #854f0b; --amber-bg: #faeeda;
@@ -241,6 +241,7 @@ section { padding: 30px 0; }
   100% { opacity: 0;   transform: scale(30); }
 }
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }   /* no smooth-scroll for vestibular safety */
   .pl-card, .pl-stage, .pl-bar > span, .pl-btn { transition: none; }
   .pl-card.is-core.boom .pl-burst { animation: none; }
 }
@@ -457,6 +458,9 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-opt.chosen-right { background: var(--green-bg); color: var(--green); border-color: transparent; }
 .qz-opt.chosen-wrong { background: var(--red-bg); color: var(--red); border-color: transparent; }
 .qz-opt.is-answer { border-color: var(--green); color: var(--green); }   /* the right answer, when you missed it */
+/* glyphs so right/wrong isn't signalled by colour alone (WCAG 1.4.1) */
+.qz-opt.chosen-right::after, .qz-opt.is-answer::after { content: " ✓"; font-weight: 800; }
+.qz-opt.chosen-wrong::after { content: " ✗"; font-weight: 800; }
 .qz-a { display: none; margin-top: 12px; margin-left: 41px; font-size: 14.5px; color: var(--text-sec); line-height: 1.55; }
 .qz.done .qz-a { display: block; }
 .qz-a b { color: var(--text); }
@@ -513,6 +517,12 @@ footer .line { max-width: 520px; }
 </style>
 </head>
 <body>
+
+<noscript>
+  <div style="max-width:620px;margin:20px auto;padding:14px 18px;text-align:center;border:1px solid var(--border-med);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:15px;line-height:1.5;">
+    This page uses JavaScript for its interactive parts — the layers, quiz, model tables and diagrams. Please turn it on and reload to see everything.
+  </div>
+</noscript>
 
 <header class="hero">
   <div class="wrap">
@@ -614,6 +624,50 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
+<!-- ============ CAN / CANNOT ============ -->
+<section id="reality">
+  <div class="wrap">
+    <div class="slabel">Reality check</div>
+    <h2 class="stitle">What AI can, can't &amp; is unreliable at</h2>
+    <div class="ssub">Roughly, versus a capable human today. The middle column is the one people miss:
+      <em>unreliable</em> means check its work — <em>can't</em> means don't ask.</div>
+    <div class="cols">
+      <div class="col can">
+        <h4>✓ Good at</h4>
+        <p class="col-sub">Lean on it here.</p>
+        <ul>
+          <li>Drafting, rewriting &amp; summarizing text</li>
+          <li>Explaining things at any level you ask</li>
+          <li>Translating &amp; changing tone or format</li>
+          <li>Writing and debugging code</li>
+          <li>Brainstorming and first drafts, fast</li>
+          <li>Pulling structure out of messy notes</li>
+        </ul>
+      </div>
+      <div class="col warn">
+        <h4>⚠ Unreliable at</h4>
+        <p class="col-sub">It will do these — check the work.</p>
+        <ul>
+          <li>Telling truth from plausible — it can sound sure and be wrong</li>
+          <li>Exact math &amp; counting (without a calculator tool)</li>
+          <li>Niche or local facts — the rarer the topic, the more it guesses</li>
+          <li>Citations &amp; quotes — it can invent real-looking sources that don't exist</li>
+        </ul>
+      </div>
+      <div class="col cant">
+        <h4>✗ Can't do</h4>
+        <p class="col-sub">No clever prompt changes these.</p>
+        <ul>
+          <li>Know what happened after its training — unless the app adds web search</li>
+          <li>Predict the stock market — it reads the past, not the future</li>
+          <li>Find winning lottery numbers — pure luck has no pattern to learn</li>
+          <li>Truly understand or care — it predicts, it doesn't think</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ BODY MAP ============ -->
 <section id="bodysec">
   <div class="wrap">
@@ -675,50 +729,6 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
-<!-- ============ CAN / CANNOT ============ -->
-<section id="reality">
-  <div class="wrap">
-    <div class="slabel">Reality check</div>
-    <h2 class="stitle">What AI can, can't &amp; is unreliable at</h2>
-    <div class="ssub">Roughly, versus a capable human today. The middle column is the one people miss:
-      <em>unreliable</em> means check its work — <em>can't</em> means don't ask.</div>
-    <div class="cols">
-      <div class="col can">
-        <h4>✓ Good at</h4>
-        <p class="col-sub">Lean on it here.</p>
-        <ul>
-          <li>Drafting, rewriting &amp; summarizing text</li>
-          <li>Explaining things at any level you ask</li>
-          <li>Translating &amp; changing tone or format</li>
-          <li>Writing and debugging code</li>
-          <li>Brainstorming and first drafts, fast</li>
-          <li>Pulling structure out of messy notes</li>
-        </ul>
-      </div>
-      <div class="col warn">
-        <h4>⚠ Unreliable at</h4>
-        <p class="col-sub">It will do these — check the work.</p>
-        <ul>
-          <li>Telling truth from plausible — it can sound sure and be wrong</li>
-          <li>Exact math &amp; counting (without a calculator tool)</li>
-          <li>Niche or local facts — the rarer the topic, the more it guesses</li>
-          <li>Citations &amp; quotes — it can invent real-looking sources that don't exist</li>
-        </ul>
-      </div>
-      <div class="col cant">
-        <h4>✗ Can't do</h4>
-        <p class="col-sub">No clever prompt changes these.</p>
-        <ul>
-          <li>Know what happened after its training — unless the app adds web search</li>
-          <li>Predict the stock market — it reads the past, not the future</li>
-          <li>Find winning lottery numbers — pure luck has no pattern to learn</li>
-          <li>Truly understand or care — it predicts, it doesn't think</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ TOPIC CLUSTERS ============ -->
 <section id="topics">
   <div class="wrap">
@@ -741,8 +751,8 @@ footer .line { max-width: 520px; }
 
 <footer>
   <div class="wrap">
-    <p class="line">Baseline is a starting point, not the last word. It's built to be honest about what's still uncertain — including where the numbers change too fast to hard-code.</p>
-    <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified — and flag themselves when they age.</p>
+    <p class="line">Baseline is a starting point, not the last word — built to be honest about what's still uncertain.</p>
+    <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified, and flag themselves when they age.</p>
     <p>Spotted something stale, wrong, or confusing?
        <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
           style="color:var(--accent); text-underline-offset:3px;">Tell us here</a> — honest corrections are the point.</p>
@@ -762,7 +772,7 @@ const LAYERS = [
   ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does", "“Bread and ___” and your brain says butter. It makes that guess, endlessly, at lightning speed."],
   ["It has no lasting memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window — working memory for this chat only.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — once the chat closes, it forgets you completely."],
   ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat", "That friend who'd rather give a smooth, confident answer than admit “honestly, I don't know.”"],
-  ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood", "Same idea as a bicycle — then strap on a jet engine and endless fuel, and suddenly it flies."],
+  ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood", "A candle and a bonfire burn the exact same way — pour on enough fuel and the difference stops being size and becomes a whole new thing."],
   ["It isn't thinking", "It's not conscious and doesn't 'understand' like you. It's an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor", "It's a power tool, not a colleague — dazzling in skilled hands, lost on its own."]
 ];
 
@@ -1179,7 +1189,12 @@ QUIZ.forEach((q, i) => {
       const right = opt.dataset.a === q[4];
       el.classList.add('done', right ? 'right' : 'wrong');
       opt.classList.add(right ? 'chosen-right' : 'chosen-wrong');
-      if (!right) el.querySelector(`.qz-opt[data-a="${q[4]}"]`).classList.add('is-answer');
+      opt.setAttribute('aria-label', `${opt.textContent} — ${right ? 'correct' : 'incorrect'}`);
+      if (!right) {
+        const ans = el.querySelector(`.qz-opt[data-a="${q[4]}"]`);
+        ans.classList.add('is-answer');
+        ans.setAttribute('aria-label', `${ans.textContent} — correct answer`);
+      }
       qzAnswered++; if (right) qzCorrect++;
       updateScore();
     });
@@ -1188,7 +1203,7 @@ QUIZ.forEach((q, i) => {
 });
 function updateScore() {
   if (qzAnswered < QUIZ.length) { qzScore.textContent = `${qzAnswered} of ${QUIZ.length} answered · ${qzCorrect} right so far`; return; }
-  const msg = qzCorrect === 9 ? 'Perfect — you have the baseline cold.'
+  const msg = qzCorrect === QUIZ.length ? 'Perfect — you have the baseline cold.'
     : qzCorrect >= 7 ? 'Strong — you\'re ahead of most of the internet.'
     : qzCorrect >= 4 ? 'Solid start — one more peel through the layers will lock it in.'
     : 'No worries — that\'s exactly what this page is for. Scroll back up.';
@@ -1198,12 +1213,12 @@ function updateScore() {
 
 /* ---------- learning circle: six steps, tap to jump, tick to track ---------- */
 const CIRCLE = [
-  ["Peel what AI is", "10 layers to the core", "#layers"],
-  ["Map the system", "AI as a body", "#bodysec"],
-  ["Learn its limits", "can · unreliable · can't", "#reality"],
-  ["Take the first drive", "15 minutes of doing", "#card-15min"],
-  ["Make it daily", "10 real-life prompts", "#card-daily"],
-  ["Own the mindset", "myths busted · quiz passed", "#quizsec"]
+  ["What AI actually is", "10 layers, plain to core", "#layers"],
+  ["What it can &amp; can't do", "good · unreliable · can't", "#reality"],
+  ["What AI is made of", "the parts, as a body", "#bodysec"],
+  ["Try it yourself", "15 minutes of doing", "#card-15min"],
+  ["Use it every day", "10 real-life prompts", "#card-daily"],
+  ["Check your baseline", "myths busted · quick quiz", "#quizsec"]
 ];
 const LC_C = 2 * Math.PI * 95;   // ring circumference
 let lcDone = Array(CIRCLE.length).fill(false);

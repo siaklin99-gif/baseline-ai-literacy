@@ -283,11 +283,13 @@ section { padding: 30px 0; }
 .bp-dots .bp-dot:nth-child(6) { animation-delay: 1.5s; } .bp-dots .bp-dot:nth-child(7) { animation-delay: 1.8s; }
 .bp-dots .bp-dot:nth-child(8) { animation-delay: 2.1s; }
 @keyframes bpPulse { 0%,100% { opacity: .75; } 50% { opacity: 1; } }
-.bp-dot.lit { r: 12; animation: none; opacity: 1;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--g2) 80%, transparent)); }
-.bp-part { transition: opacity .2s ease, filter .2s ease; }
-.bp-part.lit { opacity: 1 !important;
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--g2) 85%, transparent)); }
+.bp-dot.lit { r: 14; animation: none; opacity: 1;
+  filter: drop-shadow(0 0 3px var(--g2)) drop-shadow(0 0 12px var(--g2)); }
+/* anatomy sits dim until lit, so the illumination has real contrast to pop against */
+.bp-part { opacity: .5; transition: opacity .2s ease, filter .2s ease, transform .2s ease;
+  transform-box: fill-box; transform-origin: center; }
+.bp-part.lit { opacity: 1 !important; transform: scale(1.22);
+  filter: drop-shadow(0 0 4px var(--g2)) drop-shadow(0 0 14px var(--g2)) drop-shadow(0 0 22px color-mix(in srgb, var(--g3) 70%, transparent)); }
 .bm-item { transition: border-color .2s ease, box-shadow .2s ease; }
 .bm-item.lit { border-color: transparent;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--g2) 60%, transparent),

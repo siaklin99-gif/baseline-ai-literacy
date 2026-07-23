@@ -105,7 +105,7 @@ function assertionExpr(expected) {
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
     const bpDots = document.querySelectorAll('#bodySvg .bp-dot').length;
     const glCount = document.querySelectorAll('#glossary .gl-card').length;
-    const qzCount = document.querySelectorAll('#quiz details.qz').length;
+    const qzCount = document.querySelectorAll('#quiz .qz').length;
     const lcNodeCount = document.querySelectorAll('#lcNodes .lc-node').length;
     const lcRowCount = document.querySelectorAll('#lcList .lc-row').length;
     // peel integrity: exactly 10 cards, exactly one current, core wired
@@ -116,7 +116,7 @@ function assertionExpr(expected) {
     const plExamples = plCards.filter(c => { const e = c.querySelector('.pl-eg'); return e && e.textContent.replace(/everyday/i, '').trim().length > 0; }).length;
     // touch-target audit: primary standalone controls should be >= 44x44 (Apple HIG / WCAG 2.5.5).
     // inline text links are exempt (WCAG inline exception) so they're excluded here.
-    const PRIMARY = [['.cta','button'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz > summary','quiz tap-row'], ['.lc-row','circle step row'], ['.lc-node','circle node'], ['.bp-hit','figure marker']];
+    const PRIMARY = [['.cta','button'], ['.pl-btn','peel button'], ['details.card > summary','card tap-row'], ['.qz-opt','quiz answer button'], ['.lc-row','circle step row'], ['.lc-node','circle node'], ['.bp-hit','figure marker']];
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
@@ -232,7 +232,7 @@ async function main() {
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
-      r.cardCount === 18     ? ok(`${tag} 18 topic cards present (6/6/6)`) : bad(`${tag} expected 18 cards, got ${r.cardCount}`);
+      r.cardCount === 16     ? ok(`${tag} 16 topic cards present (6/5/5)`) : bad(`${tag} expected 16 cards, got ${r.cardCount}`);
       (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 12 && r.qzCount === 9 && r.lcNodeCount === 6 && r.lcRowCount === 6)
         ? ok(`${tag} body map (8+8 dots) + glossary (12) + quiz (9) + circle (6) rendered`)
         : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 12), quiz=${r.qzCount} (want 9), circle=${r.lcNodeCount}/${r.lcRowCount} (want 6)`);

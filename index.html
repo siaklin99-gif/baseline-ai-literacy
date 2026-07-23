@@ -98,6 +98,36 @@ body {
 .cta:active { transform: scale(0.97); }
 .cta.ghost { background: transparent; color: var(--text); border: 1px solid var(--border-med); margin-left: 8px; box-shadow: none; }
 
+/* ---------- do-one-thing action panel ---------- */
+#try { padding-top: 6px; }
+.try-panel {
+  background: color-mix(in srgb, var(--g2) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--g2) 30%, var(--border-med));
+  border-radius: var(--radius); padding: 22px 24px;
+  box-shadow: 0 14px 40px -26px color-mix(in srgb, var(--g2) 60%, transparent);
+}
+.try-panel .stitle { margin-bottom: 4px; }
+.try-tools { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 14px; }
+.try-tools a {
+  font-weight: 600; font-size: 14px; text-decoration: none; color: #fff;
+  background: var(--grad); background-size: 200% 100%; padding: 8px 15px; border-radius: 999px;
+}
+.try-tools a:nth-child(2) { background-position-x: 50%; } .try-tools a:nth-child(3) { background-position-x: 100%; }
+.try-free { font-size: 12.5px; color: var(--text-ter); }
+.try-prompt {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: var(--surface2); border-radius: 10px; padding: 12px 14px;
+}
+.try-text { flex: 1; min-width: 200px; font-size: 14.5px; line-height: 1.5; color: var(--text); }
+.try-copy {
+  flex: 0 0 auto; min-height: 40px; cursor: pointer; border: none; border-radius: 999px;
+  background: var(--text); color: var(--bg); font-weight: 600; font-size: 13.5px; padding: 8px 18px;
+  transition: background .2s ease;
+}
+.try-copy.done { background: var(--green); color: #fff; }
+.try-more { display: inline-block; margin-top: 14px; font-size: 14px; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---------- section ---------- */
 section { padding: 30px 0; }
 .slabel {
@@ -400,27 +430,30 @@ details.card[open] .chev { transform: rotate(90deg); }
 @media (max-width: 560px) { .card .content { padding-left: 18px; } }
 
 /* ---------- self-quiz ---------- */
-.qz { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); margin-bottom: 10px; }
-.qz > summary {
-  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 13px;
-  padding: 15px 18px; min-height: 44px;
-}
-.qz > summary::-webkit-details-marker { display: none; }
+.qz-score { font-size: 14px; color: var(--text-ter); font-weight: 600; margin-bottom: 14px; transition: color .2s ease; }
+.qz-score.final { font-size: 16px; color: var(--text-sec); }
+.qz-score.final b { color: var(--text); }
+.qz { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); margin-bottom: 10px; padding: 15px 18px; }
+.qz-top { display: flex; align-items: center; gap: 13px; }
 .qz-n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px; font-size: 14px; font-weight: 700;
-  background: var(--grad); background-size: 500% 100%; color: #fff;
-  display: flex; align-items: center; justify-content: center; }
-.qz:nth-child(2) .qz-n { background-position-x: 12.5%; } .qz:nth-child(3) .qz-n { background-position-x: 25%; }
-.qz:nth-child(4) .qz-n { background-position-x: 37.5%; } .qz:nth-child(5) .qz-n { background-position-x: 50%; }
-.qz:nth-child(6) .qz-n { background-position-x: 62.5%; } .qz:nth-child(7) .qz-n { background-position-x: 75%; }
-.qz:nth-child(8) .qz-n { background-position-x: 87.5%; } .qz:nth-child(9) .qz-n { background-position-x: 100%; }
+  background: var(--grad); color: #fff; display: flex; align-items: center; justify-content: center; }
 .qz-q { flex: 1; font-weight: 620; font-size: 15.5px; }
-.qz-hint { font-size: 12px; color: var(--text-ter); white-space: nowrap; }
-.qz[open] .qz-hint { display: none; }
-.qz-a { padding: 0 18px 16px 59px; font-size: 14.5px; color: var(--text-sec); line-height: 1.55; }
+.qz-opts { display: flex; gap: 8px; margin-top: 12px; margin-left: 41px; }
+.qz-opt { min-height: 44px; min-width: 74px; cursor: pointer; border: 1px solid var(--border-med);
+  background: var(--surface2); color: var(--text); font-weight: 600; font-size: 14px; border-radius: 999px;
+  padding: 8px 18px; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.qz-opt:hover:not(.chosen-right):not(.chosen-wrong) { border-color: var(--text-ter); }
+.qz.done .qz-opt { cursor: default; }
+.qz.done .qz-opt:not(.chosen-right):not(.chosen-wrong):not(.is-answer) { opacity: .5; }
+.qz-opt.chosen-right { background: var(--green-bg); color: var(--green); border-color: transparent; }
+.qz-opt.chosen-wrong { background: var(--red-bg); color: var(--red); border-color: transparent; }
+.qz-opt.is-answer { border-color: var(--green); color: var(--green); }   /* the right answer, when you missed it */
+.qz-a { display: none; margin-top: 12px; margin-left: 41px; font-size: 14.5px; color: var(--text-sec); line-height: 1.55; }
+.qz.done .qz-a { display: block; }
 .qz-a b { color: var(--text); }
 .qz-src { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
   font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-@media (max-width: 560px) { .qz-a { padding-left: 18px; } }
+@media (max-width: 560px) { .qz-opts, .qz-a { margin-left: 0; } }
 
 /* ---------- footer ---------- */
 footer { padding: 44px 0 60px; text-align: center; color: var(--text-ter); font-size: 13px; }
@@ -477,10 +510,32 @@ footer .line { max-width: 520px; }
     <div class="eyebrow">Start on the same page</div>
     <h1>Reset your<br><span class="grad">AI literacy.</span></h1>
     <p>No jargon, no hype, no background required. One calm baseline everyone — young or old, techie or not — can start from. Then go as deep as you want.</p>
-    <a href="#layers" class="cta">Start at Layer&nbsp;1</a>
-    <a href="#topics" class="cta ghost">Skip to topics</a>
+    <a href="#try" class="cta">Try it in 2&nbsp;minutes&nbsp;→</a>
+    <a href="#layers" class="cta ghost">Or start with the basics</a>
   </div>
 </header>
+
+<!-- ============ DO ONE THING (action-first) ============ -->
+<section id="try">
+  <div class="wrap">
+    <div class="try-panel">
+      <div class="slabel">Don't just read — try</div>
+      <h2 class="stitle">Do one thing in 2 minutes</h2>
+      <div class="ssub">Pick a free tool, paste the line below, hit enter. That's it — you've used AI. Everything further down just explains what happened.</div>
+      <div class="try-tools">
+        <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT ↗</a>
+        <a href="https://claude.ai" target="_blank" rel="noopener">Claude ↗</a>
+        <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini ↗</a>
+        <span class="try-free">all free to start</span>
+      </div>
+      <div class="try-prompt">
+        <span class="try-text" id="tryText">Explain [something you keep hearing about] like I'm completely new to it, in 5 short sentences.</span>
+        <button class="try-copy" type="button" data-copy="tryText">Copy</button>
+      </div>
+      <a class="try-more" href="#card-daily">See 10 more prompts for everyday life →</a>
+    </div>
+  </div>
+</section>
 
 <!-- ============ LEARNING CIRCLE ============ -->
 <section id="circle">
@@ -653,7 +708,7 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">Before you go</div>
     <h2 class="stitle">Check your baseline</h2>
-    <div class="ssub">Nine quick questions — some yes, some no. Answer in your head, then tap to check. Get them all and you're ahead of most of the internet.</div>
+    <div class="ssub">Nine quick yes-or-no questions. Pick an answer and see how you did — some are yes, some are no. Get them all and you're ahead of most of the internet.</div>
     <div id="quiz"></div>
   </div>
 </section>
@@ -830,18 +885,11 @@ const CARDS = [
      <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
      <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose", "card-daily"],
   ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}, "choose"],
-  ["💻", "Local vs cloud LLMs", "Where the model runs",
-    `<p><strong>Cloud:</strong> you send your prompt to a company's servers. Easiest, most powerful, but your text leaves your device and usually costs per use.</p>
-     <p><strong>Local:</strong> the model runs on your own computer. Private and offline, but needs a capable machine and is usually smaller/weaker.</p>
-     <p>Most people start in the cloud. Go local when privacy or offline use matters more than raw power.</p>`, "choose"],
   ["💳", "Setup &amp; what it costs", "Closed vs open source", {data:"pricing"}, "cost"],
   ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
     `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
      <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
      <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`, "cost"],
-  ["🎥", "Why so many AI 'gurus'?", "Guides everywhere",
-    `<p>Three honest reasons: the topic is new and genuinely confusing, attention is profitable, and selling a course is easier than the slow work of real skill.</p>
-     <p>Signal over noise: prefer people who <strong>show real work</strong> and admit limits over anyone promising 'get rich with AI in a weekend'.</p>`, "learn"],
   ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
     `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
      <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`, "safety"],
@@ -900,10 +948,10 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (6 / 6 / 6)
-const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate','intermediate',
-                     'advanced','beginner','advanced','beginner','beginner','advanced','intermediate',
-                     'beginner','intermediate','advanced','advanced','advanced'];   // +5: prompting / in-your-apps / bias / footprint / future
+// level per card, in CARDS order (6 / 5 / 5)
+const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate',
+                     'beginner','advanced','beginner','beginner','advanced','intermediate',
+                     'beginner','intermediate','advanced','advanced','advanced'];
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {
@@ -1045,35 +1093,65 @@ glossary.innerHTML = `<div class="gl-deck">${glCards}</div>`;
 initDeck(document.querySelector('#glossary .gl-deck'));
 
 /* ---------- self-quiz: answer in your head, tap to check ---------- */
+/* [question, short answer, explanation, tag, correct yes|no] */
 const QUIZ = [
   ["Can it explain almost anything at your level?",
-   "Yes.", "Ask it to explain something “like I'm 10,” or “like an expert” — matching the level to you is one of its strongest, most reliable skills.", "It's genuinely good at this"],
+   "Yes.", "Ask it to explain something “like I'm 10,” or “like an expert” — matching the level to you is one of its strongest, most reliable skills.", "It's genuinely good at this", "yes"],
   ["Can it save you real time on everyday tasks?",
-   "Yes.", "Drafting, summarizing, planning, rewriting — the boring half of a task shrinks from an hour to minutes. That's the whole point of getting behind the wheel.", "What it can do for your day"],
-  ["Can it tell you about today's news?",
-   "Not by itself.", "Its knowledge froze at training time. Some tools bolt on web search — but the model alone doesn't know what happened this morning.", "Layer 7 · no memory"],
-  ["Does it remember you between chats?",
-   "By default, no.", "Each conversation starts fresh. Some apps add an optional memory feature, but assume a blank slate unless told otherwise.", "Layer 7 · no memory"],
-  ["It sounds 100% confident. Is it right?",
-   "Not necessarily.", "Fluent and confident is its default voice — even when it's wrong. Confidence is not evidence; that's why you verify.", "Layer 8 · doesn't know truth"],
+   "Yes.", "Drafting, summarizing, planning, rewriting — the boring half of a task shrinks from an hour to minutes. That's the whole point of getting behind the wheel.", "What it can do for your day", "yes"],
+  ["Can it tell you about today's news, on its own?",
+   "No.", "Its knowledge froze at training time. Some tools bolt on web search — but the model alone doesn't know what happened this morning.", "Layer 7 · no memory", "no"],
+  ["Does it remember you between chats, by default?",
+   "No.", "Each conversation starts fresh. Some apps add an optional memory feature, but assume a blank slate unless told otherwise.", "Layer 7 · no memory", "no"],
+  ["It sounds 100% confident. So it's right?",
+   "No.", "Fluent and confident is its default voice — even when it's wrong. Confidence is not evidence; that's why you verify.", "Layer 8 · doesn't know truth", "no"],
   ["Is it thinking, like a person does?",
-   "No.", "It's an extraordinary next-word predictor — no understanding, no beliefs, no intentions. The skill is in how you steer it.", "Layer 10 · the core"],
+   "No.", "It's an extraordinary next-word predictor — no understanding, no beliefs, no intentions. The skill is in how you steer it.", "Layer 10 · the core", "no"],
   ["Is the most expensive model always the best choice?",
-   "No.", "Match the model to the task: flagship models for hard reasoning, smaller/cheaper ones for quick, simple jobs.", "Pick the right model"],
-  ["If it gets something wrong, whose fault is that?",
-   "Yours.", "There's no one home to take responsibility — the person who uses the answer owns the answer. That's why you verify before you act on it.", "Use it · own it"],
-  ["Will AI take your job?",
-   "Not by itself.", "Tasks get automated; the advantage moves to whoever uses the tool. The car never replaced the need to travel — the driver just left the horse rider behind. Get behind the wheel.", "Drive it · don't race it"]
+   "No.", "Match the model to the task: flagship models for hard reasoning, smaller/cheaper ones for quick, simple jobs.", "Pick the right model", "no"],
+  ["If it's wrong and you used it, is that on you?",
+   "Yes.", "There's no one home to take responsibility — the person who uses the answer owns it. That's why you verify before you act.", "Use it · own it", "yes"],
+  ["Will AI, by itself, take your job?",
+   "No.", "Tasks get automated; the advantage moves to whoever uses the tool — not the tool itself. The one who drives AI stays ahead of the one who won't.", "Drive it · don't race it", "no"]
 ];
 const quiz = document.getElementById('quiz');
+const qzScore = document.createElement('div');
+qzScore.className = 'qz-score';
+qzScore.id = 'qzScore';
+qzScore.textContent = `0 of ${QUIZ.length} answered`;
+quiz.appendChild(qzScore);
+let qzAnswered = 0, qzCorrect = 0;
 QUIZ.forEach((q, i) => {
-  const d = document.createElement('details');
-  d.className = 'qz';
-  d.innerHTML = `<summary><span class="qz-n">${i + 1}</span><span class="qz-q">${q[0]}</span>
-      <span class="qz-hint">tap to check</span></summary>
+  const el = document.createElement('div');
+  el.className = 'qz';
+  el.innerHTML = `<div class="qz-top"><span class="qz-n">${i + 1}</span><span class="qz-q">${q[0]}</span></div>
+    <div class="qz-opts">
+      <button class="qz-opt" type="button" data-a="yes">Yes</button>
+      <button class="qz-opt" type="button" data-a="no">No</button>
+    </div>
     <div class="qz-a"><b>${q[1]}</b> ${q[2]} <span class="qz-src">${q[3]}</span></div>`;
-  quiz.appendChild(d);
+  el.querySelectorAll('.qz-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (el.classList.contains('done')) return;                 // one answer per question
+      const right = opt.dataset.a === q[4];
+      el.classList.add('done', right ? 'right' : 'wrong');
+      opt.classList.add(right ? 'chosen-right' : 'chosen-wrong');
+      if (!right) el.querySelector(`.qz-opt[data-a="${q[4]}"]`).classList.add('is-answer');
+      qzAnswered++; if (right) qzCorrect++;
+      updateScore();
+    });
+  });
+  quiz.appendChild(el);
 });
+function updateScore() {
+  if (qzAnswered < QUIZ.length) { qzScore.textContent = `${qzAnswered} of ${QUIZ.length} answered · ${qzCorrect} right so far`; return; }
+  const msg = qzCorrect === 9 ? 'Perfect — you have the baseline cold.'
+    : qzCorrect >= 7 ? 'Strong — you\'re ahead of most of the internet.'
+    : qzCorrect >= 4 ? 'Solid start — one more peel through the layers will lock it in.'
+    : 'No worries — that\'s exactly what this page is for. Scroll back up.';
+  qzScore.innerHTML = `<b>You got ${qzCorrect} / ${QUIZ.length}.</b> ${msg}`;
+  qzScore.classList.add('final');
+}
 
 /* ---------- learning circle: six steps, tap to jump, tick to track ---------- */
 const CIRCLE = [
@@ -1153,6 +1231,16 @@ document.getElementById('lcReset').addEventListener('click', () => {
   lcUpdate();
 });
 lcUpdate();
+
+/* ---------- copy-a-prompt buttons ---------- */
+document.querySelectorAll('.try-copy').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const text = document.getElementById(btn.dataset.copy).textContent.trim();
+    const done = () => { btn.textContent = 'Copied ✓'; btn.classList.add('done'); setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
+    else { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) {} t.remove(); done(); }
+  });
+});
 
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));

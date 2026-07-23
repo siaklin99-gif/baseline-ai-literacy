@@ -130,8 +130,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 6 ? ok('all 6 section titles are real <h2> headings (incl. learning circle)')
-          : bad(`expected 6 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 7 ? ok('all 7 section titles are real <h2> headings')
+          : bad(`expected 7 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -143,6 +143,10 @@ else {
   nq === 9 ? ok('self-quiz has exactly 9 questions') : bad(`expected 9 quiz questions, found ${nq}`);
 }
 html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
+// quiz is actually scored (answer buttons + tally), not just reveal
+(html.includes('class="qz-opt"') && html.includes('You got ${qzCorrect}') && html.includes('qzCorrect++')) ? ok('quiz is scored (answer buttons + running score)') : bad('quiz not scored');
+// action-first block: try panel with a copy-a-prompt button + tool links
+(html.includes('id="try"') && html.includes('try-copy') && html.includes('chatgpt.com')) ? ok('above-fold action panel (copy prompt + tool links) present') : bad('action panel missing');
 // quiz must mix yes and no answers (not an 'always say no' reflex)
 (/"Yes.",/.test(html) && /"No.",/.test(html)) ? ok('quiz has both yes- and no-answer questions') : bad('quiz missing a yes-answer question (lopsided)');
 // learning circle has a reset control
@@ -199,9 +203,9 @@ const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
 if (levelBlock && cardLevelsBlock) {
   const nGroups = (levelBlock[1].match(/\['/g) || []).length;
   const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
-  (nGroups === 3 && assigned === 18)
-    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (6/6/6)`)
-    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 18)`);
+  (nGroups === 3 && assigned === 16)
+    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (6/5/5)`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 16)`);
 } else bad('LEVELS / CARD_LEVELS grouping arrays missing');
 // peel supports both directions
 html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)

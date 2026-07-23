@@ -467,8 +467,9 @@ footer .line { max-width: 520px; }
         <circle id="lcArc" cx="120" cy="120" r="95" fill="none" stroke="url(#cgrad)" stroke-width="7"
                 stroke-linecap="round" transform="rotate(-90 120 120)" stroke-dasharray="0 596.9"
                 style="transition: stroke-dasharray .5s cubic-bezier(.22,.9,.24,1)"/>
-        <text id="lcCount" x="120" y="114" text-anchor="middle" font-size="32" font-weight="700" fill="var(--text)">0/6</text>
-        <text id="lcSub" x="120" y="140" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="1.5" fill="var(--text-ter)">TICKED</text>
+        <text id="lcCount" x="120" y="112" text-anchor="middle" font-size="32" font-weight="700" fill="var(--text)">0/6</text>
+        <text id="lcSub" x="120" y="136" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="1.5" fill="var(--text-ter)">TICKED</text>
+        <text id="lcSub2" x="120" y="150" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="1.5" fill="var(--text-ter)"></text>
         <g id="lcNodes"></g>
       </svg>
       <div id="lcList"></div>
@@ -1063,7 +1064,9 @@ function lcUpdate() {
   const n = lcDone.filter(Boolean).length;
   document.getElementById('lcArc').setAttribute('stroke-dasharray', `${LC_C * n / CIRCLE.length} ${LC_C}`);
   document.getElementById('lcCount').textContent = `${n}/${CIRCLE.length}`;
-  document.getElementById('lcSub').textContent = n === CIRCLE.length ? "YOU'RE ON THE BICYCLE" : 'TICKED';
+  const complete = n === CIRCLE.length;
+  document.getElementById('lcSub').textContent  = complete ? "YOU'RE DRIVING THE CAR" : 'TICKED';
+  document.getElementById('lcSub2').textContent = complete ? 'NOT RIDING THE HORSE' : '';
   [...lcNodes.children].forEach((g, i) => {
     g.classList.toggle('done', lcDone[i]);
     g.querySelector('text').textContent = lcDone[i] ? '✓' : String(i + 1);

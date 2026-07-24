@@ -443,31 +443,35 @@ details.card[open] .chev { transform: rotate(90deg); }
 /* standalone feature card (its own section, not a swipe deck) fills the width */
 .card.feature { width: auto; }
 /* the "whole picture" map — clickable nodes that open each deep-dive */
-.aimap { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 16px 16px 14px; margin: 6px 0 20px; }
+.aimap { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 20px 22px 16px; margin: 6px 0 22px;
+  perspective: 1200px; perspective-origin: 50% 32%; }
+.aimap-stage { transform-style: preserve-3d; transform: rotateX(var(--rx, 7deg)) rotateY(var(--ry, -7deg)); transition: transform .18s ease-out; will-change: transform; }
 .aimap-lane-label { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; margin: 2px 0 10px; line-height: 1.4; }
-.aimap-flow { position: relative; padding-left: 20px; }
+.aimap-flow { position: relative; padding-left: 20px; transform-style: preserve-3d; }
 .aimap-flow::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 40px; width: 2px; background: var(--border-med); border-radius: 2px; }
 .aimap-flow::after { content: ""; position: absolute; left: 1.5px; width: 11px; height: 11px; border-radius: 50%; background: var(--grad);
   box-shadow: 0 0 8px 1px color-mix(in srgb, var(--g2) 55%, transparent); animation: aiflow 3.4s cubic-bezier(.5,0,.5,1) infinite; }
 @keyframes aiflow { 0% { top: 2px; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { top: calc(100% - 46px); opacity: 0; } }
 .aimap-start { font-size: 13px; color: var(--text-sec); font-weight: 600; padding: 4px 2px; }
 .aimap-arrow { color: var(--text-ter); font-size: 15px; line-height: 1; margin: 3px 0 3px 6px; }
-.aimap-node { display: block; width: 100%; text-align: left; cursor: pointer; margin: 0;
+.aimap-node { --z: 26px; display: block; width: 100%; text-align: left; cursor: pointer; margin: 0;
   background: var(--surface2); border: 1px solid var(--border-med); border-radius: 10px; padding: 9px 13px;
-  transition: border-color .15s ease, transform .1s ease; }
-.aimap-node:hover { border-color: var(--text-ter); }
-.aimap-node:active { transform: scale(.99); }
+  transform: translateZ(var(--z));
+  box-shadow: 0 18px 28px -16px color-mix(in srgb, var(--g2) 30%, rgba(0,0,0,.5));
+  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+.aimap-node:hover { border-color: var(--text-ter); --z: 34px; }
+.aimap-node:active { transform: translateZ(var(--z)) scale(.985); }
 .aimap-node:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 .aimap-node b { display: block; font-size: 14.5px; font-weight: 650; color: var(--text); }
 .aimap-node span { display: block; font-size: 12.5px; color: var(--text-sec); margin-top: 1px; }
-.aimap-node.accent { border-color: transparent; background: color-mix(in srgb, var(--g2) 12%, var(--surface2)); }
+.aimap-node.accent { --z: 46px; border-color: transparent; background: color-mix(in srgb, var(--g2) 12%, var(--surface2)); }
 .aimap-node.accent b { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .aimap-loop { margin: 8px 0 2px 6px; font-size: 12.5px; color: var(--text-ter); font-weight: 600; }
 .aimap-div { height: 1px; background: var(--border); margin: 16px 0 14px; }
-.aimap-node.wide { margin-bottom: 8px; }
-.aimap-hint { margin-top: 12px; font-size: 12px; color: var(--text-ter); text-align: center; }
+.aimap-node.wide { --z: 14px; margin-bottom: 10px; }
+.aimap-hint { margin-top: 14px; font-size: 12px; color: var(--text-ter); text-align: center; }
 .card.flash { box-shadow: 0 0 0 2px color-mix(in srgb, var(--g1) 55%, transparent); transition: box-shadow .25s ease; }
-@media (prefers-reduced-motion: reduce) { .aimap-flow::after { display: none; } .card.flash { box-shadow: none; } }
+@media (prefers-reduced-motion: reduce) { .aimap-flow::after { display: none; } .card.flash { box-shadow: none; } .aimap-stage { transition: none; } }
 /* interactive next-word demo */
 .llm-demo { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 14px 15px; margin: 10px 0; }
 .llm-sentence { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; line-height: 1.5;
@@ -805,6 +809,7 @@ footer .line { max-width: 520px; }
 
     <!-- the whole picture in one map; every box opens its deep-dive -->
     <div class="aimap" role="group" aria-label="How AI works — a map of the five deep-dives; each box opens one">
+     <div class="aimap-stage">
       <div class="aimap-lane-label">Run time · what happens on every message</div>
       <div class="aimap-flow">
         <div class="aimap-start">Your words</div>
@@ -823,6 +828,7 @@ footer .line { max-width: 520px; }
       <button class="aimap-node wide" type="button" data-card="card-training"><b>Training</b><span>guess → loss → backprop → gradient descent</span></button>
       <button class="aimap-node wide" type="button" data-card="card-assistant"><b>Fine-tuning + RLHF</b><span>copy good conversations, then learn from preferences</span></button>
       <div class="aimap-hint">Tap any box to open its deep-dive below ↓</div>
+     </div>
     </div>
 
     <details class="card feature" id="card-llm-predict">
@@ -1620,6 +1626,25 @@ tryTabs.forEach(tab => {
   const nodes = document.querySelectorAll('.aimap-node');
   if (!nodes.length) return;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* 3D parallax: tilt the board toward the cursor (fine pointers only, honour reduced-motion) */
+  const scene = document.querySelector('.aimap');
+  const stage = document.querySelector('.aimap-stage');
+  const fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  if (scene && stage && fine && !reduce) {
+    scene.addEventListener('pointermove', (e) => {
+      const r = scene.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;    // -0.5 … 0.5
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      stage.style.setProperty('--ry', (-7 + px * 11).toFixed(2) + 'deg');
+      stage.style.setProperty('--rx', (7 - py * 9).toFixed(2) + 'deg');
+    });
+    scene.addEventListener('pointerleave', () => {
+      stage.style.setProperty('--ry', '-7deg');
+      stage.style.setProperty('--rx', '7deg');
+    });
+  }
+
   nodes.forEach(node => {
     node.addEventListener('click', () => {
       const card = document.getElementById(node.dataset.card);

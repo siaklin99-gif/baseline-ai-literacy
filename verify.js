@@ -176,6 +176,23 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   && html.includes('data-card="card-attention"') && html.includes('data-card="card-training"')
   && html.includes('id="gfPause"') && /prefers-reduced-motion[^}]*gf-fill/.test(html))
   ? ok('animated flow present (4 stages → deep-dives; pause control; reduced-motion-safe)') : bad('animated flow missing/incomplete');
+// 2026 cold-audit locks: factual drift + confirmed UX seams must not return
+(html.includes('Check the memory setting') && html.includes('apps add search') && !/Does it remember you between chats, by default\?/.test(html))
+  ? ok('quiz Q3/Q4 match current product truth (memory + web search on by default)') : bad('quiz reverted to stale "no memory / no news" claims');
+(/a\.try-more/.test(html) && /t\.open = true/.test(html))
+  ? ok('try-more link opens its collapsed target card (not a dead-end anchor)') : bad('try-more dead-ends on a collapsed card again');
+(/const REDUCE = window\.matchMedia/.test(html) && !/behavior: 'smooth'/.test(html))
+  ? ok('all smooth scrolls respect prefers-reduced-motion (REDUCE-gated)') : bad('an unconditional smooth scroll crept back in');
+(/IntersectionObserver\(/.test(html) && /userPaused/.test(html))
+  ? ok('flow animation runs only on-screen (IO) and manual pause wins') : bad('flow animation autoplays offscreen again');
+(html.indexOf('<section id="topics">') < html.indexOf('<section id="howllm">'))
+  ? ok('beginner path unbroken: topic cards come before Under the hood') : bad('Under the hood interrupts the beginner path again');
+(!/\.pills \{/.test(html) && !/c\[5\]/.test(html))
+  ? ok('dead filter-pill CSS and orphaned card field stay removed') : bad('dead pills CSS / orphaned c[5] came back');
+(!/id="gfSentence" aria-live/.test(html))
+  ? ok('auto-animating sentence is not an aria-live announce-loop') : bad('aria-live back on the auto-animation');
+(/bmSelect/.test(html))
+  ? ok('body-map selection is state-tracked (hover cannot desync clicks)') : bad('body-map click/hover desync fix missing');
 // don't fake a produced video — point to the real one (verified https)
 (!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
   ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');
@@ -207,7 +224,7 @@ const circleBlock = html.match(/const CIRCLE = \[([\s\S]*?)\n\];/);
 if (!circleBlock) bad('CIRCLE array missing');
 else {
   const steps = (circleBlock[1].match(/\n\s*\["/g) || []).length;
-  steps === 6 ? ok('learning circle has exactly 6 steps') : bad(`expected 6 circle steps, found ${steps}`);
+  steps === 7 ? ok('learning circle has exactly 7 steps (incl under-the-hood)') : bad(`expected 7 circle steps, found ${steps}`);
   const anchors = [...circleBlock[1].matchAll(/"#([\w-]+)"/g)].map(m => m[1]);
   const missing = anchors.filter(a => !html.includes(`id="${a}"`) && !html.includes(`"${a}"`));
   missing.length === 0 ? ok('every circle step jumps to an existing anchor')

@@ -128,7 +128,7 @@ body {
 .try-tools a:nth-child(2) { background-position-x: 50%; } .try-tools a:nth-child(3) { background-position-x: 100%; }
 .try-free { font-size: 12.5px; color: var(--text-ter); }
 .try-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.try-tab { display: inline-flex; align-items: center; min-height: 40px; font-size: 13px; font-weight: 600;
+.try-tab { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600;
   padding: 6px 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--border-med);
   background: var(--surface); color: var(--text-sec);
   transition: background .15s ease, color .15s ease, border-color .15s ease; }
@@ -261,20 +261,6 @@ section { padding: 30px 0; }
 .col li { font-size: 14.5px; color: var(--text-sec); padding: 7px 0; border-top: 1px solid var(--border); }
 .col li:first-child { border-top: 0; }
 @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
-
-/* ---------- filter pills ---------- */
-.pills {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.pill {
-  font-size: 13.5px; font-weight: 550; padding: 8px 15px; border-radius: 999px;
-  border: 1px solid var(--border-med); background: var(--surface); color: var(--text-sec);
-  cursor: pointer; transition: all .15s ease; -webkit-tap-highlight-color: transparent;
-}
-.pill:hover { border-color: var(--text-ter); }
-.pill.active { background: var(--grad); color: #fff; border-color: transparent; }
-.pill .n { opacity: .6; font-weight: 500; margin-left: 4px; }
-.pill.active .n { opacity: .7; }
 
 /* ---------- topic groups + card grid: 2-up on wide screens, 1 column on mobile ---------- */
 .tg-deck, #bodymap { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
@@ -447,7 +433,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 .gf-head { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 13px; }
 .gf-run { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; }
 .gf-head-right { display: flex; align-items: center; gap: 12px; }
-.gf-pause { min-height: 30px; font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 13px; cursor: pointer; }
+.gf-pause { min-height: 44px; font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 13px; cursor: pointer; }
 .gf-pause:hover { border-color: var(--text-ter); }
 .gf-src { font-size: 12px; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
 .gf-pause:focus-visible, .gf-stage:focus-visible, .gf-chip-link:focus-visible, .gf-src:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
@@ -502,7 +488,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 .gf-sentence { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--text); }
 .gf-sentence .new { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
 .gf-learn { margin-top: 12px; font-size: 12px; color: var(--text-ter); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.gf-chip-link { font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 12px; min-height: 30px; cursor: pointer; }
+.gf-chip-link { font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 12px; min-height: 44px; cursor: pointer; }
 .gf-chip-link:hover { border-color: var(--text-ter); }
 .card.flash { box-shadow: 0 0 0 2px color-mix(in srgb, var(--g1) 55%, transparent); transition: box-shadow .25s ease; }
 @media (max-width: 640px) {
@@ -599,10 +585,6 @@ footer .line { max-width: 520px; }
   section { padding: 22px 0; }
   .hero h1 { font-size: clamp(30px, 9vw, 40px); }
   footer { padding: 34px 0 44px; }
-  /* touch targets >= 44px (Apple HIG / WCAG): fatter pills + a grabbable slider,
-     visual track stays 6px — padding just widens the invisible hit area */
-  .pill { min-height: 44px; display: inline-flex; align-items: center; }
-
   /* ---------- mobile swipe decks (hlur.ai pattern) ----------
      Can/Can't and Topics become horizontal scroll-snap decks; the next
      card peeks at the edge, native momentum scroll, progress dots below.
@@ -693,9 +675,9 @@ footer .line { max-width: 520px; }
   <div class="wrap">
     <div class="slabel">The path</div>
     <h2 class="stitle">Your learning circle</h2>
-    <div class="ssub">Six steps from "what is AI?" to driving it daily. Tap a step to jump there; tick it when it clicks. Progress stays on this device.</div>
+    <div class="ssub">Seven steps from "what is AI?" to driving it daily. Tap a step to jump there; tick it when it clicks. Progress stays on this device.</div>
     <div class="lc-wrap">
-      <svg id="lcSvg" viewBox="0 0 240 240" role="img" aria-label="Learning circle: a progress ring with six steps around it">
+      <svg id="lcSvg" viewBox="0 0 240 240" role="img" aria-label="Learning circle: a progress ring with seven steps around it">
         <defs>
           <linearGradient id="cgrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" style="stop-color:var(--g1)"/>
@@ -844,6 +826,16 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
+<!-- ============ TOPIC CLUSTERS ============ -->
+<section id="topics">
+  <div class="wrap">
+    <div class="slabel">Go further, one tap at a time</div>
+    <h2 class="stitle">The rest, when you're ready</h2>
+    <div class="ssub">Grouped by where you are, not by what it's called. Start at Beginner; drop into the others when you're curious. Tap any card to open it.</div>
+    <div id="cards"></div>
+  </div>
+</section>
+
 <!-- ============ UNDER THE HOOD (mechanism deep-dives; grows over time) ============ -->
 <section id="howllm">
   <div class="wrap">
@@ -895,7 +887,7 @@ footer .line { max-width: 520px; }
           </span>
         </button>
       </div>
-      <div class="gf-out"><span class="gf-out-label">output so far</span><span class="gf-sentence" id="gfSentence" aria-live="polite">The sky is</span></div>
+      <div class="gf-out"><span class="gf-out-label">output so far</span><span class="gf-sentence" id="gfSentence">The sky is</span></div>
       <div class="gf-learn">Built once, before you ever chat:
         <button class="gf-chip-link" data-card="card-training" type="button">Training</button>
         <button class="gf-chip-link" data-card="card-assistant" type="button">Fine-tuning + RLHF</button>
@@ -1006,14 +998,14 @@ king − man + woman  =   0.9     1.0    ← lands right on queen</pre></div>
       <div class="content">
         <p>The catch: a word's meaning depends on the words around it. In "the <strong>bank</strong> of the river" versus "money in the <strong>bank</strong>," the same token means two different things.</p>
         <p><strong>Attention</strong> lets every word look at every other word and pull in what's relevant. Take the word "it":</p>
-        <div class="codeblock"><pre>"The animal didn't cross the street because it was tired"
-                                            ↑
-                     what does "it" mean?  →  "animal"
+        <div class="codeblock"><pre>"The dog ignored the bone because it was full"
+                                       ↑
+                what does "it" mean?  →  "dog"  (bones aren't full)
 
 attention for "it":
-   animal  ██████████  0.80   ← looks mostly here
-   street  ██          0.15
-   tired   █           0.05</pre></div>
+   dog     ██████████  0.80   ← looks mostly here
+   bone    ██          0.15
+   full    █           0.05</pre></div>
         <p style="opacity:.8">Illustrative scores — the mechanism is real; the exact weights are learned.</p>
         <p>The model works out "how much should this word pay attention to each other word?", then blends their vectors together, weighted by those scores. Now "it" carries the meaning of "animal." Do that for every word, all at once — that's the <strong>Transformer</strong>.</p>
         <p><strong>How it all fits together:</strong></p>
@@ -1107,16 +1099,6 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   </div>
 </section>
 
-<!-- ============ TOPIC CLUSTERS ============ -->
-<section id="topics">
-  <div class="wrap">
-    <div class="slabel">Go further, one tap at a time</div>
-    <h2 class="stitle">The rest, when you're ready</h2>
-    <div class="ssub">Grouped by where you are, not by what it's called. Start at Beginner; drop into the others when you're curious. Tap any card to open it.</div>
-    <div id="cards"></div>
-  </div>
-</section>
-
 <!-- ============ SELF-QUIZ ============ -->
 <section id="quizsec">
   <div class="wrap">
@@ -1139,6 +1121,9 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 
 <script src="data.js"></script>
 <script>
+/* one source of truth for motion preference — every smooth scroll/animation must respect it */
+const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /* ---------- 10 layers data ---------- */
 /* each layer: [title, description, tag, everyday example] */
 const LAYERS = [
@@ -1148,7 +1133,7 @@ const LAYERS = [
   ["The engine is a 'model'", "A model is one giant math function with billions of adjustable numbers (parameters) tuned to be good at prediction.", "Layer 4 · the object", "Picture billions of tiny volume knobs, each nudged a hair until the output comes out right."],
   ["Training set those numbers", "It read enormous amounts of text/images and slowly adjusted those numbers to make fewer mistakes. That's 'training'.", "Layer 5 · where it came from", "Like shooting free throws for years — every miss tweaks your aim until you rarely miss."],
   ["An LLM predicts the next 'token'", "A Large Language Model guesses the next chunk of a word, over and over. A chat is just that loop, very fast.", "Layer 6 · what a chatbot does", "“Bread and ___” and your brain says butter. It makes that guess, endlessly, at lightning speed."],
-  ["It has no lasting memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training. What it can 'see' at once is the context window — working memory for this chat only.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — once the chat closes, it forgets you completely."],
+  ["It has no lasting memory or beliefs", "Each answer is generated fresh from your prompt plus frozen training — the model itself keeps nothing between chats. The app around it often bolts on a memory feature (saved notes it quietly feeds back in), so check that setting.", "Layer 7 · its blind spots", "Like a brilliant stranger with amnesia — he forgets you completely; but the app may slip him a notebook about you before each chat."],
   ["It doesn't know truth", "It produces the most statistically likely continuation — which is why it can be fluent, confident, and flat wrong ('hallucinate').", "Layer 8 · the big caveat", "That friend who'd rather give a smooth, confident answer than admit “honestly, I don't know.”"],
   ["Why it suddenly got good", "A design called the 'transformer' lets it weigh which earlier words matter. Then sheer scale — more data, size, compute — made it leap.", "Layer 9 · under the hood", "A candle and a bonfire burn the exact same way — pour on enough fuel and the difference stops being size and becomes a whole new thing."],
   ["It isn't thinking", "It's not conscious and doesn't 'understand' like you — think of it as an alien kind of intelligence, one we grew from our own writing. Not a person, not a calculator: an extraordinary next-step predictor. The value comes from how you steer it.", "Layer 10 · the honest floor", "Like a visitor that read almost everything we've ever written and nothing else — genuinely brilliant and confidently wrong in the same breath. Steered well it stretches what you understand and how much you get done; trusted blindly, it will mislead you with a straight face."]
@@ -1222,6 +1207,9 @@ function layout(save){
 plBtn.addEventListener('click', () => { cur = (cur >= N - 1) ? 0 : cur + 1; layout(true); });
 plUp.addEventListener('click', () => { if (cur > 0) { cur -= 1; layout(true); } });
 layout(false);
+// the stack's pixel geometry goes stale on resize/rotation — recompute (debounced)
+let plResizeT = null;
+window.addEventListener('resize', () => { clearTimeout(plResizeT); plResizeT = setTimeout(() => layout(false), 150); });
 
 /* ---------- freshness helper: turns a data.js entry into a stamp ---------- */
 const STALE_DAYS = 120;
@@ -1268,7 +1256,7 @@ function dataCard(key){
   return body + stamp;
 }
 
-/* ---------- topic clusters (11 remaining topics, grouped) ---------- */
+/* ---------- topic cards, grouped into three levels ---------- */
 /* c[3] as a string = static evergreen content.
    c[3] as {data:"key"} = pulled live from data.js with a freshness stamp. */
 /* each card: [emoji, title, sub, content, cluster] */
@@ -1280,7 +1268,7 @@ const CARDS = [
      <div class="prompt">Summarize this in 3 bullet points: [paste any letter, email or article]</div>
      <div class="prompt">Draft a short, friendly message to [who] about [what]. Keep it under 100 words.</div>
      <p><strong>3 · Catch it being wrong — on day one.</strong> Ask it <em>"How sure are you? What should I double-check?"</em> and verify one fact yourself. That habit — use it, then check it — is the whole skill.</p>
-     <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "choose", "card-15min"],
+     <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "card-15min"],
   ["🗓️", "What it can do for your day", "Real life, any background · copy, paste, fill the [brackets]",
     `<p><strong>Household &amp; paperwork</strong></p>
      <div class="prompt">Plan 5 weeknight dinners around [chicken, rice, spinach] — one grocery list, nothing fancy.</div>
@@ -1297,16 +1285,16 @@ const CARDS = [
      <p><strong>Work</strong></p>
      <div class="prompt">Turn these messy notes into 5 clear bullet points for my boss: [paste]</div>
      <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
-     <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "choose", "card-daily"],
-  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}, "choose"],
-  ["💳", "Setup &amp; what it costs", "Closed vs open source", {data:"pricing"}, "cost"],
+     <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "card-daily"],
+  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}],
+  ["💳", "Setup &amp; what it costs", "Closed vs open source", {data:"pricing"}],
   ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
     `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
      <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
-     <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`, "cost"],
+     <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`],
   ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
     `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
-     <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`, "safety"],
+     <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`],
   ["🎭", "Spotting AI fakes &amp; scams", "When AI is used to fool you",
     `<p>The same tools can be turned on you: a voice cloned from seconds of audio, a photo or video of something that never happened, and flawless scam messages written at scale.</p>
      <p><strong>How not to get fooled:</strong></p>
@@ -1314,24 +1302,24 @@ const CARDS = [
      <p>· Verify on a separate channel you already trust: hang up and call the known number back.</p>
      <p>· A photo — or even a live-looking video call — is no longer proof it's real.</p>
      <p>· Agree a <strong>family code word</strong> for real emergencies.</p>
-     <p>The old tell was bad spelling. The new tell is the <em>ask</em> — slow down whenever something pressures you to act fast.</p>`, "safety"],
+     <p>The old tell was bad spelling. The new tell is the <em>ask</em> — slow down whenever something pressures you to act fast.</p>`],
   ["🏢", "Why work won't train you", "The corporate gap",
     `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
-     <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`, "learn"],
+     <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`],
   ["🚗", "Will AI take my job?", "The big fear · answered honestly",
     `<p>Not the way you've heard it. <strong>AI doesn't replace people — people who use AI replace people who don't.</strong></p>
      <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Think of the car. It didn't replace the need to get somewhere — but the driver left the horse rider behind. Same destination, different speed. AI is that car for everyday work.</div>
      <p>Every big invention has worked this way: calculators didn't end accountants, and spreadsheets didn't either — the boring half of the work shrank while the judgment half grew.</p>
-     <p>So the move isn't to out-run the car. It's to get behind the wheel. The <strong>Your first 15 minutes</strong> card above is your first drive.</p>`, "learn"],
+     <p>So the move isn't to out-run the car. It's to get behind the wheel. The <strong>Your first 15 minutes</strong> card above is your first drive.</p>`],
   ["🔍", "Common myths, busted", "Heard everywhere · true nowhere",
     `<p><strong>"AI will take all our jobs."</strong> It takes <em>tasks</em>, not jobs — and the advantage moves to whoever uses it. See the car-vs-horse card above.</p>
-     <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots and biases — the math just delivers them fluently. Treat its take as one voice, not the referee.</p>
+     <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots. Treat its take as one voice, not the referee — the <strong>Bias</strong> card digs into why.</p>
      <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
-     <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`, "learn"],
-  ["📚", "Real foundations, not shots in the dark", "Books &amp; classes worth it", {data:"books"}, "learn"],
+     <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`],
+  ["📚", "Real foundations, not shots in the dark", "Books &amp; classes worth it", {data:"books"}],
   ["🔤", "AI jargon in plain English", "The words, decoded · 14 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
-     <div id="glossary"></div>`, "learn"],
+     <div id="glossary"></div>`],
 
   /* --- more cards --- */
   ["💬", "How to ask (so it actually helps)", "The one skill that changes everything",
@@ -1389,7 +1377,7 @@ CARDS.forEach((c, i) => {
   const content = (typeof c[3] === 'string') ? c[3] : dataCard(c[3].data);
   const d = document.createElement('details');
   d.className = 'card';
-  if (c[5]) d.id = c[5];   // anchor for the learning circle
+  if (c[4]) d.id = c[4];   // anchor for the learning circle
   d.innerHTML = `<summary>
       <div class="idx">${c[0]}</div>
       <div class="head"><div class="t">${c[1]}</div><div class="s">${c[2]}</div></div>
@@ -1456,42 +1444,44 @@ BODYMAP.forEach(b => {
 /* figure <-> list wiring: tap a glowing dot to light its explanation (and scroll
    the mobile deck to it); hovering an item lights its body part */
 const bodySvg = document.getElementById('bodySvg');
+let bmSel = null;   // the part SELECTED by click/keyboard — hover is transient and must not affect it
 function lightPart(part, on) {
   bodySvg.querySelectorAll(`.bp-dot[data-part="${part}"], .bp-${part}`)
     .forEach(e => e.classList.toggle('lit', on));
   document.querySelectorAll(`#bodymap .bm-item[data-part="${part}"]`)
-    .forEach(e => { e.classList.toggle('lit', on); e.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    .forEach(e => e.classList.toggle('lit', on));
+}
+function bmSelect(part) {          // click path: toggle selection; aria-pressed tracks selection only
+  const on = bmSel !== part;
+  BODYMAP.forEach(b => lightPart(b[4], false));
+  bmSel = on ? part : null;
+  if (on) lightPart(part, true);
+  document.querySelectorAll('#bodymap .bm-item').forEach(e =>
+    e.setAttribute('aria-pressed', e.dataset.part === bmSel ? 'true' : 'false'));
+  return on;
 }
 bodySvg.querySelectorAll('.bp-dot, .bp-hit').forEach(dot => {
   dot.addEventListener('click', () => {
-    const part = dot.dataset.part;
-    const was = bodySvg.querySelector(`.bp-dot[data-part="${part}"]`).classList.contains('lit');
-    BODYMAP.forEach(b => lightPart(b[4], false));
-    if (!was) {
-      lightPart(part, true);
-      const item = document.querySelector(`#bodymap .bm-item[data-part="${part}"]`);
+    if (bmSelect(dot.dataset.part)) {
+      const item = document.querySelector(`#bodymap .bm-item[data-part="${dot.dataset.part}"]`);
       if (item && getComputedStyle(bodymap).overflowX === 'auto') {
-        bodymap.scrollTo({ left: item.offsetLeft - 18, behavior: 'smooth' });  // mobile deck
+        bodymap.scrollTo({ left: item.offsetLeft - 18, behavior: REDUCE ? 'auto' : 'smooth' });  // mobile deck
       }
     }
   });
 });
 document.querySelectorAll('#bodymap .bm-item').forEach(item => {
-  item.addEventListener('mouseenter', () => lightPart(item.dataset.part, true));
-  item.addEventListener('mouseleave', () => lightPart(item.dataset.part, false));
+  // hover is a transient preview — only when nothing is selected
+  item.addEventListener('mouseenter', () => { if (!bmSel) lightPart(item.dataset.part, true); });
+  item.addEventListener('mouseleave', () => { if (!bmSel) lightPart(item.dataset.part, false); });
   // keyboard: role="button" needs Enter/Space to activate (mirrors the click toggle)
   item.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
   });
-  // mobile has no hover: tapping the card lights its figure part (toggle)
   item.addEventListener('click', () => {
-    const part = item.dataset.part;
-    const was = item.classList.contains('lit');
-    BODYMAP.forEach(b => lightPart(b[4], false));
-    if (!was) {
-      lightPart(part, true);
+    if (bmSelect(item.dataset.part)) {
       const svg = document.getElementById('bodySvg');
-      if (svg) svg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (svg) svg.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'center' });
     }
   });
 });
@@ -1531,10 +1521,10 @@ const QUIZ = [
    "Yes.", "Ask it to explain something “like I'm 10,” or “like an expert” — matching the level to you is one of its strongest, most reliable skills.", "It's genuinely good at this", "yes"],
   ["Can it save you real time on everyday tasks?",
    "Yes.", "Drafting, summarizing, planning, rewriting — the boring half of a task shrinks from an hour to minutes. That's the whole point of getting behind the wheel.", "What it can do for your day", "yes"],
-  ["Can it tell you about today's news, on its own?",
-   "No.", "Its knowledge froze at training time. Some tools bolt on web search — but the model alone doesn't know what happened this morning.", "Layer 7 · no memory", "no"],
-  ["Does it remember you between chats, by default?",
-   "No.", "Each conversation starts fresh. Some apps add an optional memory feature, but assume a blank slate unless told otherwise.", "Layer 7 · no memory", "no"],
+  ["Can you assume it's always up to date?",
+   "No.", "The model's own knowledge froze at training. Most chat apps now bolt on live web search — when you see cited links, it looked things up — but coverage is hit-and-miss. Treat “current” answers as claims to check.", "The model froze · apps add search", "no"],
+  ["Could it remember what you type, across chats?",
+   "Yes.", "Many chatbots now switch a memory feature ON by default — ChatGPT does. Handy for continuity, but treat anything you type as potentially remembered: check the memory setting, and use a temporary chat for sensitive stuff.", "Check the memory setting", "yes"],
   ["It sounds 100% confident. So it's right?",
    "No.", "Fluent and confident is its default voice — even when it's wrong. Confidence is not evidence; that's why you verify.", "Layer 8 · doesn't know truth", "no"],
   ["Is it thinking, like a person does?",
@@ -1601,12 +1591,15 @@ const CIRCLE = [
   ["What AI is made of", "the parts, as a body", "#bodysec"],
   ["Try it yourself", "15 minutes of doing", "#card-15min"],
   ["Use it every day", "10 real-life prompts", "#card-daily"],
+  ["Peek under the hood", "how it actually works", "#howllm"],
   ["Check your baseline", "myths busted · quick quiz", "#quizsec"]
 ];
 const LC_C = 2 * Math.PI * 95;   // ring circumference
 let lcDone = Array(CIRCLE.length).fill(false);
 try {
   const saved = JSON.parse(localStorage.getItem('baseline_circle') || '[]');
+  // ticks saved before "Peek under the hood" (step 6) existed: keep the old quiz tick on the quiz
+  if (Array.isArray(saved) && saved.length === 6) saved.splice(5, 0, false);
   if (Array.isArray(saved)) saved.forEach((v, i) => { if (i < lcDone.length) lcDone[i] = !!v; });
 } catch (e) {}
 
@@ -1616,15 +1609,15 @@ function lcNavigate(i) {
   const t = document.querySelector(CIRCLE[i][2]);
   if (!t) return;
   if (t.tagName === 'DETAILS') t.open = true;
-  t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
   // if the target card sits in a horizontal deck (mobile), bring it into the deck's view too
   const deck = t.closest && t.closest('.tg-deck');
   if (deck && getComputedStyle(deck).overflowX === 'auto') {
-    deck.scrollTo({ left: Math.max(0, t.offsetLeft - 18), behavior: 'smooth' });
+    deck.scrollTo({ left: Math.max(0, t.offsetLeft - 18), behavior: REDUCE ? 'auto' : 'smooth' });
   }
 }
 CIRCLE.forEach((s, i) => {
-  const a = (-90 + i * 60) * Math.PI / 180;
+  const a = (-90 + i * (360 / CIRCLE.length)) * Math.PI / 180;
   const x = 120 + 95 * Math.cos(a), y = 120 + 95 * Math.sin(a);
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   g.setAttribute('class', 'lc-node');
@@ -1695,6 +1688,22 @@ tryTabs.forEach(tab => {
   });
 });
 
+/* "See 10 more prompts" targets a collapsed card inside a swipe deck — a bare
+   anchor lands on it shut (and can't scroll the deck sideways), so open + scroll it */
+document.querySelectorAll('a.try-more').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (!t) return;                       // fall back to the plain anchor jump
+    e.preventDefault();
+    if (t.tagName === 'DETAILS') t.open = true;
+    t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
+    const deck = t.closest('.tg-deck');
+    if (deck && getComputedStyle(deck).overflowX === 'auto') {
+      deck.scrollTo({ left: Math.max(0, t.offsetLeft - 18), behavior: REDUCE ? 'auto' : 'smooth' });
+    }
+  });
+});
+
 /* ---------- animated flow: play one prediction loop; each stage opens its deep-dive ---------- */
 (function initGptFlow(){
   const flow = document.getElementById('gptflow');
@@ -1735,11 +1744,21 @@ tryTabs.forEach(tab => {
   function play(){ playing = true; pauseBtn.textContent = 'Pause'; pauseBtn.setAttribute('aria-pressed', 'false'); pauseBtn.setAttribute('aria-label', 'Pause the animation');
     clearInterval(timer); step(); timer = setInterval(step, STEP); }
   function pause(){ playing = false; pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation'); clearInterval(timer); }
-  pauseBtn.addEventListener('click', () => playing ? pause() : play());
+  let userPaused = false;                        // a manual pause outranks the auto play/pause
+  pauseBtn.addEventListener('click', () => { if (playing) { userPaused = true; pause(); } else { userPaused = false; play(); } });
 
   if (reduce) {                                  // static: show the whole pipeline, no motion
     sentenceEl.textContent = 'The sky is blue';
     pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation');
+  } else if ('IntersectionObserver' in window) {
+    // run only while on screen: no battery burn or motion the user can't see
+    pause();
+    new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting && !userPaused && !playing) play();
+        else if (!en.isIntersecting && playing) pause();
+      });
+    }, { threshold: 0.35 }).observe(flow);
   } else {
     play();
   }

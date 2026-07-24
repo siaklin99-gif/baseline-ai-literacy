@@ -171,11 +171,14 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // the deep-dive ladder: predict → tokens/embeddings → attention → training → assistant
 (['card-tokens','card-attention','card-training','card-assistant'].every(id => html.includes(`id="${id}"`)) && /king − man \+ woman ≈ queen/.test(html))
   ? ok('full mechanism ladder present (tokens · attention · training · fine-tuning)') : bad('a mechanism deep-dive card is missing');
-// the overview map: 6 clickable nodes, each wired to a deep-dive, flow anim reduced-motion-safe
-(html.includes('class="aimap"') && (html.match(/class="aimap-node/g) || []).length >= 6
-  && html.includes('data-card="card-training"') && html.includes('data-card="card-attention"')
-  && html.includes('.aimap-flow::after { display: none; }'))
-  ? ok('overview map present (6 nodes → deep-dives; flow animation reduced-motion-safe)') : bad('overview map missing/incomplete');
+// the animated flow: 4 clickable stages + build chips → deep-dives, has a pause control, reduced-motion-safe
+(html.includes('id="gptflow"') && (html.match(/class="gf-stage/g) || []).length >= 4
+  && html.includes('data-card="card-attention"') && html.includes('data-card="card-training"')
+  && html.includes('id="gfPause"') && /prefers-reduced-motion[^}]*gf-fill/.test(html))
+  ? ok('animated flow present (4 stages → deep-dives; pause control; reduced-motion-safe)') : bad('animated flow missing/incomplete');
+// don't fake a produced video — point to the real one (verified https)
+(!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
+  ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');
 // external hands-on links must resolve to a real place (verified https)
 (!/karpathy\/(nanoGPT|makemore)/.test(html) || /href="https:\/\/github\.com\/karpathy\/(nanoGPT|makemore)"/.test(html))
   ? ok('Karpathy hands-on links are well-formed https URLs') : bad('malformed Karpathy link');

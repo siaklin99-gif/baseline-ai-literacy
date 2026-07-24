@@ -442,32 +442,80 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codetoggle > summary:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 /* standalone feature card (its own section, not a swipe deck) fills the width */
 .card.feature { width: auto; }
-/* the "whole picture" map — clickable nodes that open each deep-dive */
-.aimap { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 16px 16px 14px; margin: 6px 0 20px; }
-.aimap-lane-label { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; margin: 2px 0 10px; line-height: 1.4; }
-.aimap-flow { position: relative; padding-left: 20px; }
-.aimap-flow::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 40px; width: 2px; background: var(--border-med); border-radius: 2px; }
-.aimap-flow::after { content: ""; position: absolute; left: 1.5px; width: 11px; height: 11px; border-radius: 50%; background: var(--grad);
-  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--g2) 55%, transparent); animation: aiflow 3.4s cubic-bezier(.5,0,.5,1) infinite; }
-@keyframes aiflow { 0% { top: 2px; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { top: calc(100% - 46px); opacity: 0; } }
-.aimap-start { font-size: 13px; color: var(--text-sec); font-weight: 600; padding: 4px 2px; }
-.aimap-arrow { color: var(--text-ter); font-size: 15px; line-height: 1; margin: 3px 0 3px 6px; }
-.aimap-node { display: block; width: 100%; text-align: left; cursor: pointer; margin: 0;
-  background: var(--surface2); border: 1px solid var(--border-med); border-radius: 10px; padding: 9px 13px;
-  transition: border-color .15s ease, transform .1s ease; }
-.aimap-node:hover { border-color: var(--text-ter); }
-.aimap-node:active { transform: scale(.99); }
-.aimap-node:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
-.aimap-node b { display: block; font-size: 14.5px; font-weight: 650; color: var(--text); }
-.aimap-node span { display: block; font-size: 12.5px; color: var(--text-sec); margin-top: 1px; }
-.aimap-node.accent { border-color: transparent; background: color-mix(in srgb, var(--g2) 12%, var(--surface2)); }
-.aimap-node.accent b { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.aimap-loop { margin: 8px 0 2px 6px; font-size: 12.5px; color: var(--text-ter); font-weight: 600; }
-.aimap-div { height: 1px; background: var(--border); margin: 16px 0 14px; }
-.aimap-node.wide { margin-bottom: 8px; }
-.aimap-hint { margin-top: 12px; font-size: 12px; color: var(--text-ter); text-align: center; }
+/* animated flow — watch the data move through one prediction loop; each stage opens its deep-dive */
+.gptflow { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 15px 16px 14px; margin: 6px 0 22px; }
+.gf-head { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 13px; }
+.gf-run { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; }
+.gf-head-right { display: flex; align-items: center; gap: 12px; }
+.gf-pause { min-height: 30px; font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 13px; cursor: pointer; }
+.gf-pause:hover { border-color: var(--text-ter); }
+.gf-src { font-size: 12px; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.gf-pause:focus-visible, .gf-stage:focus-visible, .gf-chip-link:focus-visible, .gf-src:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+/* the pipeline strip */
+.gf-strip { display: flex; align-items: stretch; gap: 5px; }
+.gf-stage { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 9px; cursor: pointer; text-align: center;
+  background: var(--surface2); border: 1px solid var(--border-med); border-radius: 12px; padding: 11px 9px 13px;
+  transition: border-color .3s ease, box-shadow .3s ease, background .3s ease; }
+.gf-cap { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700; color: var(--text-ter); transition: color .3s ease; }
+.gf-body { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 64px; }
+.gf-stage.on { border-color: transparent; background: color-mix(in srgb, var(--g2) 9%, var(--surface2));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--g1) 42%, transparent), 0 12px 24px -16px color-mix(in srgb, var(--g2) 65%, transparent); }
+.gf-stage.on .gf-cap { color: var(--blue); }
+/* arrows between stages — dots that pulse as data passes through */
+.gf-arrow { flex: 0 0 16px; align-self: center; display: flex; gap: 3px; }
+.gf-arrow i { width: 4px; height: 4px; border-radius: 50%; background: var(--border-med); transition: background .2s; }
+.gf-arrow.flow i { background: var(--g2); animation: gfdot .55s ease; }
+.gf-arrow.flow i:nth-child(2) { animation-delay: .1s; } .gf-arrow.flow i:nth-child(3) { animation-delay: .2s; }
+@keyframes gfdot { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.7); opacity: 1; } }
+/* tokenize */
+.gf-tok { flex-wrap: wrap; gap: 5px; }
+.gf-chip { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--text); background: var(--surface); border: 1px solid var(--border-med); border-radius: 6px; padding: 3px 8px; }
+.gf-stage.on .gf-chip { animation: gfpop .4s ease both; }
+.gf-stage.on .gf-chip:nth-child(2) { animation-delay: .09s; } .gf-stage.on .gf-chip:nth-child(3) { animation-delay: .18s; }
+@keyframes gfpop { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+/* embed grid */
+.gf-grid { gap: 9px; }
+.gf-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.gf-col b { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--text-sec); margin-bottom: 2px; font-weight: 700; }
+.gf-col i { font-family: ui-monospace, Menlo, monospace; font-style: normal; font-size: 10.5px; color: var(--text-ter); font-variant-numeric: tabular-nums; }
+.gf-stage.on .gf-col i { animation: gffade .5s ease both; }
+.gf-stage.on .gf-col:nth-child(2) i { animation-delay: .08s; } .gf-stage.on .gf-col:nth-child(3) i { animation-delay: .16s; }
+@keyframes gffade { from { opacity: 0; } to { opacity: 1; } }
+/* attention heatmap (query × key) */
+.gf-attn { display: grid; grid-template-columns: repeat(3, 17px); grid-template-rows: repeat(3, 17px); gap: 3px; }
+.gf-cell { width: 17px; height: 17px; border-radius: 3px; background: var(--grad); opacity: calc(var(--v) * .8 + .1); }
+.gf-stage.on .gf-cell { animation: gfcell .5s ease both; }
+@keyframes gfcell { from { transform: scale(.35); } to { transform: scale(1); } }
+/* predict bars */
+.gf-bars { flex-direction: column; gap: 6px; width: 100%; }
+.gf-bar { display: flex; align-items: center; gap: 7px; }
+.gf-bar em { font-style: normal; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--text-sec); flex: 0 0 30px; text-align: left; }
+.gf-bar:first-child em { color: var(--text); font-weight: 700; }
+.gf-track { flex: 1; height: 7px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+.gf-fill { display: block; height: 100%; width: var(--w); background: var(--grad); border-radius: 999px; }
+.gf-stage.on .gf-fill { animation: gfgrow .7s cubic-bezier(.22,.9,.24,1); }
+@keyframes gfgrow { from { width: 0; } to { width: var(--w); } }
+.gf-bar b { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--text-ter); flex: 0 0 30px; text-align: right; font-variant-numeric: tabular-nums; }
+/* running output + build-time chips */
+.gf-out { margin-top: 14px; display: flex; align-items: baseline; gap: 9px; padding: 9px 13px; background: var(--surface2); border-radius: 9px; flex-wrap: wrap; }
+.gf-out-label { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-ter); font-weight: 700; }
+.gf-sentence { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--text); }
+.gf-sentence .new { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+.gf-learn { margin-top: 12px; font-size: 12px; color: var(--text-ter); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.gf-chip-link { font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 12px; min-height: 30px; cursor: pointer; }
+.gf-chip-link:hover { border-color: var(--text-ter); }
 .card.flash { box-shadow: 0 0 0 2px color-mix(in srgb, var(--g1) 55%, transparent); transition: box-shadow .25s ease; }
-@media (prefers-reduced-motion: reduce) { .aimap-flow::after { display: none; } .card.flash { box-shadow: none; } }
+@media (max-width: 640px) {
+  .gf-strip { flex-direction: column; gap: 4px; }
+  .gf-stage { flex-direction: row; align-items: center; text-align: left; gap: 13px; padding: 10px 12px; }
+  .gf-cap { flex: 0 0 66px; }
+  .gf-body { justify-content: flex-start; min-height: 46px; }
+  .gf-arrow { transform: rotate(90deg); margin: 1px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gf-stage.on .gf-chip, .gf-stage.on .gf-col i, .gf-stage.on .gf-cell, .gf-stage.on .gf-fill, .gf-arrow.flow i { animation: none; }
+  .card.flash { box-shadow: none; }
+}
 /* interactive next-word demo */
 .llm-demo { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 14px 15px; margin: 10px 0; }
 .llm-sentence { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; line-height: 1.5;
@@ -803,26 +851,55 @@ footer .line { max-width: 520px; }
     <h2 class="stitle">How AI actually works</h2>
     <div class="ssub">Optional, hands-on deep dives for the curious — open one when you want the mechanism, not the metaphor. More will land here over time.</div>
 
-    <!-- the whole picture in one map; every box opens its deep-dive -->
-    <div class="aimap" role="group" aria-label="How AI works — a map of the five deep-dives; each box opens one">
-      <div class="aimap-lane-label">Run time · what happens on every message</div>
-      <div class="aimap-flow">
-        <div class="aimap-start">Your words</div>
-        <div class="aimap-arrow" aria-hidden="true">↓</div>
-        <button class="aimap-node" type="button" data-card="card-tokens"><b>Tokens</b><span>chopped into chunks + IDs</span></button>
-        <div class="aimap-arrow" aria-hidden="true">↓</div>
-        <button class="aimap-node" type="button" data-card="card-tokens"><b>Embeddings</b><span>IDs → meaning-vectors</span></button>
-        <div class="aimap-arrow" aria-hidden="true">↓</div>
-        <button class="aimap-node" type="button" data-card="card-attention"><b>Attention ×dozens</b><span>each word reads the others</span></button>
-        <div class="aimap-arrow" aria-hidden="true">↓</div>
-        <button class="aimap-node accent" type="button" data-card="card-llm-predict"><b>Predict the next token</b><span>pick one, weighted by its odds</span></button>
-        <div class="aimap-loop" aria-hidden="true">↻&nbsp; append it, then run the whole thing again</div>
+    <!-- animated: watch the data flow through one loop of next-word prediction; each stage opens its deep-dive -->
+    <div class="gptflow" id="gptflow" role="group" aria-label="Animated: one loop of next-word prediction — each stage opens its deep-dive">
+      <div class="gf-head">
+        <span class="gf-run">One loop of next-word prediction</span>
+        <div class="gf-head-right">
+          <button class="gf-pause" id="gfPause" type="button" aria-label="Pause the animation" aria-pressed="false">Pause</button>
+          <a class="gf-src" href="https://www.youtube.com/watch?v=LPZh9BOjkQs" target="_blank" rel="noopener">See it animated properly — 3Blue1Brown ↗</a>
+        </div>
       </div>
-      <div class="aimap-div" aria-hidden="true"></div>
-      <div class="aimap-lane-label">How it got good · done once, before you ever chat — this sets the weights above</div>
-      <button class="aimap-node wide" type="button" data-card="card-training"><b>Training</b><span>guess → loss → backprop → gradient descent</span></button>
-      <button class="aimap-node wide" type="button" data-card="card-assistant"><b>Fine-tuning + RLHF</b><span>copy good conversations, then learn from preferences</span></button>
-      <div class="aimap-hint">Tap any box to open its deep-dive below ↓</div>
+      <div class="gf-strip" id="gfStrip">
+        <button class="gf-stage" data-i="0" data-card="card-tokens" type="button" aria-label="Tokenize — open the tokens deep-dive">
+          <span class="gf-cap">Tokenize</span>
+          <span class="gf-body gf-tok">
+            <span class="gf-chip">The</span><span class="gf-chip">sky</span><span class="gf-chip">is</span>
+          </span>
+        </button>
+        <span class="gf-arrow" aria-hidden="true"><i></i><i></i><i></i></span>
+        <button class="gf-stage" data-i="1" data-card="card-tokens" type="button" aria-label="Embed — open the embeddings deep-dive">
+          <span class="gf-cap">Embed</span>
+          <span class="gf-body gf-grid">
+            <span class="gf-col"><b>The</b><i>0.2</i><i>-0.9</i><i>0.4</i></span>
+            <span class="gf-col"><b>sky</b><i>0.7</i><i>0.3</i><i>-0.2</i></span>
+            <span class="gf-col"><b>is</b><i>-0.1</i><i>0.6</i><i>0.5</i></span>
+          </span>
+        </button>
+        <span class="gf-arrow" aria-hidden="true"><i></i><i></i><i></i></span>
+        <button class="gf-stage" data-i="2" data-card="card-attention" type="button" aria-label="Attention — open the attention deep-dive">
+          <span class="gf-cap">Attention</span>
+          <span class="gf-body gf-attn">
+            <span class="gf-cell" style="--v:.85"></span><span class="gf-cell" style="--v:.15"></span><span class="gf-cell" style="--v:.30"></span>
+            <span class="gf-cell" style="--v:.20"></span><span class="gf-cell" style="--v:.90"></span><span class="gf-cell" style="--v:.25"></span>
+            <span class="gf-cell" style="--v:.35"></span><span class="gf-cell" style="--v:.20"></span><span class="gf-cell" style="--v:.80"></span>
+          </span>
+        </button>
+        <span class="gf-arrow" aria-hidden="true"><i></i><i></i><i></i></span>
+        <button class="gf-stage gf-accent" data-i="3" data-card="card-llm-predict" type="button" aria-label="Predict — open the next-word deep-dive">
+          <span class="gf-cap">Predict</span>
+          <span class="gf-body gf-bars">
+            <span class="gf-bar" style="--w:85%"><em>blue</em><span class="gf-track"><span class="gf-fill"></span></span><b>85%</b></span>
+            <span class="gf-bar" style="--w:6%"><em>clear</em><span class="gf-track"><span class="gf-fill"></span></span><b>6%</b></span>
+            <span class="gf-bar" style="--w:4%"><em>grey</em><span class="gf-track"><span class="gf-fill"></span></span><b>4%</b></span>
+          </span>
+        </button>
+      </div>
+      <div class="gf-out"><span class="gf-out-label">output so far</span><span class="gf-sentence" id="gfSentence" aria-live="polite">The sky is</span></div>
+      <div class="gf-learn">Built once, before you ever chat:
+        <button class="gf-chip-link" data-card="card-training" type="button">Training</button>
+        <button class="gf-chip-link" data-card="card-assistant" type="button">Fine-tuning + RLHF</button>
+      </div>
     </div>
 
     <details class="card feature" id="card-llm-predict">
@@ -1615,14 +1692,20 @@ tryTabs.forEach(tab => {
   });
 });
 
-/* ---------- "whole picture" map: each box opens + jumps to its deep-dive ---------- */
-(function initAiMap(){
-  const nodes = document.querySelectorAll('.aimap-node');
-  if (!nodes.length) return;
+/* ---------- animated flow: play one prediction loop; each stage opens its deep-dive ---------- */
+(function initGptFlow(){
+  const flow = document.getElementById('gptflow');
+  if (!flow) return;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  nodes.forEach(node => {
-    node.addEventListener('click', () => {
-      const card = document.getElementById(node.dataset.card);
+  const stages = [...flow.querySelectorAll('.gf-stage')];
+  const arrows = [...flow.querySelectorAll('.gf-arrow')];
+  const sentenceEl = document.getElementById('gfSentence');
+  const pauseBtn = document.getElementById('gfPause');
+
+  // click any stage or build-time chip → open + jump to its deep-dive
+  flow.querySelectorAll('[data-card]').forEach(el => {
+    el.addEventListener('click', () => {
+      const card = document.getElementById(el.dataset.card);
       if (!card) return;
       card.open = true;
       card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
@@ -1630,6 +1713,33 @@ tryTabs.forEach(tab => {
       setTimeout(() => card.classList.remove('flash'), 1300);
     });
   });
+
+  const BASE = 'The sky is', WORDS = ['blue', 'today'];   // the loop appends these, then resets
+  const STEP = 1450;
+  let phase = 0, wordIdx = 0, text = BASE, timer = null, playing = false;
+
+  function step(){
+    if (phase === 0 && wordIdx >= WORDS.length) { text = BASE; wordIdx = 0; sentenceEl.textContent = text; }
+    stages.forEach((s, i) => s.classList.toggle('on', i === phase));
+    arrows.forEach((a, i) => a.classList.toggle('flow', i === phase - 1));
+    if (phase === 3) {
+      const w = WORDS[wordIdx]; wordIdx++;
+      sentenceEl.innerHTML = esc(text) + '<span class="new"> ' + esc(w) + '</span>';
+      text = text + ' ' + w;
+    }
+    phase = (phase + 1) % 4;
+  }
+  function play(){ playing = true; pauseBtn.textContent = 'Pause'; pauseBtn.setAttribute('aria-pressed', 'false'); pauseBtn.setAttribute('aria-label', 'Pause the animation');
+    clearInterval(timer); step(); timer = setInterval(step, STEP); }
+  function pause(){ playing = false; pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation'); clearInterval(timer); }
+  pauseBtn.addEventListener('click', () => playing ? pause() : play());
+
+  if (reduce) {                                  // static: show the whole pipeline, no motion
+    sentenceEl.textContent = 'The sky is blue';
+    pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation');
+  } else {
+    play();
+  }
 })();
 
 /* ---------- interactive next-word demo (How an LLM works) ---------- */

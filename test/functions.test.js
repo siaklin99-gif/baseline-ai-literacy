@@ -51,6 +51,8 @@ const sandbox = {
   getComputedStyle: () => ({ paddingLeft: '0px', display: 'block' }),
   requestAnimationFrame: () => 0,
   addEventListener: () => {},
+  // browser timer globals the page uses (animated flow); no-op stubs for the headless harness
+  setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
   Date, JSON, Math, parseInt, parseFloat,
 };
 sandbox.window = sandbox;

@@ -147,6 +147,7 @@ body {
 .try-copy.done { background: var(--green); color: #fff; }
 .try-more { display: inline-block; margin-top: 14px; font-size: 14px; color: var(--accent);
   text-decoration: underline; text-underline-offset: 3px; }
+a.xref { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- section ---------- */
 section { padding: 30px 0; }
@@ -600,7 +601,7 @@ footer .line { max-width: 520px; }
      Can/Can't and Topics become horizontal scroll-snap decks; the next
      card peeks at the edge, native momentum scroll, progress dots below.
      (The layers use the peel-stack, which already works vertically.) */
-  .cols, .tg-deck, #bodymap, .gl-deck {
+  .cols, .tg-deck, #bodymap {
     display: flex; grid-template-columns: none;
     overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
@@ -609,8 +610,8 @@ footer .line { max-width: 520px; }
     scrollbar-width: none;
   }
   .cols::-webkit-scrollbar, .tg-deck::-webkit-scrollbar,
-  #bodymap::-webkit-scrollbar, .gl-deck::-webkit-scrollbar { display: none; }
-  .cols > *, .tg-deck > *, #bodymap > *, .gl-deck > * {
+  #bodymap::-webkit-scrollbar { display: none; }
+  .cols > *, .tg-deck > *, #bodymap > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
   }
 
@@ -840,8 +841,8 @@ footer .line { max-width: 520px; }
 <!-- ============ TOPIC CLUSTERS ============ -->
 <section id="topics">
   <div class="wrap">
-    <div class="slabel">Go further, one tap at a time</div>
-    <h2 class="stitle">The rest, when you're ready</h2>
+    <div class="slabel">Go further</div>
+    <h2 class="stitle">Costs, privacy, jobs &amp; more</h2>
     <div class="ssub">Grouped by where you are, not by what it's called. Start at Beginner; drop into the others when you're curious. Tap any card to open it.</div>
     <div id="cards"></div>
   </div>
@@ -1272,12 +1273,13 @@ function dataCard(key){
    c[3] as {data:"key"} = pulled live from data.js with a freshness stamp. */
 /* each card: [emoji, title, sub, content, cluster] */
 const CARDS = [
+  /* --- beginner --- */
   ["🚀", "Your first 15 minutes", "Start here · from reading to doing",
     `<p><strong>1 · Pick one tool.</strong> ChatGPT, Claude or Gemini — all have a free tier that runs in your browser. No card details needed.</p>
-     <p><strong>2 · Sign up</strong> with your email, open the chat box, and try these three — just replace the [brackets]:</p>
-     <div class="prompt">Explain [a term you keep hearing] like I'm completely new to this, in 5 short sentences.</div>
-     <div class="prompt">Summarize this in 3 bullet points: [paste any letter, email or article]</div>
-     <div class="prompt">Draft a short, friendly message to [who] about [what]. Keep it under 100 words.</div>
+     <p><strong>2 · Sign up</strong> with your email, open the chat box, and go past the one-liner you tried up top — these show what a <em>conversation</em> can do (just replace the [brackets]):</p>
+     <div class="prompt">Here's my situation: [describe it]. Ask me 3 questions first, then give me practical advice.</div>
+     <div class="prompt">Turn this messy brain-dump into a tidy plan for my week: [paste whatever's in your head]</div>
+     <div class="prompt">Quiz me — 5 quick questions on [something I'm learning], one at a time, and score me at the end.</div>
      <p><strong>3 · Catch it being wrong — on day one.</strong> Ask it <em>"How sure are you? What should I double-check?"</em> and verify one fact yourself. That habit — use it, then check it — is the whole skill.</p>
      <p style="opacity:.8">15 minutes of doing beats an afternoon of reading about it.</p>`, "card-15min"],
   ["🗓️", "What it can do for your day", "Real life, any background · copy, paste, fill the [brackets]",
@@ -1297,12 +1299,18 @@ const CARDS = [
      <div class="prompt">Turn these messy notes into 5 clear bullet points for my boss: [paste]</div>
      <div class="prompt">Tailor my resume summary to this job posting: [paste both]</div>
      <p style="opacity:.8">One rule for all ten: it drafts, you decide.</p>`, "card-daily"],
-  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}],
-  ["💳", "Setup &amp; what it costs", "Closed vs open source", {data:"pricing"}],
-  ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
-    `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
-     <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
-     <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`],
+  ["💬", "How to ask (so it actually helps)", "The one skill that changes everything",
+    `<p>The gap between a useless answer and a great one is usually <strong>you</strong>, not the AI. Four moves cover most of it:</p>
+     <p><strong>1 · Give context</strong> — who it's for, what the goal is. "Explain to my 70-year-old mum" beats "explain."</p>
+     <p><strong>2 · Ask for a format</strong> — "in 3 bullets," "as a table," "under 100 words."</p>
+     <p><strong>3 · Show an example</strong> of what "good" looks like, if you have one.</p>
+     <p><strong>4 · Let it ask you</strong> — end with "Ask me anything you need first," and it fills its own gaps.</p>
+     <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Vague: "write a birthday message." Better: "Write a warm, funny 2-line birthday text for my brother who loves fishing — casual, no emojis."</div>
+     <p>No magic words, no "prompt engineering" course. Just tell it what you'd tell a capable assistant.</p>`],
+  ["🔤", "AI jargon in plain English", "The words, decoded · 14 terms",
+    `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
+     <div id="glossary"></div>`],
+
   ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
     `<p>With cloud tools, assume your prompts may be stored and — depending on settings — used to improve the model.</p>
      <p><strong>Protect yourself:</strong> don't paste passwords, IDs, medical or financial secrets; turn off training/history in settings where offered; use a work-approved tool for work data; go local for the truly sensitive stuff.</p>`],
@@ -1314,50 +1322,39 @@ const CARDS = [
      <p>· A photo — or even a live-looking video call — is no longer proof it's real.</p>
      <p>· Agree a <strong>family code word</strong> for real emergencies.</p>
      <p>The old tell was bad spelling. The new tell is the <em>ask</em> — slow down whenever something pressures you to act fast.</p>`],
-  ["🏢", "Why work won't train you", "The corporate gap",
-    `<p>Companies push 'use AI' but rarely teach it because the tools change monthly, few internal experts exist yet, and 'do more with AI' is easier to say than to actually teach.</p>
-     <p>That gap is exactly why a shared baseline like this exists — so you're not guessing in the dark.</p>`],
   ["🚗", "Will AI take my job?", "The big fear · answered honestly",
     `<p>Not the way you've heard it. <strong>AI doesn't replace people — people who use AI replace people who don't.</strong></p>
      <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Think of the car. It didn't replace the need to get somewhere — but the driver left the horse rider behind. Same destination, different speed. AI is that car for everyday work.</div>
      <p>Every big invention has worked this way: calculators didn't end accountants, and spreadsheets didn't either — the boring half of the work shrank while the judgment half grew.</p>
-     <p>So the move isn't to out-run the car. It's to get behind the wheel. The <strong>Your first 15 minutes</strong> card above is your first drive.</p>`],
+     <p>One warning: don't wait for work to train you — tools change monthly and most companies are still catching up. That gap is exactly why this page exists.</p>
+     <p>So the move isn't to out-run the car. It's to get behind the wheel. <a class="xref" href="#card-15min">Your first 15 minutes</a> is your first drive.</p>`, "card-job"],
   ["🔍", "Common myths, busted", "Heard everywhere · true nowhere",
-    `<p><strong>"AI will take all our jobs."</strong> It takes <em>tasks</em>, not jobs — and the advantage moves to whoever uses it. See the car-vs-horse card above.</p>
-     <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots. Treat its take as one voice, not the referee — the <strong>Bias</strong> card digs into why.</p>
+    `<p><strong>"AI will take all our jobs."</strong> It takes <em>tasks</em>, not jobs — and the advantage moves to whoever uses it. See <a class="xref" href="#card-job">the car-vs-horse card</a>.</p>
+     <p><strong>"AI is objective — it's just math."</strong> It learned from human writing, so it inherits human blind spots. Treat its take as one voice, not the referee — <a class="xref" href="#card-bias">the Bias card</a> digs into why.</p>
      <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
      <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`],
-  ["📚", "Real foundations, not shots in the dark", "Books &amp; classes worth it", {data:"books"}],
-  ["🔤", "AI jargon in plain English", "The words, decoded · 14 terms",
-    `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
-     <div id="glossary"></div>`],
-
-  /* --- more cards --- */
-  ["💬", "How to ask (so it actually helps)", "The one skill that changes everything",
-    `<p>The gap between a useless answer and a great one is usually <strong>you</strong>, not the AI. Four moves cover most of it:</p>
-     <p><strong>1 · Give context</strong> — who it's for, what the goal is. "Explain to my 70-year-old mum" beats "explain."</p>
-     <p><strong>2 · Ask for a format</strong> — "in 3 bullets," "as a table," "under 100 words."</p>
-     <p><strong>3 · Show an example</strong> of what "good" looks like, if you have one.</p>
-     <p><strong>4 · Let it ask you</strong> — end with "Ask me anything you need first," and it fills its own gaps.</p>
-     <div class="pl-eg"><span class="pl-eg-tag">Everyday</span>Vague: "write a birthday message." Better: "Write a warm, funny 2-line birthday text for my brother who loves fishing — casual, no emojis."</div>
-     <p>No magic words, no "prompt engineering" course. Just tell it what you'd tell a capable assistant.</p>`],
-
+  /* --- intermediate --- */
+  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}],
+  ["💳", "Setup &amp; what it costs", "Closed vs open weight", {data:"pricing"}],
+  ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
+    `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
+     <p><strong>Spend less:</strong> be concise, don't paste giant documents you don't need, start fresh chats instead of dragging long history, and pick a smaller model for simple tasks.</p>
+     <p><strong>Track it:</strong> most paid tools show usage in a dashboard or billing page — check it early so there are no surprises.</p>`],
   ["🧩", "It's already in your apps", "You may not need a new app at all",
     `<p>AI isn't only a separate chatbot — it's quietly built into tools you already use:</p>
      <p><strong>Email &amp; docs:</strong> Gmail, Outlook, Google Docs and Word can draft, summarize and rewrite right where you're working.</p>
-     <p><strong>Your phone:</strong> newer iPhones and Android phones summarize notifications, tidy photos, and rewrite text you've typed.</p>
+     <p><strong>Your phone:</strong> recent iPhones and Android phones ship AI features — summarizing notifications, tidying photos, rewriting text.</p>
      <p><strong>Search &amp; browsers:</strong> many now answer in plain language instead of only listing links.</p>
      <p>So before signing up for anything, look for a sparkle or "AI" button in the app already on your screen — that's often the easiest first step.</p>`],
-
+  ["📚", "Books &amp; courses worth your time", "Real foundations — gentlest first", {data:"books"}],
+  /* --- advanced --- */
   ["⚖️", "Bias — whose view is it?", "Objective math, subjective data",
     `<p>AI learned from human writing and images, so it absorbs human blind spots, stereotypes and gaps — then delivers them in a confident, neutral-sounding voice.</p>
      <p>It shows up as over-representing whatever was common in its training data, leaning toward certain cultures or viewpoints, and quietly missing perspectives that were written about less.</p>
-     <p><strong>What to do:</strong> treat its answer as one well-read voice, not a neutral referee — especially on people, cultures, history and anything contested. Ask for other viewpoints, and notice what it leaves out.</p>`],
-
+     <p><strong>What to do:</strong> treat its answer as one well-read voice, not a neutral referee — especially on people, cultures, history and anything contested. Ask for other viewpoints, and notice what it leaves out.</p>`, "card-bias"],
   ["🌍", "AI's real-world footprint", "The cost you don't see on screen",
     `<p>Every answer runs on physical computers in data centers. Training a big model takes a lot of electricity up front; each query then costs a little energy, and that adds up across billions of uses. Those data centers also use water to stay cool.</p>
      <p>Not a reason for guilt over a few chats — but it's real, and it's why "throw AI at everything" isn't free. Using the right-sized model for the job (not always the biggest) is greener as well as cheaper.</p>`],
-
   ["🔮", "What's next: agents &amp; AGI", "Hype vs the honest answer",
     `<p><strong>Agents</strong> are the near-term shift: AI that takes multi-step actions for you — book the trip, not just suggest it. Early and uneven, but coming fast. (That's <em>AI agent = the hands</em> from the body map.)</p>
      <p><strong>AGI</strong> — a machine as generally capable as a person — is the big headline. Honest take: no one knows if or when. Today's AI is narrow and non-thinking despite the marketing, and confident predictions (for or against) are mostly guesses.</p>
@@ -1369,10 +1366,8 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (7 / 5 / 5)
-const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate',
-                     'beginner','beginner','advanced','beginner','beginner','advanced','intermediate',
-                     'beginner','intermediate','advanced','advanced','advanced'];
+// level per card, in CARDS order (8 / 5 / 3) — array order matches the level grouping
+const CARD_LEVELS = [...Array(8).fill('beginner'), ...Array(5).fill('intermediate'), ...Array(3).fill('advanced')];
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {
@@ -1523,7 +1518,6 @@ const glCards = GLOSSARY.map(g =>
      <div class="gl-eg"><span class="pl-eg-tag">Like</span>${g[2]}</div></div>`
 ).join('');
 glossary.innerHTML = `<div class="gl-deck">${glCards}</div>`;
-initDeck(document.querySelector('#glossary .gl-deck'));
 
 /* ---------- self-quiz: answer in your head, tap to check ---------- */
 /* [question, short answer, explanation, tag, correct yes|no] */
@@ -1699,9 +1693,10 @@ tryTabs.forEach(tab => {
   });
 });
 
-/* "See 10 more prompts" targets a collapsed card inside a swipe deck — a bare
-   anchor lands on it shut (and can't scroll the deck sideways), so open + scroll it */
-document.querySelectorAll('a.try-more').forEach(a => {
+/* Links that target a collapsed card inside a swipe deck — a bare anchor lands
+   on it shut (and can't scroll the deck sideways), so open + scroll it.
+   Covers the try-panel link AND the in-card cross-references (a.xref). */
+document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   a.addEventListener('click', (e) => {
     const t = document.querySelector(a.getAttribute('href'));
     if (!t) return;                       // fall back to the plain anchor jump

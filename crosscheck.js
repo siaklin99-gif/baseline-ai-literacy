@@ -99,7 +99,7 @@ function assertionExpr(expected) {
     });
     // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack;
     // the glossary shows a swipe deck on mobile, a table on desktop)
-    const decksScroll = ['.cols', '#bodymap', '.gl-deck'].every(sel => {
+    const decksScroll = ['.cols', '#bodymap'].every(sel => {
       const e = document.querySelector(sel); return e && e.scrollWidth > e.clientWidth + 5;
     }) && [...document.querySelectorAll('.tg-deck')].every(e => e.scrollWidth > e.clientWidth + 5);
     const bmCount = document.querySelectorAll('#bodymap .bm-item').length;
@@ -148,6 +148,7 @@ function assertionExpr(expected) {
       missingSample: missing.slice(0, 3),
       leaks: leaks,
       cardCount: cards.length,
+      strayCards: [...document.getElementById("cards").children].filter(c => !c.classList.contains("tg")).length,
       wrapW: wrapW,
       usedPct: usedPct,
       cardsPerRow: cardsPerRow,
@@ -232,7 +233,7 @@ async function main() {
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
-      r.cardCount === 17     ? ok(`${tag} 17 topic cards present (7/5/5)`) : bad(`${tag} expected 17 cards, got ${r.cardCount}`);
+      (r.cardCount === 16 && r.strayCards === 0) ? ok(`${tag} 16 topic cards present (8/5/3), none stray`) : bad(`${tag} cards=${r.cardCount} (want 16), strays=${r.strayCards} (want 0)`);
       (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 14 && r.qzCount === 9 && r.lcNodeCount === 7 && r.lcRowCount === 7)
         ? ok(`${tag} body map (8+8 dots) + glossary (14) + quiz (9) + circle (7) rendered`)
         : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 14), quiz=${r.qzCount} (want 9), circle=${r.lcNodeCount}/${r.lcRowCount} (want 7)`);

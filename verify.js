@@ -196,6 +196,28 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   ? ok('auto-animating sentence is not an aria-live announce-loop') : bad('aria-live back on the auto-animation');
 (/bmSelect/.test(html))
   ? ok('body-map selection is state-tracked (hover cannot desync clicks)') : bad('body-map click/hover desync fix missing');
+// CARDS must be a dense 16-entry array — a stray comma creates a HOLE, forEach skips it,
+// every later card shifts one level and the last falls out of its group (real bug, 2026-07-24)
+{
+  const cm = html.match(/const CARDS = \[[\s\S]*?\n\];/);
+  let cardsArr = null;
+  try { cardsArr = new Function(cm[0] + ' return CARDS;')(); } catch (e) {}
+  let holes = 0; if (cardsArr) for (let i = 0; i < cardsArr.length; i++) if (!(i in cardsArr)) holes++;
+  (cardsArr && cardsArr.length === 16 && holes === 0)
+    ? ok('CARDS is dense: 16 entries, no array holes')
+    : bad(`CARDS malformed: ${cardsArr ? cardsArr.length : 'uneval'} entries, ${holes} hole(s) — cards will silently fall out of their groups`);
+}
+// topics-section optimization locks (2026-07-24 cold audit)
+(!/Why work won't train you/.test(html) && /don't wait for work to train you/.test(html))
+  ? ok('thin work-gap card stays merged into the jobs card') : bad('work-gap card back as a standalone (or its point lost)');
+(/a\.try-more, a\.xref/.test(html) && /href="#card-job"/.test(html) && /href="#card-bias"/.test(html))
+  ? ok('in-card cross-references are real open-and-scroll links') : bad('cross-references degraded to bold text again');
+(html.indexOf('AI jargon in plain English') < html.indexOf('"Pick the right model for the job"'))
+  ? ok('jargon decoder lives in the Beginner group (day-one need)') : bad('jargon card demoted out of Beginner');
+(!/\.gl-deck > \*/.test(html))
+  ? ok('glossary is a vertical list on mobile (no deck-in-a-deck)') : bad('nested glossary swipe deck is back');
+(!/Explain \[a term you keep hearing\]/.test(html))
+  ? ok('15-min card prompts extend (not duplicate) the try panel') : bad('15-min card duplicates the try-panel prompts again');
 // don't fake a produced video — point to the real one (verified https)
 (!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
   ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');
@@ -270,13 +292,17 @@ html.includes('prefers-color-scheme: dark') ? ok('dark-mode styles present')
                                                         : bad('AI gradient (--grad) missing or unused');
 // topics grouped by level: 3 groups defined, every card assigned, split adds to 13
 const levelBlock = html.match(/const LEVELS = \[([\s\S]*?)\n\];/);
-const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
+const cardLevelsBlock = html.match(/const CARD_LEVELS = ([\s\S]*?);\n/);
 if (levelBlock && cardLevelsBlock) {
   const nGroups = (levelBlock[1].match(/\['/g) || []).length;
-  const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
-  (nGroups === 3 && assigned === 17)
-    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (7/5/5)`)
-    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 17)`);
+  // evaluate the real expression (it may use Array.fill), don't count string literals
+  let lv = [];
+  try { lv = new Function('return ' + cardLevelsBlock[1])(); } catch (e) {}
+  const counts = { beginner: 0, intermediate: 0, advanced: 0 };
+  (Array.isArray(lv) ? lv : []).forEach(k => { if (k in counts) counts[k]++; });
+  (nGroups === 3 && lv.length === 16 && counts.beginner === 8 && counts.intermediate === 5 && counts.advanced === 3)
+    ? ok(`topics grouped into 3 levels; all ${lv.length} cards assigned (8/5/3)`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${lv.length} assigned as ${counts.beginner}/${counts.intermediate}/${counts.advanced} (want 16 as 8/5/3)`);
 } else bad('LEVELS / CARD_LEVELS grouping arrays missing');
 // peel supports both directions
 html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)

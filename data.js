@@ -34,7 +34,7 @@ window.BASELINE_DATA = {
       <p><strong>Rule of thumb:</strong> reach for a big flagship model for hard reasoning,
          coding and nuance; use a smaller/cheaper one for quick, high-volume, simple jobs.</p>
       <p style="opacity:.8">These are the main families as of mid-2026. Exact version numbers change
-         almost monthly — the products below don't. Start with a paid one; try an open one later.</p>`,
+         almost monthly — the products below don't. Start with one of the big-name ones — the free tier is fine; try an open-weight one later.</p>`,
     // { name, kind: "Paid"|"Open weight", best }
     list: [
       {name:"ChatGPT", kind:"Paid · OpenAI", best:"Strong all-rounder for everyday writing, research and coding."},

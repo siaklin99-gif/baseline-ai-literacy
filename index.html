@@ -429,6 +429,17 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codeblock pre { margin: 0; white-space: pre; color: var(--text); line-height: 1.55; font-size: 12.5px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .codeblock .cm { color: var(--text-ter); }   /* comments */
+/* code hidden behind a click — opt-in for readers who want the source */
+.codetoggle { margin: 10px 0; }
+.codetoggle:not([open]) > *:not(summary) { display: none; }   /* guarantee the code hides when closed */
+.codetoggle > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 8px 15px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+  color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); }
+.codetoggle > summary::-webkit-details-marker { display: none; }
+.codetoggle > summary::before { content: "›"; font-size: 17px; line-height: 1; display: inline-block; transition: transform .2s ease; }
+.codetoggle[open] > summary::before { transform: rotate(90deg); }
+.codetoggle[open] > summary { color: var(--text); }
+.codetoggle > summary:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 /* standalone feature card (its own section, not a swipe deck) fills the width */
 .card.feature { width: auto; }
 /* interactive next-word demo */
@@ -796,8 +807,10 @@ footer .line { max-width: 520px; }
           </div>
           <div class="llm-note" id="llmNote">The odds are hand-written into this toy model — a real one computes them from what it learned.</div>
         </div>
-        <p><strong>Or read the code.</strong> That's the entire engine, in ~15 lines. A real model computes its probabilities; here they're written in by hand:</p>
-        <div class="codeblock"><pre>import random
+        <details class="codetoggle">
+          <summary>Show the Python — the whole engine in ~15 lines</summary>
+          <p style="opacity:.8; margin-top:10px;">A real model computes its probabilities; this toy has them written in by hand:</p>
+          <div class="codeblock"><pre>import random
 
 <span class="cm"># a toy "model": for this context, what tends to come next</span>
 model = {
@@ -817,6 +830,7 @@ text = "The sky is"
 for _ in range(2):
     text += " " + next_word(text)
     print(text)</pre></div>
+        </details>
         <p><strong>What a real LLM does differently:</strong></p>
         <p>· No lookup table — billions of learned numbers (<em>weights</em>) compute the probabilities instead.</p>
         <p>· Its context is the whole conversation, not three words.</p>

@@ -431,10 +431,21 @@ details.card[open] .chev { transform: rotate(90deg); }
 /* animated flow — watch the data move through one prediction loop; each stage opens its deep-dive */
 .gptflow { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 15px 16px 14px; margin: 6px 0 22px; }
 .gf-head { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 13px; }
-.gf-run { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; }
+.gf-run { display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700;
+  background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gf-live { width: 9px; height: 9px; border-radius: 50%; background: var(--grad); flex: 0 0 auto;
+  animation: gflive 2.2s ease-out infinite; }
+@keyframes gflive { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--g2) 45%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 .gf-head-right { display: flex; align-items: center; gap: 12px; }
-.gf-pause { min-height: 44px; font-size: 12px; font-weight: 600; color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 4px 13px; cursor: pointer; }
-.gf-pause:hover { border-color: var(--text-ter); }
+/* paused = the call to action (gradient); playing = quiet neutral */
+.gf-pause { min-height: 44px; font-size: 13px; font-weight: 700; color: #fff; background: var(--grad);
+  border: none; border-radius: 999px; padding: 8px 18px; cursor: pointer;
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--g2) 70%, transparent);
+  transition: transform .12s ease, box-shadow .15s ease; }
+.gf-pause:active { transform: scale(.97); }
+.gf-pause.playing { background: var(--surface2); color: var(--text-sec); border: 1px solid var(--border-med);
+  box-shadow: none; font-weight: 600; }
 .gf-src { font-size: 12px; color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
 .gf-pause:focus-visible, .gf-stage:focus-visible, .gf-chip-link:focus-visible, .gf-src:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 /* the pipeline strip */
@@ -474,7 +485,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 @keyframes gfcell { from { transform: scale(.35); } to { transform: scale(1); } }
 /* predict bars */
 .gf-bars { flex-direction: column; gap: 6px; width: 100%; }
-.gf-bar { display: flex; align-items: center; gap: 7px; }
+.gf-bar { display: flex; align-items: center; gap: 7px; width: 100%; }  /* full row, or the track collapses to 0 */
 .gf-bar em { font-style: normal; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--text-sec); flex: 0 0 30px; text-align: left; }
 .gf-bar:first-child em { color: var(--text); font-weight: 700; }
 .gf-track { flex: 1; height: 7px; background: var(--surface); border-radius: 999px; overflow: hidden; }
@@ -499,7 +510,7 @@ details.card[open] .chev { transform: rotate(90deg); }
   .gf-arrow { transform: rotate(90deg); margin: 1px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gf-stage.on .gf-chip, .gf-stage.on .gf-col i, .gf-stage.on .gf-cell, .gf-stage.on .gf-fill, .gf-arrow.flow i { animation: none; }
+  .gf-stage.on .gf-chip, .gf-stage.on .gf-col i, .gf-stage.on .gf-cell, .gf-stage.on .gf-fill, .gf-arrow.flow i, .gf-live { animation: none; }
   .card.flash { box-shadow: none; }
 }
 /* interactive next-word demo */
@@ -846,9 +857,9 @@ footer .line { max-width: 520px; }
     <!-- animated: watch the data flow through one loop of next-word prediction; each stage opens its deep-dive -->
     <div class="gptflow" id="gptflow" role="group" aria-label="Animated: one loop of next-word prediction — each stage opens its deep-dive">
       <div class="gf-head">
-        <span class="gf-run">One loop of next-word prediction</span>
+        <span class="gf-run"><span class="gf-live" aria-hidden="true"></span>Watch it write — one word at a time</span>
         <div class="gf-head-right">
-          <button class="gf-pause" id="gfPause" type="button" aria-label="Pause the animation" aria-pressed="false">Pause</button>
+          <button class="gf-pause" id="gfPause" type="button" aria-label="Play the animation" aria-pressed="true">▸ Play</button>
           <a class="gf-src" href="https://www.youtube.com/watch?v=LPZh9BOjkQs" target="_blank" rel="noopener">See it animated properly — 3Blue1Brown ↗</a>
         </div>
       </div>
@@ -1727,31 +1738,42 @@ document.querySelectorAll('a.try-more').forEach(a => {
   });
 
   const BASE = 'The sky is', WORDS = ['blue', 'today'];   // the loop appends these, then resets
+  // odds shown for EACH prediction (matches the toy model in the deep-dive) — picked word first
+  const PRED = [
+    [['blue', 85], ['clear', 6], ['grey', 4]],
+    [['today', 60], ['and', 30], ['.', 10]]
+  ];
+  const barsEl = flow.querySelector('.gf-bars');
+  function renderBars(i){
+    barsEl.innerHTML = (PRED[i] || PRED[0]).map(([w, p]) =>
+      `<span class="gf-bar" style="--w:${p}%"><em>${esc(w)}</em><span class="gf-track"><span class="gf-fill"></span></span><b>${p}%</b></span>`).join('');
+  }
   const STEP = 1450;
   let phase = 0, wordIdx = 0, text = BASE, timer = null, playing = false;
 
   function step(){
-    if (phase === 0 && wordIdx >= WORDS.length) { text = BASE; wordIdx = 0; sentenceEl.textContent = text; }
+    if (phase === 0 && wordIdx >= WORDS.length) { text = BASE; wordIdx = 0; sentenceEl.textContent = text; renderBars(0); }
     stages.forEach((s, i) => s.classList.toggle('on', i === phase));
     arrows.forEach((a, i) => a.classList.toggle('flow', i === phase - 1));
     if (phase === 3) {
+      renderBars(wordIdx);                           // the odds THIS pick was made from
       const w = WORDS[wordIdx]; wordIdx++;
       sentenceEl.innerHTML = esc(text) + '<span class="new"> ' + esc(w) + '</span>';
       text = text + ' ' + w;
     }
     phase = (phase + 1) % 4;
   }
-  function play(){ playing = true; pauseBtn.textContent = 'Pause'; pauseBtn.setAttribute('aria-pressed', 'false'); pauseBtn.setAttribute('aria-label', 'Pause the animation');
+  function play(){ playing = true; pauseBtn.textContent = 'Pause'; pauseBtn.classList.add('playing'); pauseBtn.setAttribute('aria-pressed', 'false'); pauseBtn.setAttribute('aria-label', 'Pause the animation');
     clearInterval(timer); step(); timer = setInterval(step, STEP); }
-  function pause(){ playing = false; pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation'); clearInterval(timer); }
-  let userPaused = false;                        // a manual pause outranks the auto play/pause
+  function pause(){ playing = false; pauseBtn.textContent = '▸ Play'; pauseBtn.classList.remove('playing'); pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation'); clearInterval(timer); }
+  let userPaused = true;                         // nothing moves until the user presses Play
   pauseBtn.addEventListener('click', () => { if (playing) { userPaused = true; pause(); } else { userPaused = false; play(); } });
 
   if (reduce) {                                  // static: show the whole pipeline, no motion
     sentenceEl.textContent = 'The sky is blue';
-    pauseBtn.textContent = 'Play'; pauseBtn.setAttribute('aria-pressed', 'true'); pauseBtn.setAttribute('aria-label', 'Play the animation');
+    pause();
   } else if ('IntersectionObserver' in window) {
-    // run only while on screen: no battery burn or motion the user can't see
+    // after the user starts it, run only while on screen (no offscreen battery burn)
     pause();
     new IntersectionObserver((entries) => {
       entries.forEach(en => {
@@ -1760,7 +1782,7 @@ document.querySelectorAll('a.try-more').forEach(a => {
       });
     }, { threshold: 0.35 }).observe(flow);
   } else {
-    play();
+    pause();                                     // no IO support: still play-on-demand only
   }
 })();
 

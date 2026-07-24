@@ -185,6 +185,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   ? ok('all smooth scrolls respect prefers-reduced-motion (REDUCE-gated)') : bad('an unconditional smooth scroll crept back in');
 (/IntersectionObserver\(/.test(html) && /userPaused/.test(html))
   ? ok('flow animation runs only on-screen (IO) and manual pause wins') : bad('flow animation autoplays offscreen again');
+// flow: nothing moves until the user presses Play, and each prediction shows ITS OWN odds
+(/let userPaused = true/.test(html) && /const PRED = /.test(html) && /\[\['today', 60\]/.test(html))
+  ? ok('flow is play-on-demand with per-prediction odds (today gets its own bars)') : bad('flow autoplays or the odds bars are static again');
 (html.indexOf('<section id="topics">') < html.indexOf('<section id="howllm">'))
   ? ok('beginner path unbroken: topic cards come before Under the hood') : bad('Under the hood interrupts the beginner path again');
 (!/\.pills \{/.test(html) && !/c\[5\]/.test(html))

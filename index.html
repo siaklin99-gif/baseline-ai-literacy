@@ -442,6 +442,32 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codetoggle > summary:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 /* standalone feature card (its own section, not a swipe deck) fills the width */
 .card.feature { width: auto; }
+/* the "whole picture" map — clickable nodes that open each deep-dive */
+.aimap { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 16px 16px 14px; margin: 6px 0 20px; }
+.aimap-lane-label { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-ter); font-weight: 700; margin: 2px 0 10px; line-height: 1.4; }
+.aimap-flow { position: relative; padding-left: 20px; }
+.aimap-flow::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 40px; width: 2px; background: var(--border-med); border-radius: 2px; }
+.aimap-flow::after { content: ""; position: absolute; left: 1.5px; width: 11px; height: 11px; border-radius: 50%; background: var(--grad);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--g2) 55%, transparent); animation: aiflow 3.4s cubic-bezier(.5,0,.5,1) infinite; }
+@keyframes aiflow { 0% { top: 2px; opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { top: calc(100% - 46px); opacity: 0; } }
+.aimap-start { font-size: 13px; color: var(--text-sec); font-weight: 600; padding: 4px 2px; }
+.aimap-arrow { color: var(--text-ter); font-size: 15px; line-height: 1; margin: 3px 0 3px 6px; }
+.aimap-node { display: block; width: 100%; text-align: left; cursor: pointer; margin: 0;
+  background: var(--surface2); border: 1px solid var(--border-med); border-radius: 10px; padding: 9px 13px;
+  transition: border-color .15s ease, transform .1s ease; }
+.aimap-node:hover { border-color: var(--text-ter); }
+.aimap-node:active { transform: scale(.99); }
+.aimap-node:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.aimap-node b { display: block; font-size: 14.5px; font-weight: 650; color: var(--text); }
+.aimap-node span { display: block; font-size: 12.5px; color: var(--text-sec); margin-top: 1px; }
+.aimap-node.accent { border-color: transparent; background: color-mix(in srgb, var(--g2) 12%, var(--surface2)); }
+.aimap-node.accent b { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.aimap-loop { margin: 8px 0 2px 6px; font-size: 12.5px; color: var(--text-ter); font-weight: 600; }
+.aimap-div { height: 1px; background: var(--border); margin: 16px 0 14px; }
+.aimap-node.wide { margin-bottom: 8px; }
+.aimap-hint { margin-top: 12px; font-size: 12px; color: var(--text-ter); text-align: center; }
+.card.flash { box-shadow: 0 0 0 2px color-mix(in srgb, var(--g1) 55%, transparent); transition: box-shadow .25s ease; }
+@media (prefers-reduced-motion: reduce) { .aimap-flow::after { display: none; } .card.flash { box-shadow: none; } }
 /* interactive next-word demo */
 .llm-demo { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 14px 15px; margin: 10px 0; }
 .llm-sentence { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; line-height: 1.5;
@@ -776,6 +802,29 @@ footer .line { max-width: 520px; }
     <div class="slabel">Under the hood</div>
     <h2 class="stitle">How AI actually works</h2>
     <div class="ssub">Optional, hands-on deep dives for the curious — open one when you want the mechanism, not the metaphor. More will land here over time.</div>
+
+    <!-- the whole picture in one map; every box opens its deep-dive -->
+    <div class="aimap" role="group" aria-label="How AI works — a map of the five deep-dives; each box opens one">
+      <div class="aimap-lane-label">Run time · what happens on every message</div>
+      <div class="aimap-flow">
+        <div class="aimap-start">Your words</div>
+        <div class="aimap-arrow" aria-hidden="true">↓</div>
+        <button class="aimap-node" type="button" data-card="card-tokens"><b>Tokens</b><span>chopped into chunks + IDs</span></button>
+        <div class="aimap-arrow" aria-hidden="true">↓</div>
+        <button class="aimap-node" type="button" data-card="card-tokens"><b>Embeddings</b><span>IDs → meaning-vectors</span></button>
+        <div class="aimap-arrow" aria-hidden="true">↓</div>
+        <button class="aimap-node" type="button" data-card="card-attention"><b>Attention ×dozens</b><span>each word reads the others</span></button>
+        <div class="aimap-arrow" aria-hidden="true">↓</div>
+        <button class="aimap-node accent" type="button" data-card="card-llm-predict"><b>Predict the next token</b><span>pick one, weighted by its odds</span></button>
+        <div class="aimap-loop" aria-hidden="true">↻&nbsp; append it, then run the whole thing again</div>
+      </div>
+      <div class="aimap-div" aria-hidden="true"></div>
+      <div class="aimap-lane-label">How it got good · done once, before you ever chat — this sets the weights above</div>
+      <button class="aimap-node wide" type="button" data-card="card-training"><b>Training</b><span>guess → loss → backprop → gradient descent</span></button>
+      <button class="aimap-node wide" type="button" data-card="card-assistant"><b>Fine-tuning + RLHF</b><span>copy good conversations, then learn from preferences</span></button>
+      <div class="aimap-hint">Tap any box to open its deep-dive below ↓</div>
+    </div>
+
     <details class="card feature" id="card-llm-predict">
       <summary>
         <div class="idx">🎲</div>
@@ -1565,6 +1614,23 @@ tryTabs.forEach(tab => {
     document.getElementById('tryText').textContent = tab.dataset.prompt;
   });
 });
+
+/* ---------- "whole picture" map: each box opens + jumps to its deep-dive ---------- */
+(function initAiMap(){
+  const nodes = document.querySelectorAll('.aimap-node');
+  if (!nodes.length) return;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  nodes.forEach(node => {
+    node.addEventListener('click', () => {
+      const card = document.getElementById(node.dataset.card);
+      if (!card) return;
+      card.open = true;
+      card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      card.classList.add('flash');
+      setTimeout(() => card.classList.remove('flash'), 1300);
+    });
+  });
+})();
 
 /* ---------- interactive next-word demo (How an LLM works) ---------- */
 (function initLlmDemo(){

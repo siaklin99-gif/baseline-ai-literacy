@@ -138,8 +138,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 7 ? ok('all 7 section titles are real <h2> headings')
-          : bad(`expected 7 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 8 ? ok('all 8 section titles are real <h2> headings')
+          : bad(`expected 8 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -165,9 +165,12 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('Spotting AI fakes') && html.includes('family code word')) ? ok('AI-fakes/scams safety card present') : bad('safety card missing');
 // IP: MCP analogy must be our own expression, not Anthropic's "USB-C for AI" line
 (!html.includes('USB-C')) ? ok('MCP analogy is original (no lifted "USB-C" line)') : bad('MCP still uses the "USB-C" marketing phrasing');
-// "How an LLM works" card: the toy code must stay copy-paste runnable (uses random.choices → needs the import)
-(html.includes('How an LLM actually works') && (!/random\.choices/.test(html) || /import random/.test(html)))
-  ? ok('LLM card present and its toy code is runnable (import matches usage)') : bad('LLM toy code uses random.choices without "import random"');
+// dedicated "Under the hood" section with the LLM explainer + its interactive demo
+(html.includes('id="howllm"') && html.includes('id="card-llm-predict"') && html.includes('id="llmDemo"') && html.includes('id="llmStep"'))
+  ? ok('"Under the hood" section + interactive next-word demo present') : bad('LLM section / interactive demo missing');
+// its toy code must stay copy-paste runnable (uses random.choices → needs the import)
+(!/random\.choices/.test(html) || /import random/.test(html))
+  ? ok('LLM toy code is runnable (import matches usage)') : bad('LLM toy code uses random.choices without "import random"');
 // core layer frames AI as an alien intelligence WE grew — and keeps the honest caveat (no "nothing to worry about")
 (/alien kind of intelligence/.test(html) && /we grew from our own writing/.test(html) && /trusted blindly/.test(html))
   ? ok('core layer: alien-intelligence framing kept with its honest caveat') : bad('core layer alien framing / caveat missing');
@@ -237,9 +240,9 @@ const cardLevelsBlock = html.match(/const CARD_LEVELS = \[([\s\S]*?)\];/);
 if (levelBlock && cardLevelsBlock) {
   const nGroups = (levelBlock[1].match(/\['/g) || []).length;
   const assigned = (cardLevelsBlock[1].match(/'(beginner|intermediate|advanced)'/g) || []).length;
-  (nGroups === 3 && assigned === 18)
-    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (7/5/6)`)
-    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 18)`);
+  (nGroups === 3 && assigned === 17)
+    ? ok(`topics grouped into 3 levels; all ${assigned} cards assigned (7/5/5)`)
+    : bad(`level grouping off: ${nGroups} groups (want 3), ${assigned} cards assigned (want 17)`);
 } else bad('LEVELS / CARD_LEVELS grouping arrays missing');
 // peel supports both directions
 html.includes('class="pl-btn pl-up"') && /Peel back up/.test(html)

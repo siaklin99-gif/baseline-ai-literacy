@@ -429,6 +429,28 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codeblock pre { margin: 0; white-space: pre; color: var(--text); line-height: 1.55; font-size: 12.5px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .codeblock .cm { color: var(--text-ter); }   /* comments */
+/* standalone feature card (its own section, not a swipe deck) fills the width */
+.card.feature { width: auto; }
+/* interactive next-word demo */
+.llm-demo { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); padding: 14px 15px; margin: 10px 0; }
+.llm-sentence { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; line-height: 1.5;
+  background: var(--surface2); border-radius: 8px; padding: 11px 13px; min-height: 22px; color: var(--text); word-break: break-word; }
+.llm-sentence .new { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+.llm-probs { margin: 12px 0 2px; display: grid; gap: 7px; }
+.llm-probs:empty { display: none; }
+.llm-prob-row { display: grid; grid-template-columns: 58px 1fr 40px; align-items: center; gap: 10px; font-size: 13px; }
+.llm-word { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-sec); overflow: hidden; text-overflow: ellipsis; }
+.llm-bar { height: 8px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+.llm-fill { display: block; height: 100%; background: var(--grad); border-radius: 999px; transition: width .35s cubic-bezier(.22,.9,.24,1); }
+.llm-pct { text-align: right; color: var(--text-ter); font-variant-numeric: tabular-nums; }
+.llm-prob-row.picked .llm-word, .llm-prob-row.picked .llm-pct { color: var(--text); font-weight: 700; }
+.llm-ctrls { display: flex; gap: 8px; margin-top: 13px; flex-wrap: wrap; }
+.llm-step, .llm-reset { min-height: 40px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 13.5px; padding: 8px 16px; border: 1px solid var(--border-med); transition: opacity .15s ease; }
+.llm-step { background: var(--text); color: var(--bg); border-color: transparent; }
+.llm-step:disabled { opacity: .4; cursor: default; }
+.llm-reset { background: var(--surface); color: var(--text-sec); }
+.llm-step:focus-visible, .llm-reset:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.llm-note { margin-top: 11px; font-size: 12.5px; color: var(--text-ter); line-height: 1.45; }
 /* freshness stamp on data-driven cards */
 .stamp { display:flex; align-items:center; gap:7px; margin-top: 12px; font-size: 12.5px; }
 .stamp .dot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
@@ -737,6 +759,73 @@ footer .line { max-width: 520px; }
   </div>
 </section>
 
+<!-- ============ UNDER THE HOOD (mechanism deep-dives; grows over time) ============ -->
+<section id="howllm">
+  <div class="wrap">
+    <div class="slabel">Under the hood</div>
+    <h2 class="stitle">How AI actually works</h2>
+    <div class="ssub">Optional, hands-on deep dives for the curious — open one when you want the mechanism, not the metaphor. More will land here over time.</div>
+    <details class="card feature" id="card-llm-predict">
+      <summary>
+        <div class="idx">🎲</div>
+        <div class="head"><div class="t">How an LLM predicts the next word</div><div class="s">One trick, repeated — with a demo you can click</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>Strip away the magic and there's a single move: <strong>guess the next chunk of text, then do it again.</strong> Everything a chatbot does is that loop, running very fast.</p>
+        <p>Give it a few words and it produces a ranked list of what could come next, each with a probability:</p>
+        <div class="codeblock"><pre>   "The sky is"
+        ↓
+     [ model ]
+        ↓
+   blue      85%
+   clear      6%
+   grey       4%
+   falling    0.1%</pre></div>
+        <p style="opacity:.8">Made-up numbers, to show the shape — not a reading from a real model.</p>
+        <p>It picks one — leaning toward the likely ones, with a little randomness so you don't get an identical answer every time — adds it to the end, and feeds the whole thing back in:</p>
+        <div class="codeblock"><pre>"The sky is" → "The sky is blue" → "The sky is blue today" → ...</pre></div>
+        <p>That's the entire engine. No plan, no meaning, no looking ahead — just the next chunk (a <strong>token</strong>), over and over, until it stops.</p>
+        <p><strong>Try it yourself.</strong> Hit <em>Predict</em> — it reads the words so far, shows the odds for what comes next, picks one (leaning to the likely ones), and appends it. Then it runs again on the longer sentence:</p>
+        <div class="llm-demo" id="llmDemo">
+          <div class="llm-sentence" id="llmSentence" aria-live="polite">The sky is</div>
+          <div class="llm-probs" id="llmProbs"></div>
+          <div class="llm-ctrls">
+            <button class="llm-step" id="llmStep" type="button">Predict next word →</button>
+            <button class="llm-reset" id="llmReset" type="button">Reset</button>
+          </div>
+          <div class="llm-note" id="llmNote">The odds are hand-written into this toy model — a real one computes them from what it learned.</div>
+        </div>
+        <p><strong>Or read the code.</strong> That's the entire engine, in ~15 lines. A real model computes its probabilities; here they're written in by hand:</p>
+        <div class="codeblock"><pre>import random
+
+<span class="cm"># a toy "model": for this context, what tends to come next</span>
+model = {
+    "the sky is":      {"blue": 0.85, "clear": 0.10, "grey": 0.05},
+    "the sky is blue": {"today": 0.6, "and": 0.3, ".": 0.1},
+}
+
+def next_word(context):
+    options = model.get(context.lower())
+    if not options:
+        return "."
+    words, probs = list(options.keys()), list(options.values())
+    <span class="cm"># pick one, weighted by probability</span>
+    return random.choices(words, weights=probs)[0]
+
+text = "The sky is"
+for _ in range(2):
+    text += " " + next_word(text)
+    print(text)</pre></div>
+        <p><strong>What a real LLM does differently:</strong></p>
+        <p>· No lookup table — billions of learned numbers (<em>weights</em>) compute the probabilities instead.</p>
+        <p>· Its context is the whole conversation, not three words.</p>
+        <p>· It learned those numbers by reading enormous amounts of text and adjusting until its guesses matched what actually came next. That's <em>training</em>.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
 <!-- ============ TOPIC CLUSTERS ============ -->
 <section id="topics">
   <div class="wrap">
@@ -980,49 +1069,6 @@ const CARDS = [
      <p><strong>Search &amp; browsers:</strong> many now answer in plain language instead of only listing links.</p>
      <p>So before signing up for anything, look for a sparkle or "AI" button in the app already on your screen — that's often the easiest first step.</p>`],
 
-  ["🎲", "How an LLM actually works", "One trick, repeated",
-    `<p>Strip away the magic and there's a single move: <strong>guess the next chunk of text, then do it again.</strong> Everything a chatbot does is that loop, running very fast.</p>
-     <p>Give it a few words and it produces a ranked list of what could come next, each with a probability:</p>
-     <div class="codeblock"><pre>   "The sky is"
-        ↓
-     [ model ]
-        ↓
-   blue      85%
-   clear      6%
-   grey       4%
-   falling    0.1%</pre></div>
-     <p style="opacity:.8">Made-up numbers, to show the shape — not a reading from a real model.</p>
-     <p>It picks one — leaning toward the likely ones, with a little randomness so you don't get an identical answer every time — adds it to the end, and feeds the whole thing back in:</p>
-     <div class="codeblock"><pre>"The sky is" → "The sky is blue" → "The sky is blue today" → ...</pre></div>
-     <p>That's the entire engine. No plan, no meaning, no looking ahead — just the next chunk (a <strong>token</strong>), over and over, until it stops.</p>
-     <p><strong>A toy version you can read.</strong> A real model computes its probabilities; here they're written in by hand:</p>
-     <div class="codeblock"><pre>import random
-
-<span class="cm"># a toy "model": for this context, what tends to come next</span>
-model = {
-    "the sky is":      {"blue": 0.85, "clear": 0.10, "grey": 0.05},
-    "the sky is blue": {"today": 0.6, "and": 0.3, ".": 0.1},
-}
-
-def next_word(context):
-    options = model.get(context.lower())
-    if not options:
-        return "."
-    words, probs = list(options.keys()), list(options.values())
-    <span class="cm"># pick one, weighted by probability</span>
-    return random.choices(words, weights=probs)[0]
-
-text = "The sky is"
-for _ in range(2):
-    text += " " + next_word(text)
-    print(text)</pre></div>
-     <p>One run (it's random, so it varies):</p>
-     <div class="codeblock"><pre>The sky is blue
-The sky is blue today</pre></div>
-     <p><strong>What a real LLM does differently:</strong></p>
-     <p>· No lookup table — billions of learned numbers (<em>weights</em>) compute the probabilities instead.</p>
-     <p>· Its context is the whole conversation, not three words.</p>
-     <p>· It learned those numbers by reading enormous amounts of text and adjusting until its guesses matched what actually came next. That's <em>training</em>.</p>`, "learn"],
   ["⚖️", "Bias — whose view is it?", "Objective math, subjective data",
     `<p>AI learned from human writing and images, so it absorbs human blind spots, stereotypes and gaps — then delivers them in a confident, neutral-sounding voice.</p>
      <p>It shows up as over-representing whatever was common in its training data, leaning toward certain cultures or viewpoints, and quietly missing perspectives that were written about less.</p>
@@ -1043,10 +1089,10 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (7 / 5 / 6)
+// level per card, in CARDS order (7 / 5 / 5)
 const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate',
                      'beginner','beginner','advanced','beginner','beginner','advanced','intermediate',
-                     'beginner','intermediate','advanced','advanced','advanced','advanced'];
+                     'beginner','intermediate','advanced','advanced','advanced'];
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {
@@ -1364,6 +1410,62 @@ tryTabs.forEach(tab => {
     document.getElementById('tryText').textContent = tab.dataset.prompt;
   });
 });
+
+/* ---------- interactive next-word demo (How an LLM works) ---------- */
+(function initLlmDemo(){
+  const demo = document.getElementById('llmDemo');
+  if (!demo) return;
+  const model = {
+    "the sky is":      { blue: 0.85, clear: 0.10, grey: 0.05 },
+    "the sky is blue": { today: 0.6, and: 0.3, ".": 0.1 }
+  };
+  const START = 'The sky is';
+  const DEFAULT_NOTE = 'The odds are hand-written into this toy model — a real one computes them from what it learned.';
+  const sentenceEl = document.getElementById('llmSentence');
+  const probsEl = document.getElementById('llmProbs');
+  const stepBtn = document.getElementById('llmStep');
+  const resetBtn = document.getElementById('llmReset');
+  const noteEl = document.getElementById('llmNote');
+  let text = START;
+
+  function weightedPick(options){
+    const words = Object.keys(options), probs = Object.values(options);
+    let r = Math.random(), acc = 0;
+    for (let i = 0; i < words.length; i++){ acc += probs[i]; if (r <= acc) return words[i]; }
+    return words[words.length - 1];
+  }
+  function renderProbs(options, picked){
+    probsEl.innerHTML = Object.keys(options).map(w => {
+      const pct = Math.round(options[w] * 100);
+      return `<div class="llm-prob-row${w === picked ? ' picked' : ''}">
+        <span class="llm-word">${esc(w)}</span>
+        <span class="llm-bar"><span class="llm-fill" style="width:${Math.max(4, pct)}%"></span></span>
+        <span class="llm-pct">${pct}%</span></div>`;
+    }).join('');
+  }
+  stepBtn.addEventListener('click', () => {
+    const options = model[text.toLowerCase()];
+    if (!options) return;                       // already at the dead end
+    const picked = weightedPick(options);
+    renderProbs(options, picked);
+    const sep = picked === '.' ? '' : ' ';
+    sentenceEl.innerHTML = esc(text) + '<span class="new">' + esc(sep + picked) + '</span>';
+    text += sep + picked;
+    if (!model[text.toLowerCase()]) {
+      stepBtn.disabled = true;
+      noteEl.textContent = `Picked “${picked}”. Now the toy runs out — it only knows a couple of contexts. A real LLM learned billions, which is why it just keeps going.`;
+    } else {
+      noteEl.textContent = `Picked “${picked}” — weighted by its odds. The longer sentence goes back in, and it predicts again.`;
+    }
+  });
+  resetBtn.addEventListener('click', () => {
+    text = START;
+    sentenceEl.textContent = START;
+    probsEl.innerHTML = '';
+    stepBtn.disabled = false;
+    noteEl.textContent = DEFAULT_NOTE;
+  });
+})();
 
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));

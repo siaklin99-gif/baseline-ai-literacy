@@ -165,6 +165,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('Spotting AI fakes') && html.includes('family code word')) ? ok('AI-fakes/scams safety card present') : bad('safety card missing');
 // IP: MCP analogy must be our own expression, not Anthropic's "USB-C for AI" line
 (!html.includes('USB-C')) ? ok('MCP analogy is original (no lifted "USB-C" line)') : bad('MCP still uses the "USB-C" marketing phrasing');
+// core layer frames AI as an alien intelligence WE grew — and keeps the honest caveat (no "nothing to worry about")
+(/alien kind of intelligence/.test(html) && /we grew from our own writing/.test(html) && /trusted blindly/.test(html))
+  ? ok('core layer: alien-intelligence framing kept with its honest caveat') : bad('core layer alien framing / caveat missing');
 // small MEANINGFUL gradient text uses the AA-safe (no-teal) gradient, not the display gradient
 (html.includes('--grad-text') && /\.gl-cterm \.gt \{ background: var\(--grad-text\)/.test(html) && /\.qz-src[^}]*var\(--grad-text\)/.test(html))
   ? ok('glossary terms + quiz source use AA-safe text gradient (WCAG contrast)') : bad('small meaningful text still on the low-contrast display gradient');

@@ -898,6 +898,86 @@ attention for "it":
         <p><strong>Where the intelligence actually comes from:</strong> nobody writes these rules. Every vector and attention weight is <em>learned</em> — during training the model reads text, guesses the next token, checks whether it was right, and nudges billions of numbers to be a little less wrong, across an enormous amount of text. The skill <em>emerges</em> from the guessing game — which is also why it has no beliefs of its own, only patterns pulled from what it read.</p>
       </div>
     </details>
+
+    <details class="card feature" id="card-training">
+      <summary>
+        <div class="idx">📉</div>
+        <div class="head"><div class="t">How training adjusts the weights</div><div class="s">Gradient descent &amp; backprop — the learning itself</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>We keep saying "the weights are learned." Here's the actual mechanic — one big <strong>guess-and-correct loop</strong>. A single step:</p>
+        <div class="codeblock"><pre>1. Hide the answer:   "The sky is ___"      (true word: "blue")
+
+2. Model guesses, using its current weights:
+      grey   60%
+      blue   30%    ← only gave the right word 30%
+      green  10%
+
+3. Measure how wrong it was  →  the LOSS
+      "blue" should've been ~100%, got 30%  →  loss is high
+
+4. "Which weights, nudged which way, would push 'blue' up?"
+      → answering that is BACKPROPAGATION  (just the chain rule)
+      → the answer is the GRADIENT: a direction for every weight
+
+5. Nudge every weight a tiny step that way  →  GRADIENT DESCENT
+
+6. Repeat — over and over, across trillions of words.</pre></div>
+        <p style="opacity:.8">Illustrative percentages — the loop is the real point.</p>
+        <p><strong>The picture:</strong> you're on a foggy hillside trying to reach the lowest valley (lowest loss). You can't see the bottom, but you can feel which way is downhill — so you take a small step that way, and repeat.</p>
+        <div class="codeblock"><pre>loss
+ │＼
+ │  ＼___          each step = one nudge downhill
+ │      ＼__
+ │         ＼____  "trained": loss is low, guesses are good
+ └──────────────── weights</pre></div>
+        <details class="codetoggle">
+          <summary>Show the nudge — 6 runnable lines</summary>
+          <p style="opacity:.8; margin-top:10px;">Loss here is just weight² (a simple bowl), so it runs on its own; a real model's gradient comes from backprop, but the nudge is exactly this:</p>
+          <div class="codeblock"><pre>weight = 5.0            <span class="cm"># start somewhere</span>
+rate   = 0.1            <span class="cm"># step size (the "learning rate")</span>
+for step in range(40):
+    gradient = 2 * weight       <span class="cm"># downhill direction for loss = weight**2</span>
+    weight  -= rate * gradient  <span class="cm"># step downhill</span>
+print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</span></pre></div>
+        </details>
+        <p>Every one of a model's billions of weights gets this treatment. That "read everything and adjust" phase is <strong>pretraining</strong> — expensive: months on thousands of GPUs. The result is dazzling at <em>completing</em> text — but it isn't an assistant yet. Ask it a question and it might just reply with more questions, because that's what it saw on the web.</p>
+      </div>
+    </details>
+
+    <details class="card feature" id="card-assistant">
+      <summary>
+        <div class="idx">🙋</div>
+        <div class="head"><div class="t">How a chatbot gets its manners</div><div class="s">Fine-tuning &amp; RLHF — from text-completer to assistant</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>Pretraining gives you a brilliant text-completer, not an assistant. Two more — much cheaper — stages add the manners on top.</p>
+        <p><strong>Stage A — Fine-tuning (SFT).</strong> Show it thousands of example conversations written by people: good question → good answer. Same guess-and-correct loop, but now it's learning the <em>shape</em> of being helpful.</p>
+        <div class="codeblock"><pre>"How do I boil an egg?"
+  before →  "How do I fry an egg? How long do you..."   (just continues text)
+  after  →  "Put it in boiling water for about 8 minutes."   (answers)</pre></div>
+        <p><strong>Stage B — RLHF (learning from preferences).</strong> The model writes two answers; a person — or a reward model trained on people's ratings — picks the better one; the model is nudged toward that. Do it a lot and it learns to be helpful, honest, and to decline harmful requests.</p>
+        <div class="codeblock"><pre>"Tell me a joke."
+  A: "No."                                 ← person prefers B
+  B: "Why don't scientists trust atoms?    ← nudge the model toward this
+      They make up everything."</pre></div>
+        <p><strong>The whole lifecycle:</strong></p>
+        <div class="codeblock"><pre>random weights
+   │  Pretraining       read ~the internet, predict next token  → knows language &amp; facts
+   │  Fine-tuning (SFT)  copy human example conversations        → answers instead of rambling
+   │  RLHF              nudge toward human-preferred answers     → helpful, safe, well-mannered
+   ▼
+  the assistant you're talking to</pre></div>
+        <p>Put the four deep-dives together and that's the whole thing:</p>
+        <p>· <strong>Run time:</strong> tokens → embeddings → attention → predict the next token, loop.</p>
+        <p>· <strong>Train time:</strong> guess → measure loss → backprop → gradient descent, loop.</p>
+        <p>· <strong>Polish:</strong> fine-tune on examples, then RLHF on preferences.</p>
+        <p>No hidden magic layer — it's next-token prediction, scaled up and steered.</p>
+        <p><strong>Want to watch it happen?</strong> Andrej Karpathy's <a href="https://github.com/karpathy/makemore" target="_blank" rel="noopener">makemore</a> and <a href="https://github.com/karpathy/nanoGPT" target="_blank" rel="noopener">nanoGPT</a> are tiny, readable models you can train yourself and watch the loss drop.</p>
+      </div>
+    </details>
   </div>
 </section>
 

@@ -168,9 +168,12 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // dedicated "Under the hood" section with the LLM explainer + its interactive demo
 (html.includes('id="howllm"') && html.includes('id="card-llm-predict"') && html.includes('id="llmDemo"') && html.includes('id="llmStep"'))
   ? ok('"Under the hood" section + interactive next-word demo present') : bad('LLM section / interactive demo missing');
-// the deep-dive ladder: predict → tokens/embeddings → attention
-(html.includes('id="card-tokens"') && html.includes('id="card-attention"') && /king − man \+ woman ≈ queen/.test(html))
-  ? ok('mechanism deep-dives present (tokens/embeddings + attention)') : bad('tokens/attention deep-dive cards missing');
+// the deep-dive ladder: predict → tokens/embeddings → attention → training → assistant
+(['card-tokens','card-attention','card-training','card-assistant'].every(id => html.includes(`id="${id}"`)) && /king − man \+ woman ≈ queen/.test(html))
+  ? ok('full mechanism ladder present (tokens · attention · training · fine-tuning)') : bad('a mechanism deep-dive card is missing');
+// external hands-on links must resolve to a real place (verified https)
+(!/karpathy\/(nanoGPT|makemore)/.test(html) || /href="https:\/\/github\.com\/karpathy\/(nanoGPT|makemore)"/.test(html))
+  ? ok('Karpathy hands-on links are well-formed https URLs') : bad('malformed Karpathy link');
 // its toy code must stay copy-paste runnable (uses random.choices → needs the import)
 (!/random\.choices/.test(html) || /import random/.test(html))
   ? ok('LLM toy code is runnable (import matches usage)') : bad('LLM toy code uses random.choices without "import random"');

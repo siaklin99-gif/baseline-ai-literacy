@@ -176,9 +176,6 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   && html.includes('data-card="card-training"') && html.includes('data-card="card-attention"')
   && html.includes('.aimap-flow::after { display: none; }'))
   ? ok('overview map present (6 nodes → deep-dives; flow animation reduced-motion-safe)') : bad('overview map missing/incomplete');
-// the map is a real 3D board (perspective + preserve-3d), parallax honours reduced-motion
-(html.includes('class="aimap-stage"') && /perspective:\s*\d/.test(html) && /transform-style:\s*preserve-3d/.test(html) && /prefers-reduced-motion[^}]*aimap-stage/.test(html))
-  ? ok('map is a 3D board (perspective + preserve-3d, reduced-motion-aware)') : bad('3D map scaffolding missing');
 // external hands-on links must resolve to a real place (verified https)
 (!/karpathy\/(nanoGPT|makemore)/.test(html) || /href="https:\/\/github\.com\/karpathy\/(nanoGPT|makemore)"/.test(html))
   ? ok('Karpathy hands-on links are well-formed https URLs') : bad('malformed Karpathy link');

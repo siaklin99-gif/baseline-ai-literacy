@@ -424,6 +424,11 @@ details.card[open] .chev { transform: rotate(90deg); }
   border-radius: 8px; padding: 9px 12px; margin: 8px 0;
   font-size: 14px; line-height: 1.5; color: var(--text);
 }
+/* code / diagram blocks — scroll inside themselves so they never break the page */
+.codeblock { background: var(--surface2); border-radius: 8px; padding: 10px 13px; margin: 9px 0; overflow-x: auto; }
+.codeblock pre { margin: 0; white-space: pre; color: var(--text); line-height: 1.55; font-size: 12.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.codeblock .cm { color: var(--text-ter); }   /* comments */
 /* freshness stamp on data-driven cards */
 .stamp { display:flex; align-items:center; gap:7px; margin-top: 12px; font-size: 12.5px; }
 .stamp .dot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
@@ -975,6 +980,49 @@ const CARDS = [
      <p><strong>Search &amp; browsers:</strong> many now answer in plain language instead of only listing links.</p>
      <p>So before signing up for anything, look for a sparkle or "AI" button in the app already on your screen — that's often the easiest first step.</p>`],
 
+  ["🎲", "How an LLM actually works", "One trick, repeated",
+    `<p>Strip away the magic and there's a single move: <strong>guess the next chunk of text, then do it again.</strong> Everything a chatbot does is that loop, running very fast.</p>
+     <p>Give it a few words and it produces a ranked list of what could come next, each with a probability:</p>
+     <div class="codeblock"><pre>   "The sky is"
+        ↓
+     [ model ]
+        ↓
+   blue      85%
+   clear      6%
+   grey       4%
+   falling    0.1%</pre></div>
+     <p style="opacity:.8">Made-up numbers, to show the shape — not a reading from a real model.</p>
+     <p>It picks one — leaning toward the likely ones, with a little randomness so you don't get an identical answer every time — adds it to the end, and feeds the whole thing back in:</p>
+     <div class="codeblock"><pre>"The sky is" → "The sky is blue" → "The sky is blue today" → ...</pre></div>
+     <p>That's the entire engine. No plan, no meaning, no looking ahead — just the next chunk (a <strong>token</strong>), over and over, until it stops.</p>
+     <p><strong>A toy version you can read.</strong> A real model computes its probabilities; here they're written in by hand:</p>
+     <div class="codeblock"><pre>import random
+
+<span class="cm"># a toy "model": for this context, what tends to come next</span>
+model = {
+    "the sky is":      {"blue": 0.85, "clear": 0.10, "grey": 0.05},
+    "the sky is blue": {"today": 0.6, "and": 0.3, ".": 0.1},
+}
+
+def next_word(context):
+    options = model.get(context.lower())
+    if not options:
+        return "."
+    words, probs = list(options.keys()), list(options.values())
+    <span class="cm"># pick one, weighted by probability</span>
+    return random.choices(words, weights=probs)[0]
+
+text = "The sky is"
+for _ in range(2):
+    text += " " + next_word(text)
+    print(text)</pre></div>
+     <p>One run (it's random, so it varies):</p>
+     <div class="codeblock"><pre>The sky is blue
+The sky is blue today</pre></div>
+     <p><strong>What a real LLM does differently:</strong></p>
+     <p>· No lookup table — billions of learned numbers (<em>weights</em>) compute the probabilities instead.</p>
+     <p>· Its context is the whole conversation, not three words.</p>
+     <p>· It learned those numbers by reading enormous amounts of text and adjusting until its guesses matched what actually came next. That's <em>training</em>.</p>`, "learn"],
   ["⚖️", "Bias — whose view is it?", "Objective math, subjective data",
     `<p>AI learned from human writing and images, so it absorbs human blind spots, stereotypes and gaps — then delivers them in a confident, neutral-sounding voice.</p>
      <p>It shows up as over-representing whatever was common in its training data, leaning toward certain cultures or viewpoints, and quietly missing perspectives that were written about less.</p>
@@ -995,10 +1043,10 @@ const LEVELS = [
   ['intermediate', 'Getting the hang of it', 'Use it well, spend smart'],
   ['advanced',     'Going deeper',  'The bigger picture']
 ];
-// level per card, in CARDS order (7 / 5 / 5)
+// level per card, in CARDS order (7 / 5 / 6)
 const CARD_LEVELS = ['beginner','beginner','intermediate','intermediate','intermediate',
                      'beginner','beginner','advanced','beginner','beginner','advanced','intermediate',
-                     'beginner','intermediate','advanced','advanced','advanced'];
+                     'beginner','intermediate','advanced','advanced','advanced','advanced'];
 const cardsRoot = document.getElementById('cards');
 const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {

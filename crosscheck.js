@@ -232,7 +232,7 @@ async function main() {
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
-      r.cardCount === 17     ? ok(`${tag} 17 topic cards present (7/5/5)`) : bad(`${tag} expected 17 cards, got ${r.cardCount}`);
+      r.cardCount === 18     ? ok(`${tag} 18 topic cards present (7/5/6)`) : bad(`${tag} expected 18 cards, got ${r.cardCount}`);
       (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 14 && r.qzCount === 9 && r.lcNodeCount === 6 && r.lcRowCount === 6)
         ? ok(`${tag} body map (8+8 dots) + glossary (14) + quiz (9) + circle (6) rendered`)
         : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 14), quiz=${r.qzCount} (want 9), circle=${r.lcNodeCount}/${r.lcRowCount} (want 6)`);

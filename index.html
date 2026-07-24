@@ -858,6 +858,16 @@ for _ in range(2):
 " dog"  → [-0.7,  0.1, 0.9, ... ]   ← far away     (not a colour)</pre></div>
         <p style="opacity:.8">Illustrative numbers — the <em>closeness</em> is the real point.</p>
         <p>Because meaning now lives in numbers, you can literally do arithmetic on it. The classic result from early word-vectors: <strong>king − man + woman ≈ queen</strong>.</p>
+        <p><strong>Why that makes sense.</strong> Each number is like a dial for some property. Picture just two dials — "royal?" and "female?" — and read the words off them (real vectors have ~1000s, and they don't come with tidy labels, but the geometry is real):</p>
+        <div class="codeblock"><pre>             royal?   female?
+king      =    0.9      0.0
+man       =    0.1      0.0
+woman     =    0.1      1.0
+queen     =    0.9      1.0     ← what we hope to land near
+
+king − man          =   0.8     0.0    "male" cancels; royalty stays
+king − man + woman  =   0.9     1.0    ← lands right on queen</pre></div>
+        <p>Subtracting "man" strips out the everyday-male part and leaves the <em>royalty</em>; adding "woman" puts the female part back — so the result sits right next to "queen." Nobody defined a "royalty" dial; that direction just fell out of training, because kings and queens are described in similar ways minus the gender.</p>
       </div>
     </details>
 

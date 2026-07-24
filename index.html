@@ -558,15 +558,15 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-score { font-size: 14px; color: var(--text-ter); font-weight: 600; margin-bottom: 14px; transition: color .2s ease; }
 .qz-score.final { font-size: 16px; color: var(--text-sec); }
 .qz-score.final b { color: var(--text); }
-.qz { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); margin-bottom: 10px; padding: 15px 18px; }
-.qz-top { display: flex; align-items: center; gap: 13px; }
-.qz-n { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px; font-size: 14px; font-weight: 700;
+.qz { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius); margin-bottom: 8px; padding: 11px 16px; }
+.qz-top { display: flex; align-items: center; gap: 12px; }
+.qz-n { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px; font-size: 13.5px; font-weight: 700;
   background: var(--grad); color: #fff; display: flex; align-items: center; justify-content: center; }
-.qz-q { flex: 1; font-weight: 620; font-size: 15.5px; }
-.qz-opts { display: flex; gap: 8px; margin-top: 12px; margin-left: 41px; }
-.qz-opt { min-height: 44px; min-width: 74px; cursor: pointer; border: 1px solid var(--border-med);
+.qz-q { flex: 1; min-width: 0; font-weight: 620; font-size: 15px; line-height: 1.35; }
+.qz-opts { flex: 0 0 auto; display: flex; gap: 7px; }
+.qz-opt { min-height: 44px; min-width: 52px; cursor: pointer; border: 1px solid var(--border-med);
   background: var(--surface2); color: var(--text); font-weight: 600; font-size: 14px; border-radius: 999px;
-  padding: 8px 18px; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+  padding: 8px 15px; transition: background .15s ease, color .15s ease, border-color .15s ease; }
 .qz-opt:hover:not(.chosen-right):not(.chosen-wrong) { border-color: var(--text-ter); }
 .qz.done .qz-opt { cursor: default; }
 .qz.done .qz-opt:not(.chosen-right):not(.chosen-wrong):not(.is-answer) { opacity: .5; }
@@ -576,12 +576,12 @@ details.card[open] .chev { transform: rotate(90deg); }
 /* glyphs so right/wrong isn't signalled by colour alone (WCAG 1.4.1) */
 .qz-opt.chosen-right::after, .qz-opt.is-answer::after { content: " ✓"; font-weight: 800; }
 .qz-opt.chosen-wrong::after { content: " ✗"; font-weight: 800; }
-.qz-a { display: none; margin-top: 12px; margin-left: 41px; font-size: 14.5px; color: var(--text-sec); line-height: 1.55; }
+.qz-a { display: none; margin-top: 10px; margin-left: 38px; font-size: 14px; color: var(--text-sec); line-height: 1.5; }
 .qz.done .qz-a { display: block; }
 .qz-a b { color: var(--text); }
 .qz-src { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
   font-weight: 700; background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
-@media (max-width: 560px) { .qz-opts, .qz-a { margin-left: 0; } }
+@media (max-width: 560px) { .qz-a { margin-left: 0; } .qz-opt { min-width: 46px; padding: 8px 12px; } }
 
 /* ---------- footer ---------- */
 footer { padding: 44px 0 60px; text-align: center; color: var(--text-ter); font-size: 13px; }
@@ -1557,10 +1557,13 @@ let qzAnswered = 0, qzCorrect = 0;
 QUIZ.forEach((q, i) => {
   const el = document.createElement('div');
   el.className = 'qz';
-  el.innerHTML = `<div class="qz-top"><span class="qz-n">${i + 1}</span><span class="qz-q">${q[0]}</span></div>
-    <div class="qz-opts">
-      <button class="qz-opt" type="button" data-a="yes">Yes</button>
-      <button class="qz-opt" type="button" data-a="no">No</button>
+  el.innerHTML = `<div class="qz-top">
+      <span class="qz-n">${i + 1}</span>
+      <span class="qz-q">${q[0]}</span>
+      <span class="qz-opts">
+        <button class="qz-opt" type="button" data-a="yes">Yes</button>
+        <button class="qz-opt" type="button" data-a="no">No</button>
+      </span>
     </div>
     <div class="qz-a"><b>${q[1]}</b> ${q[2]} <span class="qz-src">${q[3]}</span></div>`;
   el.querySelectorAll('.qz-opt').forEach(opt => {

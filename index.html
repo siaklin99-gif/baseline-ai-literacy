@@ -837,6 +837,57 @@ for _ in range(2):
         <p>· It learned those numbers by reading enormous amounts of text and adjusting until its guesses matched what actually came next. That's <em>training</em>.</p>
       </div>
     </details>
+
+    <details class="card feature" id="card-tokens">
+      <summary>
+        <div class="idx">🔢</div>
+        <div class="head"><div class="t">How words become numbers</div><div class="s">Tokens &amp; embeddings — one layer down</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>A model can't do math on letters, so text becomes numbers in two steps.</p>
+        <p><strong>Step A — tokenize.</strong> Chop the text into chunks (<strong>tokens</strong>) and give each an ID from a fixed dictionary:</p>
+        <div class="codeblock"><pre>"The sky is blue"
+   →  ["The", " sky", " is", " blue"]
+   →  [ 464,   6766,   318,   4171 ]</pre></div>
+        <p style="opacity:.8">Illustrative IDs — the exact numbers depend on the tokenizer.</p>
+        <p>Tokens aren't always whole words — "unbelievable" might split into "un", "believ", "able". (That's why you're billed per <strong>token</strong>, not per word.)</p>
+        <p><strong>Step B — embed.</strong> Each ID becomes a list of numbers (a <em>vector</em>) that stands in for its meaning. Similar words land on similar vectors:</p>
+        <div class="codeblock"><pre>" blue" → [ 0.2, -0.9, 0.4, ... ]   real ones are ~1000s long
+" red"  → [ 0.3, -0.8, 0.5, ... ]   ← near "blue"  (both colours)
+" dog"  → [-0.7,  0.1, 0.9, ... ]   ← far away     (not a colour)</pre></div>
+        <p style="opacity:.8">Illustrative numbers — the <em>closeness</em> is the real point.</p>
+        <p>Because meaning now lives in numbers, you can literally do arithmetic on it. The classic result from early word-vectors: <strong>king − man + woman ≈ queen</strong>.</p>
+      </div>
+    </details>
+
+    <details class="card feature" id="card-attention">
+      <summary>
+        <div class="idx">👁️</div>
+        <div class="head"><div class="t">What "attention" actually does</div><div class="s">How it uses context — the Transformer</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>The catch: a word's meaning depends on the words around it. In "the <strong>bank</strong> of the river" versus "money in the <strong>bank</strong>," the same token means two different things.</p>
+        <p><strong>Attention</strong> lets every word look at every other word and pull in what's relevant. Take the word "it":</p>
+        <div class="codeblock"><pre>"The animal didn't cross the street because it was tired"
+                                            ↑
+                     what does "it" mean?  →  "animal"
+
+attention for "it":
+   animal  ██████████  0.80   ← looks mostly here
+   street  ██          0.15
+   tired   █           0.05</pre></div>
+        <p style="opacity:.8">Illustrative scores — the mechanism is real; the exact weights are learned.</p>
+        <p>The model works out "how much should this word pay attention to each other word?", then blends their vectors together, weighted by those scores. Now "it" carries the meaning of "animal." Do that for every word, all at once — that's the <strong>Transformer</strong>.</p>
+        <p><strong>How it all fits together:</strong></p>
+        <div class="codeblock"><pre>text → tokens → embeddings → [ attention block ] ×dozens → next-token odds
+                                    ↑ stacked deep — where context gets woven in
+  ↑                                                                     ↓
+  └─────────────── loop: append the token, run it again ───────────────┘</pre></div>
+        <p><strong>Where the intelligence actually comes from:</strong> nobody writes these rules. Every vector and attention weight is <em>learned</em> — during training the model reads text, guesses the next token, checks whether it was right, and nudges billions of numbers to be a little less wrong, across an enormous amount of text. The skill <em>emerges</em> from the guessing game — which is also why it has no beliefs of its own, only patterns pulled from what it read.</p>
+      </div>
+    </details>
   </div>
 </section>
 

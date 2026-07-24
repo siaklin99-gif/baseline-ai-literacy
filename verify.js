@@ -230,9 +230,25 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // core layer frames AI as an alien intelligence WE grew — and keeps the honest caveat (no "nothing to worry about")
 (/alien kind of intelligence/.test(html) && /we grew from our own writing/.test(html) && /trusted blindly/.test(html))
   ? ok('core layer: alien-intelligence framing kept with its honest caveat') : bad('core layer alien framing / caveat missing');
-// small MEANINGFUL gradient text uses the AA-safe (no-teal) gradient, not the display gradient
-(html.includes('--grad-text') && /\.gl-cterm \.gt \{ background: var\(--grad-text\)/.test(html) && /\.qz-src[^}]*var\(--grad-text\)/.test(html))
-  ? ok('glossary terms + quiz source use AA-safe text gradient (WCAG contrast)') : bad('small meaningful text still on the low-contrast display gradient');
+// small meaningful labels use SOLID AA colors (2026-07-24 design pass demoted them off the gradient);
+// nothing small may sit on the low-contrast display gradient
+(!/\.gl-cterm \.gt[^}]*var\(--grad\)/.test(html) && !/\.qz-src[^}]*var\(--grad\)/.test(html)
+  && /\.gl-cterm \.gt \{ color: var\(--accent\)/.test(html))
+  ? ok('small labels are solid AA colors (glossary terms = accent, quiz src = tertiary)') : bad('small meaningful text back on a gradient');
+// 2026-07-24 design consolidation locks
+{
+  const halfPx = (html.match(/font-size: \d+\.5px/g) || []).length;
+  const oddWeights = (html.match(/font-weight: (550|620|650|800)/g) || []).length;
+  const gradUses = (html.match(/var\(--grad\)/g) || []).length;
+  (halfPx === 0 && oddWeights === 0) ? ok('type scale holds (no half-pixel sizes, weights {500,600,700})')
+    : bad(`type drift: ${halfPx} half-px sizes, ${oddWeights} odd weights`);
+  (gradUses <= 18) ? ok(`gradient budget held (${gradUses} uses ≤ 18 — identity, not wallpaper)`)
+    : bad(`gradient splatter returning: ${gradUses} uses (budget 18)`);
+  (/section \{ padding: 44px 0; \}/.test(html) && /#reality \{ background: var\(--surface2\)/.test(html) && /#quizsec \{ background: linear-gradient/.test(html))
+    ? ok('section rhythm: 44px gaps + reality band + quiz wash') : bad('section rhythm treatments missing');
+  (!/0\.5px/.test(html)) ? ok('no 0.5px hairlines (render reliably everywhere)') : bad('0.5px borders back');
+  ((html.match(/class="trust-pill"/g) || []).length === 3) ? ok('trust strip is 3 short pills') : bad('trust strip bloated again');
+}
 // keyboard a11y: the custom (non-native) controls must be operable without a mouse
 (html.includes("el.setAttribute('role', 'button')") && html.includes("el.setAttribute('tabindex', '0')") && /item\.addEventListener\('keydown'/.test(html))
   ? ok('body-map items are keyboard-operable (role=button + tabindex + Enter/Space handler)') : bad('body-map items not keyboard-operable');

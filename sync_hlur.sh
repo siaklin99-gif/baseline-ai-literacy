@@ -29,7 +29,26 @@ DEPLOY=0
 [[ "${1:-}" == "--deploy" ]] && DEPLOY=1
 
 echo "▶ guard first — only a green build may ship"
-./selfcheck
+SELF_OUT="$(mktemp)"; trap 'rm -f "$SELF_OUT"' EXIT
+./selfcheck | tee "$SELF_OUT"
+
+# The hlur.ai homepage advertises this repo's check count ("Ships behind N automated
+# checks"). That number goes stale every time a check is added, and a stale claim on a
+# page about honesty is the worst place to have one. Compare it to what selfcheck just
+# reported: warn on a plain sync, FAIL on --deploy (an untrue claim must not go live).
+CHECKS="$(grep -oE '^[0-9]+ checks' "$SELF_OUT" | grep -oE '^[0-9]+' | awk '{s+=$1} END{print s+0}')"
+CLAIMED="$(grep -oE 'Ships behind [0-9]+ automated checks' "$SITE/index.html" 2>/dev/null | grep -oE '[0-9]+' || true)"
+if [[ -n "$CLAIMED" && "$CHECKS" -gt 0 && "$CLAIMED" != "$CHECKS" ]]; then
+  echo
+  echo "⚠  CLAIM DRIFT: hlur.ai homepage says \"$CLAIMED automated checks\"; selfcheck reports $CHECKS."
+  echo "   Fix the Baseline card receipt in $SITE/index.html"
+  if [[ $DEPLOY -eq 1 ]]; then
+    echo "   Refusing to deploy an untrue claim. (Plain ./sync_hlur.sh only warns.)"
+    exit 1
+  fi
+else
+  [[ -n "$CLAIMED" ]] && echo "  ✓ homepage claim matches selfcheck ($CHECKS checks)"
+fi
 
 mkdir -p "$DEST"
 cp index.html data.js og.png "$DEST/"

@@ -1,0 +1,107 @@
+---
+# ============================================================
+# Push here  ->  hlur.ai/baseline updates itself.
+#
+# This repo is the single source of truth for Baseline. It has TWO homes:
+#   • GitHub Pages  — updates on push, no CI needed
+#   • hlur.ai/baseline — a copy inside the separate Hlur_Website repo,
+#     deployed to Netlify. That copy is what this workflow keeps current.
+#
+# It runs the SAME sync_hlur.sh used locally (DEST/PUSH are env-overridable)
+# so CI and your laptop can't drift apart. set -e inside the script means the
+# chain stops at the first red, so a broken build never reaches the site:
+#   selfcheck -> claim-drift check -> copy -> hlur.ai harnesses
+#   -> netlify deploy -> commit+push artifact -> parity.js against live
+#
+# ONE-TIME SETUP — add two repo secrets
+#   (Settings > Secrets and variables > Actions > New repository secret)
+#
+#   NETLIFY_AUTH_TOKEN  Netlify > User settings > Applications >
+#                       Personal access tokens > New access token
+#   HLUR_REPO_TOKEN     A GitHub token that can push to siaklin99-gif/Hlur_Website.
+#                       Fine-grained PAT, Repository access = Hlur_Website only,
+#                       Permissions > Repository > Contents = Read and write.
+#
+# Until both exist the job fails fast with a clear message and changes nothing.
+# You can always fall back to running ./sync_hlur.sh --deploy by hand.
+# ============================================================
+name: deploy-baseline-to-hlur
+
+on:
+  push:
+    branches: [main]
+    paths:            # only the published artifacts matter; docs/harness edits don't redeploy
+      - 'index.html'
+      - 'data.js'
+      - 'og.png'
+      - 'sync_hlur.sh'
+      - '.github/workflows/deploy-hlur.yml'
+  workflow_dispatch:   # lets you trigger a deploy by hand from the Actions tab
+
+concurrency:           # never let two deploys race the same site
+  group: deploy-hlur
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out Baseline (source of truth)
+        uses: actions/checkout@v4
+
+      - name: Fail fast if the secrets are missing
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          HLUR_REPO_TOKEN: ${{ secrets.HLUR_REPO_TOKEN }}
+        run: |
+          missing=0
+          [ -z "$NETLIFY_AUTH_TOKEN" ] && { echo "::error::NETLIFY_AUTH_TOKEN secret is not set"; missing=1; }
+          [ -z "$HLUR_REPO_TOKEN" ]    && { echo "::error::HLUR_REPO_TOKEN secret is not set"; missing=1; }
+          [ "$missing" = "1" ] && { echo "See the header of this workflow for how to create them."; exit 1; }
+          echo "✓ both secrets present"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check out the Hlur website (holds the deployed copy)
+        uses: actions/checkout@v4
+        with:
+          repository: siaklin99-gif/Hlur_Website
+          token: ${{ secrets.HLUR_REPO_TOKEN }}
+          path: hlur-site
+          fetch-depth: 0
+
+      - name: Install Playwright (visual_check renders the pages)
+        working-directory: hlur-site
+        run: |
+          npm init -y >/dev/null 2>&1 || true
+          npm i --no-save playwright >/dev/null
+          npx playwright install --with-deps chromium
+
+      - name: Install Netlify CLI
+        run: npm i -g netlify-cli >/dev/null
+
+      - name: Identify the commit author
+        working-directory: hlur-site
+        run: |
+          git config user.name  "baseline-sync[bot]"
+          git config user.email "actions@users.noreply.github.com"
+
+      - name: Sync, verify, deploy, prove
+        env:
+          DEST: ${{ github.workspace }}/hlur-site/baseline
+          PUSH: '1'
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 5106a934-085b-4aff-bcf1-1acaf3b6f95a   # hlur.ai — useless without the auth token
+        run: ./sync_hlur.sh --deploy
+
+      - name: Save the rendered screenshots when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-shots
+          path: hlur-site/visual_shots/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -23,10 +23,14 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-DEST="/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/baseline"
+# DEST is overridable so CI runs THIS script rather than a duplicate in YAML.
+# Locally it defaults to the checkout on this machine.
+DEST="${DEST:-/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/baseline}"
 SITE="$(dirname "$DEST")"
 DEPLOY=0
 [[ "${1:-}" == "--deploy" ]] && DEPLOY=1
+# CI sets PUSH=1 to publish the artifact commit; locally you push when you choose.
+PUSH="${PUSH:-0}"
 
 echo "▶ guard first — only a green build may ship"
 SELF_OUT="$(mktemp)"; trap 'rm -f "$SELF_OUT"' EXIT
@@ -66,13 +70,17 @@ echo "▶ host-site harnesses — baseline must not break hlur.ai"
 
 echo
 echo "▶ deploy hlur.ai"
-( cd "$SITE" && netlify deploy --prod --dir . | grep -E 'Production URL|Website URL' )
+# NETLIFY_SITE_ID/NETLIFY_AUTH_TOKEN are only needed in CI; locally the CLI is already
+# logged in and reads .netlify/state.json, so both stay unset and this is a no-op.
+( cd "$SITE" && netlify deploy --prod --dir . ${NETLIFY_SITE_ID:+--site "$NETLIFY_SITE_ID"} \
+    | grep -E 'Production URL|Website URL' )
 
 echo
 echo "▶ commit the build artifact"
 ( cd "$SITE" && git add baseline && \
   ( git diff --cached --quiet && echo "  (no artifact change to commit)" || \
-    git commit -q -m "baseline: sync from AI_Technology (source of truth)" && echo "  ✓ committed" ) )
+    ( git commit -q -m "baseline: sync from AI_Technology (source of truth)" && echo "  ✓ committed" ) ) && \
+  if [[ "$PUSH" == "1" ]]; then git push -q origin HEAD && echo "  ✓ pushed"; fi )
 
 echo
 echo "▶ prove the live copy is faithful"

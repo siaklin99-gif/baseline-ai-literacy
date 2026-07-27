@@ -65,14 +65,27 @@ fi
 
 echo
 echo "▶ host-site harnesses — baseline must not break hlur.ai"
-( cd "$SITE" && node verify_home.js >/dev/null && echo "  ✓ verify_home" )
-( cd "$SITE" && node visual_check.js >/dev/null && echo "  ✓ visual_check" )
+# Do NOT swallow stdout here. It was >/dev/null, so when verify_home failed in CI the
+# step died with exit 1 and printed nothing at all — undiagnosable from the run log.
+# Show the failing lines on failure, stay quiet on success.
+run_harness() {  # run_harness <file>
+  local out; out="$(cd "$SITE" && node "$1" 2>&1)" && { echo "  ✓ $1"; return 0; }
+  echo "  ✗ $1 FAILED:"; echo "$out" | grep -aE '^FAIL|CHECK\(S\) FAILED|Error' | head -12 | sed 's/^/      /'
+  return 1
+}
+run_harness verify_home.js
+run_harness visual_check.js
 
 echo
 echo "▶ deploy hlur.ai"
+# Publish _dist, NEVER the repo root. This said `--dir .`, which would have uploaded the
+# whole private Hlur_Website repo — harnesses, the user-guide PDF, review notes, scripts —
+# to a public URL. That is the exact leak Hlur_Website's own deploy.sh was rewritten to
+# close, and this second deploy path still had it. The two paths must publish the same dir.
+( cd "$SITE" && node build_dist.js | tail -1 )
 # NETLIFY_SITE_ID/NETLIFY_AUTH_TOKEN are only needed in CI; locally the CLI is already
 # logged in and reads .netlify/state.json, so both stay unset and this is a no-op.
-( cd "$SITE" && netlify deploy --prod --dir . ${NETLIFY_SITE_ID:+--site "$NETLIFY_SITE_ID"} \
+( cd "$SITE" && netlify deploy --prod --dir _dist ${NETLIFY_SITE_ID:+--site "$NETLIFY_SITE_ID"} \
     | grep -E 'Production URL|Website URL' )
 
 echo

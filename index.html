@@ -123,6 +123,9 @@ body {
   border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
 .trust-by { font-size: 13px; color: var(--text-ter); margin-left: auto; }
 .trust-by a { color: var(--text-sec); text-underline-offset: 2px; }
+.whats-new { flex-basis: 100%; font-size: 13px; color: var(--text-sec); margin-top: 2px; }
+.whats-new b { color: var(--accent); font-weight: 700; }
+.whats-new i { font-style: normal; color: var(--text-ter); font-size: 12px; margin-left: 4px; }
 @media (max-width: 560px) { .trust-by { margin-left: 0; width: 100%; } }
 
 /* ---------- do-one-thing action panel ---------- */
@@ -510,6 +513,37 @@ details.card[open] .chev { transform: rotate(90deg); }
 .gf-stage.on .gf-fill { animation: gfgrow .7s cubic-bezier(.22,.9,.24,1); }
 @keyframes gfgrow { from { width: 0; } to { width: var(--w); } }
 .gf-bar b { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--text-ter); flex: 0 0 30px; text-align: right; font-variant-numeric: tabular-nums; }
+/* attention playground: tap a word, watch where it looks */
+.attn-play { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 14px 0; }
+.attn-sent { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.attn-w { min-height: 44px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-med);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 15px; cursor: pointer; transition: transform .15s ease; }
+.attn-w:active { transform: scale(.96); }
+.attn-w.on { background: var(--text); color: var(--bg); border-color: transparent; font-weight: 700; }
+.attn-why { font-size: 13px; color: var(--text-sec); margin-bottom: 10px; line-height: 1.5; }
+.attn-why b { color: var(--text); }
+.attn-bars { display: flex; flex-direction: column; gap: 7px; }
+.attn-bar { display: flex; align-items: center; gap: 8px; }
+.attn-bar em { font-style: normal; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--text-sec); flex: 0 0 64px; text-align: right; }
+.attn-track { flex: 1; height: 8px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+.attn-fill { display: block; height: 100%; width: var(--w); background: var(--grad); border-radius: 999px; transition: width .5s cubic-bezier(.22,.9,.24,1); }
+.attn-bar b { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--text-ter); flex: 0 0 34px; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .attn-fill, .attn-w { transition: none; } }
+/* lab 001: stack upgrades onto a weak prompt */
+.lab-build { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 14px 0; }
+.lab-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.lab-chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border-med);
+  background: var(--surface); color: var(--text-sec); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lab-chip.on { background: var(--text); color: var(--bg); border-color: transparent; }
+.lab-prompt { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+  font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.7; color: var(--text); }
+.lab-prompt .lab-add { color: var(--blue); }
+.qz-share-note { display: block; margin-top: 6px; font-size: 13px; color: var(--text-sec); font-weight: 500; }
+.lab-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.lab-score { font-size: 13px; font-weight: 700; color: var(--text-sec); }
+.lab-score b { color: var(--green); }
+.lab-copy { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: none; background: var(--text); color: var(--bg);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
 /* running output + build-time chips */
 .gf-out { margin-top: 14px; display: flex; align-items: baseline; gap: 9px; padding: 9px 13px; background: var(--surface2); border-radius: 10px; flex-wrap: wrap; }
 .gf-out-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-ter); font-weight: 700; }
@@ -600,8 +634,24 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-flag { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
   font-weight: 700; color: var(--amber); background: var(--amber-bg); border-radius: 5px;
   padding: 2px 7px; vertical-align: 2px; margin-left: 4px; }
+.qz-lock { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 700; color: var(--green); background: var(--green-bg); border-radius: 5px;
+  padding: 2px 7px; vertical-align: 2px; margin-left: 4px; }
 .qz-next { display: block; margin-top: 6px; font-size: 14px; color: var(--text-sec); font-weight: 500; }
 .lc-day { text-align: center; font-size: 12px; color: var(--text-ter); margin-top: 10px; }
+/* guided start: pick your starting point, the path lights up */
+.path-pick { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 20px; }
+.path-q { font-size: 13px; color: var(--text-sec); font-weight: 600; margin-right: 4px; }
+.path-chip { min-height: 44px; padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600;
+  background: var(--surface); color: var(--text-sec); border: 1px solid var(--border-med);
+  transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.path-chip:hover { border-color: var(--text-ter); }
+.path-chip:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.path-chip.on { background: var(--text); color: var(--bg); border-color: transparent; }
+.lc-row.lc-rec { border-color: color-mix(in srgb, var(--g1) 45%, var(--border)); }
+.lc-rec-chip { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
+  color: var(--accent); background: color-mix(in srgb, var(--g1) 10%, var(--surface2)); border-radius: 5px;
+  padding: 2px 7px; margin-left: 6px; vertical-align: 2px; }
 .lc-tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 /* progress-transfer panel (accounts-free cross-device) */
 .px-panel { max-width: 560px; margin: 14px auto 0; background: var(--surface); border: 1px solid var(--border-med);
@@ -787,6 +837,8 @@ footer { margin-top: 30px; }
     <span class="trust-pill">Nothing tracked</span>
     <span class="trust-pill">No course to sell</span>
     <span class="trust-by">Made at <a href="https://hlur.ai" target="_blank" rel="noopener">hlur.ai</a></span>
+    <!-- update this line whenever something ships — it's how returning visitors see the page grow -->
+    <span class="whats-new"><b>New</b> · Lab 001 (prompting), tap-a-word attention playground, 1·3·7-day spaced re-quiz, pick-your-path start <i>2026-07-29</i></span>
   </div>
 </div>
 
@@ -823,6 +875,12 @@ footer { margin-top: 30px; }
     <div class="slabel">The path</div>
     <h2 class="stitle">Your learning circle</h2>
     <div class="ssub">Seven steps from "what is AI?" to driving it daily. Tap a step to jump there; tick it when it clicks. Progress stays on this device.</div>
+    <div class="path-pick" role="group" aria-label="Where are you starting from?">
+      <span class="path-q">Where are you starting from?</span>
+      <button class="path-chip" type="button" aria-pressed="false" data-path="new">New to AI</button>
+      <button class="path-chip" type="button" aria-pressed="false" data-path="some">Used it a bit</button>
+      <button class="path-chip" type="button" aria-pressed="false" data-path="tech">Techie</button>
+    </div>
     <div class="lc-wrap">
       <svg id="lcSvg" viewBox="0 0 240 240" role="img" aria-label="Learning circle: a progress ring with seven steps around it">
         <defs>
@@ -1175,16 +1233,15 @@ king − man + woman  =   0.9     1.0    ← lands right on queen</pre></div>
       </summary>
       <div class="content">
         <p>The catch: a word's meaning depends on the words around it. In "the <strong>bank</strong> of the river" versus "money in the <strong>bank</strong>," the same token means two different things.</p>
-        <p><strong>Attention</strong> lets every word look at every other word and pull in what's relevant. Take the word "it":</p>
-        <div class="codeblock"><pre>"The dog ignored the bone because it was full"
-                                       ↑
-                what does "it" mean?  →  "dog"  (bones aren't full)
-
-attention for "it":
-   dog     ██████████  0.80   ← looks mostly here
-   bone    ██          0.15
-   full    █           0.05</pre></div>
-        <p style="opacity:.8">Illustrative scores — the mechanism is real; the exact weights are learned.</p>
+        <p><strong>Attention</strong> lets every word look at every other word and pull in what's relevant. Try it — tap any word in the sentence and see where it looks:</p>
+        <div class="attn-play" id="attnPlay">
+          <div class="attn-sent" role="group" aria-label="Tap a word to see which other words it pays attention to"></div>
+          <div class="attn-out">
+            <div class="attn-why" id="attnWhy" aria-live="polite"></div>
+            <div class="attn-bars" id="attnBars"></div>
+          </div>
+        </div>
+        <p style="opacity:.8">Illustrative weights — the mechanism is real; the exact numbers are learned, and real models track hundreds of these per word at once.</p>
         <p>The model works out "how much should this word pay attention to each other word?", then blends their vectors together, weighted by those scores. Now "it" carries the meaning of "animal." Do that for every word, all at once — that's the <strong>Transformer</strong>.</p>
         <p><strong>How it all fits together:</strong></p>
         <div class="codeblock"><pre>text → tokens → embeddings → [ attention block ] ×dozens → next-token odds
@@ -1277,6 +1334,40 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   </div>
 </section>
 
+<!-- ============ LABS — level 2: practice, not reading ============ -->
+<section id="labs">
+  <div class="wrap">
+    <div class="slabel">Labs · level 2</div>
+    <h2 class="stitle">Baseline Labs</h2>
+    <div class="ssub">The page above is the foundation. Labs are where you practice — one skill each, built as an exercise, not an essay. More labs land here as they're ready.</div>
+
+    <details class="card feature" id="lab-prompting" open>
+      <summary>
+        <div class="idx">🧪</div>
+        <div class="head"><div class="t">Lab 001 · Prompting mastery</div><div class="s">The one skill that upgrades every answer you get</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>Weak prompts get generic answers — from every model, at every price. Below is a weak prompt. Stack the four upgrades on it, one tap each, and watch it sharpen:</p>
+        <div class="lab-build" id="labBuild">
+          <div class="lab-chips" role="group" aria-label="Tap upgrades to add them to the prompt">
+            <button class="lab-chip" data-k="role" type="button" aria-pressed="false">+ give it a role</button>
+            <button class="lab-chip" data-k="task" type="button" aria-pressed="false">+ sharpen the task</button>
+            <button class="lab-chip" data-k="format" type="button" aria-pressed="false">+ demand a format</button>
+            <button class="lab-chip" data-k="check" type="button" aria-pressed="false">+ ask it to push back</button>
+          </div>
+          <div class="lab-prompt" id="labPrompt" aria-live="polite"></div>
+          <div class="lab-foot">
+            <span class="lab-score" id="labScore"></span>
+            <button class="lab-copy" id="labCopy" type="button">Copy it — try it in any chatbot</button>
+          </div>
+        </div>
+        <p>The pattern behind all four: say <strong>who it should be</strong>, <strong>exactly what you want</strong>, <strong>what shape to return it in</strong>, and <strong>give it permission to disagree</strong>. That one habit beats any list of "magic prompts" — and it works because of what you saw under the hood: the more precisely your words pin down the context, the better the next-word machine can aim.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
 <!-- ============ SELF-QUIZ ============ -->
 <section id="quizsec">
   <div class="wrap">
@@ -1340,6 +1431,18 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 <script>
 /* one source of truth for motion preference — every smooth scroll/animation must respect it */
 const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* one share-out for the whole page: native sheet where real, copy fallback;
+   AbortError = the person closed the sheet, which is an answer, not an error */
+async function shareOut(text, noteEl) {
+  const data = { title: 'Baseline — reset your AI literacy', text, url: 'https://hlur.ai/baseline/' };
+  if (navigator.share) {
+    try { await navigator.share(data); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(text + ' ' + data.url); if (noteEl) noteEl.textContent = 'Copied — paste it anywhere.'; }
+  catch (e) { if (noteEl) noteEl.textContent = data.url; }
+}
 
 /* ---------- 10 layers data ---------- */
 /* each layer: [title, description, tag, everyday example] */
@@ -1786,7 +1889,14 @@ QUIZ.forEach((q, i) => {
         ans.setAttribute('aria-label', `${ans.textContent} — correct answer`);
       }
       qzAnswered++; if (right) qzCorrect++;
-      qzRemember(i, right);
+      const rep = qzRemember(i, right);
+      qzDueAnswered(el);
+      if (rep) {
+        const n = rep === 'locked' ? 0 : +rep.split(':')[1];
+        el.querySelector('.qz-a').insertAdjacentHTML('beforeend', rep === 'locked'
+          ? ' <span class="qz-lock">locked in ✓ · three spaced wins</span>'
+          : ` <span class="qz-flag">next review in ${n} ${n === 1 ? 'day' : 'days'}</span>`);
+      }
       updateScore();
     });
   });
@@ -1798,39 +1908,82 @@ function updateScore() {
     : qzCorrect >= 7 ? 'Strong — you\'re ahead of most of the internet.'
     : qzCorrect >= 4 ? 'Solid start — one more peel through the layers will lock it in.'
     : 'No worries — that\'s exactly what this page is for. Scroll back up.';
-  const next = qzMissed.length
-    ? ` The ${qzMissed.length === 1 ? 'one' : qzMissed.length} you missed will be waiting next visit — spaced repeats are how it sticks.`
-    : (qzHadMissed ? ' You cleared everything you missed last time. That\'s the loop working.'
-                   : ' Come back tomorrow — what you got wrong resurfaces until it sticks.');
+  const pending = qzTrack.length;
+  const next = pending
+    ? ` ${pending === 1 ? 'One question is' : pending + ' questions are'} in your review rotation — each comes back after 1, then 3, then 7 days. Beat one three times, spaced out, and it's locked in for good.`
+    : (qzHadMissed ? ' Review rotation cleared — every question you ever missed is locked in. That\'s the loop finished.'
+                   : ' Miss one and it comes back after 1, 3, then 7 days until it sticks — the same spacing your memory actually uses.');
   qzScore.innerHTML = `<b>You got ${qzCorrect} / ${QUIZ.length}.</b> ${msg}<span class="qz-next">${next}</span>`;
   qzScore.classList.add('final');
+  qzScore.insertAdjacentHTML('beforeend', ' <button class="mg-again" id="qzShare" type="button">📣 Share your score</button> <span class="qz-share-note" aria-live="polite"></span>');
+  qzScore.querySelector('#qzShare').addEventListener('click', () =>
+    shareOut(`I got ${qzCorrect}/${QUIZ.length} on Baseline — where's your AI baseline?`, qzScore.querySelector('.qz-share-note')));
 }
 
-/* ---------- return loop: what you missed persists on-device and resurfaces ---------- */
+/* ---------- return loop v2: TRUE spaced repetition, all on-device ----------
+   Miss a question → it's due tomorrow. Beat it when due → the gap stretches
+   to 3 days, then 7. Three spaced wins → locked in and retired. Any miss
+   resets the clock. Entries: { i, stage, due:'YYYY-MM-DD' }. */
 const QZ_KEY = 'baseline_quiz_missed';
-let qzMissed = [];
+const QZ_STEPS = [1, 3, 7];                     // days to next review at stage 0,1,2
+function localDate(offsetDays) {
+  const d = new Date(); d.setDate(d.getDate() + (offsetDays || 0));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+let qzTrack = [];
 try {
   const s = JSON.parse(localStorage.getItem(QZ_KEY) || '[]');
-  if (Array.isArray(s)) qzMissed = s.filter(n => Number.isInteger(n) && n >= 0 && n < QUIZ.length);
+  const seen = new Set();
+  if (Array.isArray(s)) qzTrack = s
+    .map(x => Number.isInteger(x) ? { i: x, stage: 0, due: localDate(0) } : x)   // migrate v1 (plain indexes)
+    .filter(x => x && Number.isInteger(x.i) && x.i >= 0 && x.i < QUIZ.length
+      && Number.isInteger(x.stage) && x.stage >= 0
+      && typeof x.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.due)
+      && !seen.has(x.i) && seen.add(x.i))                                        // one entry per question
+    // a due date past the longest legit gap (clock was wrong, hand-edited) would never
+    // come due and never advance — clamp it back into reach instead of stranding it
+    .map(x => x.due > localDate(QZ_STEPS[QZ_STEPS.length - 1]) ? { ...x, due: localDate(QZ_STEPS[QZ_STEPS.length - 1]) } : x);
 } catch (e) {}
-const qzHadMissed = qzMissed.length > 0;
+const qzSave = () => { try { localStorage.setItem(QZ_KEY, JSON.stringify(qzTrack)); } catch (e) {} };
+const qzDueNow = () => qzTrack.filter(x => x.due <= localDate(0));
+const qzHadMissed = qzDueNow().length > 0;
 function qzRemember(i, right) {
-  const at = qzMissed.indexOf(i);
-  if (right && at > -1) qzMissed.splice(at, 1);
-  if (!right && at === -1) qzMissed.push(i);
-  try { localStorage.setItem(QZ_KEY, JSON.stringify(qzMissed)); } catch (e) {}
+  const at = qzTrack.findIndex(x => x.i === i);
+  if (!right) {                                  // wrong: (re)enter rotation, clock resets
+    if (at > -1) { qzTrack[at].stage = 0; qzTrack[at].due = localDate(QZ_STEPS[0]); }
+    else qzTrack.push({ i, stage: 0, due: localDate(QZ_STEPS[0]) });
+    qzSave(); return 'gap:' + QZ_STEPS[0];       // tell the user it comes back tomorrow
+  }
+  if (at === -1) return null;                    // right + never missed: nothing to track
+  const t = qzTrack[at];
+  if (t.due > localDate(0)) return null;         // right but not due yet — a spaced win must be SPACED
+  t.stage += 1;
+  if (t.stage >= QZ_STEPS.length) { qzTrack.splice(at, 1); qzSave(); return 'locked'; }
+  t.due = localDate(QZ_STEPS[t.stage]);
+  qzSave(); return 'gap:' + QZ_STEPS[t.stage];
 }
+let qzBanner = null, qzDueLeft = 0;
 if (qzHadMissed) {
   const qzEls = [...quiz.querySelectorAll('.qz')];
-  const b = document.createElement('div');
-  b.className = 'qz-return';
-  b.innerHTML = `<b>Welcome back.</b> Last visit you missed ${qzMissed.length === 1 ? 'one question' : qzMissed.length + ' questions'} — marked below. Beat them this round.`;
-  qzScore.after(b);
-  qzMissed.forEach(i => {
+  const due = qzDueNow();
+  qzDueLeft = due.length;
+  qzBanner = document.createElement('div');
+  qzBanner.className = 'qz-return';
+  qzBanner.innerHTML = `<b>Welcome back.</b> ${due.length === 1 ? 'One question is' : due.length + ' questions are'} due for review — marked below. Beat ${due.length === 1 ? 'it' : 'them'} and the gap stretches.`;
+  qzScore.after(qzBanner);
+  due.forEach(({ i }) => {
     if (!qzEls[i]) return;
     qzEls[i].classList.add('retry');
-    qzEls[i].querySelector('.qz-q').insertAdjacentHTML('beforeend', ' <span class="qz-flag">missed last time</span>');
+    qzEls[i].querySelector('.qz-q').insertAdjacentHTML('beforeend', ' <span class="qz-flag">due for review</span>');
   });
+}
+// keep the banner truthful as due questions get answered — never claim "due" after the review
+function qzDueAnswered(el) {
+  if (!el.classList.contains('retry')) return;
+  el.classList.remove('retry');
+  const f = el.querySelector('.qz-q .qz-flag'); if (f) f.remove();
+  qzDueLeft -= 1;
+  if (qzBanner && qzDueLeft <= 0) qzBanner.innerHTML = '<b>Review done for today.</b> The gaps are doing the remembering — come back when the next one ends.';
 }
 
 /* visit-day counter — device-local, no accounts, honest ("this device" only) */
@@ -1883,7 +2036,7 @@ pwaBtn.addEventListener('click', async () => {
 
 /* ---------- progress transfer: a copyable code instead of accounts ---------- */
 (function initProgressTransfer(){
-  const KEYS = ['baseline_circle', 'baseline_quiz_missed', 'baseline_visits', 'baseline_peel'];
+  const KEYS = ['baseline_circle', 'baseline_quiz_missed', 'baseline_visits', 'baseline_peel', 'baseline_path'];
   const panel = document.getElementById('pxPanel'), note = document.getElementById('pxNote');
   const code = document.getElementById('pxCode');
   const pack = () => {
@@ -2005,6 +2158,40 @@ document.getElementById('lcReset').addEventListener('click', () => {
 });
 lcUpdate();
 
+/* ---------- guided start: three starting points light up a path ---------- */
+(function initPathPick(){
+  // step indexes per starting point (0-based into CIRCLE)
+  const PATHS = { new: [0, 1, 3], some: [2, 4, 6], tech: [5, 6] };
+  const chips = [...document.querySelectorAll('.path-chip')];
+  const rows = () => [...document.querySelectorAll('#lcList .lc-row')];
+  function apply(key) {
+    rows().forEach((r, i) => {
+      r.classList.remove('lc-rec');
+      const old = r.querySelector('.lc-rec-chip'); if (old) old.remove();
+    });
+    chips.forEach(c => { const on = c.dataset.path === key; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+    if (!key) return;
+    const steps = PATHS[key] || [];
+    rows().forEach((r, i) => {
+      if (!steps.includes(i)) return;
+      r.classList.add('lc-rec');
+      if (i === steps[0]) r.querySelector('.lc-t b').insertAdjacentHTML('beforeend', '<span class="lc-rec-chip">start here</span>');
+    });
+  }
+  chips.forEach(c => c.addEventListener('click', () => {
+    const key = c.classList.contains('on') ? null : c.dataset.path;   // tap again to clear
+    // stored JSON-encoded: the progress-transfer import JSON.parses every key it carries,
+    // so a raw string here would make the WHOLE transfer code unreadable on import
+    try { key ? localStorage.setItem('baseline_path', JSON.stringify(key)) : localStorage.removeItem('baseline_path'); } catch (e) {}
+    apply(key);
+  }));
+  try {
+    let saved = localStorage.getItem('baseline_path');
+    try { saved = JSON.parse(saved); } catch (e) {}   // tolerate a pre-fix raw value
+    if (saved && PATHS[saved]) apply(saved);
+  } catch (e) {}
+})();
+
 /* ---------- copy-a-prompt buttons ---------- */
 document.querySelectorAll('.try-copy').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2110,6 +2297,100 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   } else {
     pause();                                     // no IO support: still play-on-demand only
   }
+})();
+
+/* ---------- attention playground: tap a word, see where it looks ----------
+   Weights are hand-tuned to be pedagogically true (the page says so on screen);
+   the point is the MECHANISM — every word attends to the words that resolve it. */
+(function initAttnPlay(){
+  const play = document.getElementById('attnPlay');
+  if (!play) return;
+  const WORDS = ['The', 'dog', 'ignored', 'the', 'bone', 'because', 'it', 'was', 'full'];
+  // per word: top-3 [targetIndex, weight] + one line of why
+  const ATTN = [
+    { w: [[1, .85], [2, .10], [4, .05]], why: '"The" mostly points at the noun it introduces — <b>dog</b>.' },
+    { w: [[2, .45], [6, .35], [4, .20]], why: '"dog" links to what it did (<b>ignored</b>) and to "<b>it</b>", the word that refers back to it.' },
+    { w: [[1, .55], [4, .35], [5, .10]], why: '"ignored" needs its actor (<b>dog</b>) and its object (<b>bone</b>).' },
+    { w: [[4, .85], [1, .10], [0, .05]], why: 'Same trick as the first "The" — this one points at <b>bone</b>.' },
+    { w: [[2, .50], [1, .35], [3, .15]], why: '"bone" looks at the verb that acted on it (<b>ignored</b>) and at who did the ignoring.' },
+    { w: [[7, .40], [2, .35], [8, .25]], why: '"because" is a bridge — it ties the action to the reason.' },
+    { w: [[1, .80], [4, .15], [8, .05]], why: '"it" resolves to <b>dog</b> — bones aren\'t full. This is the classic move attention makes.' },
+    { w: [[6, .60], [8, .30], [5, .10]], why: '"was" connects its subject (<b>it</b>) to its state (<b>full</b>).' },
+    { w: [[6, .55], [1, .30], [7, .15]], why: '"full" describes <b>it</b> — and through "it", the <b>dog</b>.' }
+  ];
+  const sent = play.querySelector('.attn-sent');
+  const bars = document.getElementById('attnBars');
+  const why = document.getElementById('attnWhy');
+  const chips = WORDS.map((word, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'attn-w'; b.textContent = word;
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', `See what "${word}" pays attention to`);
+    b.addEventListener('click', () => show(i));
+    sent.appendChild(b);
+    return b;
+  });
+  function show(i) {
+    chips.forEach((c, j) => { c.classList.toggle('on', j === i); c.setAttribute('aria-pressed', String(j === i)); });
+    why.innerHTML = ATTN[i].why;
+    bars.innerHTML = ATTN[i].w.map(([t, v]) =>
+      `<div class="attn-bar"><em>${WORDS[t]}</em><span class="attn-track"><span class="attn-fill" style="--w:0%"></span></span><b>${v.toFixed(2)}</b></div>`
+    ).join('');
+    // grow the bars on the next frame so the width transition actually runs
+    requestAnimationFrame(() => bars.querySelectorAll('.attn-fill').forEach((f, k) =>
+      f.style.setProperty('--w', (ATTN[i].w[k][1] * 100) + '%')));
+  }
+  show(6);   // start on "it" — the classic example the paragraph above sets up
+})();
+
+/* ---------- lab 001: stack four upgrades onto a weak prompt ---------- */
+(function initLab001(){
+  const build = document.getElementById('labBuild');
+  if (!build) return;
+  const WEAK = 'Help me plan a trip to Japan.';
+  const UP = {
+    role:   'You are a travel planner who has organized dozens of Japan trips.',
+    task:   'Plan a 7-day itinerary for two adults in April — first visit, mid-range budget, food and quiet places over crowds.',
+    format: 'Return it as a day-by-day list with one backup option per day.',
+    check:  'If anything in my request is a bad idea for April, say so and suggest better.'
+  };
+  const LEVELS = ['Generic — you\'ll get a brochure.', 'Better — it knows its job now.',
+                  'Good — it knows exactly what you want.', 'Sharp — the answer arrives ready to use.',
+                  'Pro-level — this is how power users ask.'];
+  const on = new Set();
+  const promptEl = document.getElementById('labPrompt');
+  const scoreEl = document.getElementById('labScore');
+  function text() {
+    const parts = [];
+    if (on.has('role')) parts.push(UP.role);
+    parts.push(on.has('task') ? UP.task : WEAK);
+    if (on.has('format')) parts.push(UP.format);
+    if (on.has('check')) parts.push(UP.check);
+    return parts.join(' ');
+  }
+  function render() {
+    const rows = [];
+    if (on.has('role')) rows.push(`<span class="lab-add">${UP.role}</span>`);
+    rows.push(on.has('task') ? `<span class="lab-add">${UP.task}</span>` : WEAK);
+    if (on.has('format')) rows.push(`<span class="lab-add">${UP.format}</span>`);
+    if (on.has('check')) rows.push(`<span class="lab-add">${UP.check}</span>`);
+    promptEl.innerHTML = rows.join('<br>');
+    scoreEl.innerHTML = `${on.size}/4 · ${on.size === 4 ? '<b>' + LEVELS[4] + '</b>' : LEVELS[on.size]}`;
+  }
+  build.querySelectorAll('.lab-chip').forEach(c => c.addEventListener('click', () => {
+    const k = c.dataset.k;
+    on.has(k) ? on.delete(k) : on.add(k);
+    c.classList.toggle('on', on.has(k));
+    c.setAttribute('aria-pressed', String(on.has(k)));
+    render();
+  }));
+  const copyBtn = document.getElementById('labCopy');
+  copyBtn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text()); copyBtn.textContent = 'Copied ✓ — paste it into any chatbot'; }
+    catch (e) { copyBtn.textContent = 'Select the prompt above and copy it'; }
+    setTimeout(() => { copyBtn.textContent = 'Copy it — try it in any chatbot'; }, 2200);
+  });
+  render();
 })();
 
 /* ---------- interactive next-word demo (How an LLM works) ---------- */
@@ -2325,17 +2606,7 @@ LEVELS.forEach(([key]) => initDeck(levelDeck[key]));   // one swipe deck per lev
 (function initShare(){
   const btn = document.getElementById('shareBtn'), note = document.getElementById('shareNote');
   if (!btn) return;
-  btn.addEventListener('click', async () => {
-    const data = { title: 'Baseline — reset your AI literacy',
-      text: 'What AI really is, from one calm page — free, no signup.',
-      url: 'https://hlur.ai/baseline/' };
-    if (navigator.share) {
-      try { await navigator.share(data); return; }
-      catch (e) { if (e && e.name === 'AbortError') return; }   // dismissed = done; real errors → copy fallback
-    }
-    try { await navigator.clipboard.writeText(data.url); note.textContent = 'Link copied — paste it anywhere.'; }
-    catch (e) { note.textContent = data.url; }
-  });
+  btn.addEventListener('click', () => shareOut('What AI really is, from one calm page — free, no signup.', note));
 })();
 
 /* ---------- clip mode: ?clip=write|peel — a looping component for recording social clips ---------- */

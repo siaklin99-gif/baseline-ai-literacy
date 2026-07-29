@@ -138,8 +138,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 8 ? ok('all 8 section titles are real <h2> headings')
-          : bad(`expected 8 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 9 ? ok('all 9 section titles are real <h2> headings (incl. Baseline Labs)')
+          : bad(`expected 9 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -299,8 +299,10 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   const gradUses = (html.match(/var\(--grad\)/g) || []).length;
   (halfPx === 0 && oddWeights === 0) ? ok('type scale holds (no half-pixel sizes, weights {500,600,700})')
     : bad(`type drift: ${halfPx} half-px sizes, ${oddWeights} odd weights`);
-  (gradUses <= 18) ? ok(`gradient budget held (${gradUses} uses ≤ 18 — identity, not wallpaper)`)
-    : bad(`gradient splatter returning: ${gradUses} uses (budget 18)`);
+  // budget 18 → 19 (2026-07-29): +1 for the attention-playground bars, which mirror the
+  // existing gf-fill gradient bars exactly. All new chip selected-states stay solid.
+  (gradUses <= 19) ? ok(`gradient budget held (${gradUses} uses ≤ 19 — identity, not wallpaper)`)
+    : bad(`gradient splatter returning: ${gradUses} uses (budget 19)`);
   (/section \{ padding: 44px 0; \}/.test(html) && /#reality \{ background: var\(--surface2\)/.test(html) && /#quizsec \{ background: linear-gradient/.test(html))
     ? ok('section rhythm: 44px gaps + reality band + quiz wash') : bad('section rhythm treatments missing');
   (!/0\.5px/.test(html)) ? ok('no 0.5px hairlines (render reliably everywhere)') : bad('0.5px borders back');
@@ -415,6 +417,33 @@ if (DATA) {
     (DATA[k].list||[]).some(r => Object.entries(r).some(([f,v]) => f!=='html' && /&amp;|&lt;|&gt;/.test(String(v)))));
   g(!leaked, 'no double-escaped entities left in data.js text fields (fix #4)');
 }
+
+/* ---------- 5. regression guards: 2026-07-29 roadmap batch (cold-audit fixes) ---------- */
+// spaced repetition v2: 1/3/7-day steps, format-validated + de-duped storage
+g(/QZ_STEPS = \[1, 3, 7\]/.test(html), 'spaced repetition uses 1/3/7-day steps');
+g(/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$/.test(html), 'quiz-miss entries validate due-date format (cold-audit #2)');
+g(html.includes('!seen.has(x.i) && seen.add(x.i)'), 'quiz-miss entries de-duped per question (cold-audit #3)');
+g(html.includes('t.due > localDate(0)) return null'), 'early correct answers do not advance the spaced schedule');
+g(/'locked'/.test(html) && /qz-lock/.test(html), 'third spaced win locks a question in (chip + retire path)');
+// path picker: stored JSON-encoded or the progress-transfer import breaks (cold-audit #1)
+g(html.includes("localStorage.setItem('baseline_path', JSON.stringify(key))"), 'baseline_path stored JSON-encoded (transfer-safe, cold-audit #1)');
+g(html.includes("'baseline_path']"), 'progress transfer carries baseline_path');
+// share-your-score writes its note to a dedicated span, never over the rotation status line
+g(html.includes('qz-share-note') && html.includes("qzScore.querySelector('.qz-share-note')"), 'share-score note has its own span (cold-audit #5)');
+g(/function shareOut\(/.test(html), 'shareOut helper present (native share + clipboard fallback)');
+// attention playground + lab 001 + labs section + whats-new line
+g(html.includes('id="attnPlay"'), 'attention playground present');
+g(/Illustrative weights/.test(html), 'attention playground carries its honesty label');
+g(html.includes('id="labs"') && html.includes('Lab 001'), 'Baseline Labs section + Lab 001 present');
+g(html.includes('id="labCopy"'), 'lab 001 has a copy-and-try button');
+// falsification-checked: a generic aria-pressed count passes on PRE-fix code (13 prior uses) —
+// require each new chip group's own wiring instead
+g(html.includes('class="path-chip" type="button" aria-pressed="false"')
+  && /class="lab-chip" data-k="\w+" type="button" aria-pressed="false"/.test(html)
+  && html.includes("b.setAttribute('aria-pressed', 'false')")
+  && (html.match(/setAttribute\('aria-pressed', String\(/g) || []).length >= 3,
+  'all three new chip groups expose live aria-pressed state (cold-audit #4)');
+g(/class="whats-new"/.test(html) && /<i>\d{4}-\d{2}-\d{2}<\/i>/.test(html), 'dated whats-new line in trust strip');
 
 /* ---------- result ---------- */
 console.log('---------------');

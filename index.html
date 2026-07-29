@@ -2250,7 +2250,10 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   host.innerHTML = `<div class="mg-head"><span class="mg-tag">Quick check</span><b>Flagship or small?</b>
       <span class="mg-sub">Four everyday jobs — tap the right tool class for each.</span></div>
     <div class="mg-body" id="mpBody"></div><div class="mg-note" id="mpNote" aria-live="polite"></div>`;
-  card.querySelector('.content').appendChild(host);
+  // insert ABOVE the freshness stamp — the dated line reads as the card's footer,
+  // so anything after it is never scrolled to (real user missed the game there)
+  const stampEl = card.querySelector('.content .stamp');
+  if (stampEl) stampEl.before(host); else card.querySelector('.content').appendChild(host);
   const JOBS = [
     ['Draft a quick thank-you message to a friend', 'small', 'Simple and short — a small, cheap model does this instantly.'],
     ['Untangle a 30-page contract and flag the risks', 'flagship', 'Long, high-stakes reasoning — exactly what the big models are for.'],

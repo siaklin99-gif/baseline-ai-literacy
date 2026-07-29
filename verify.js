@@ -444,6 +444,9 @@ g(html.includes('class="path-chip" type="button" aria-pressed="false"')
   && (html.match(/setAttribute\('aria-pressed', String\(/g) || []).length >= 3,
   'all three new chip groups expose live aria-pressed state (cold-audit #4)');
 g(/class="whats-new"/.test(html) && /<i>\d{4}-\d{2}-\d{2}<\/i>/.test(html), 'dated whats-new line in trust strip');
+// 8 of 13 codeblocks scroll sideways on mobile — scroll shadows make that visible, not broken-looking
+g(/\.codeblock \{[^}]*background-attachment: local, local, scroll, scroll, local/.test(html)
+  && html.includes('--cb-shadow'), 'codeblocks carry self-hiding scroll shadows (mobile swipe affordance)');
 
 /* ---------- result ---------- */
 console.log('---------------');

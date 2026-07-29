@@ -50,6 +50,7 @@
   --teal: #2D8E7E; --lur-body: #9AD3C6; --coral-btn: #b84f35; --coral-btn-text: #fff;
   --wrap: 940px;   /* outer container: uses wide screens without going edge-to-edge */
   --read: 640px;   /* readable prose column cap (~78 chars max) — text never stretches past this */
+  --cb-shadow: rgba(0,0,0,0.28);   /* codeblock scroll-shadow (hints "more to the side") */
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -66,6 +67,7 @@
     --accent: #6f97ff;
     --g1: #6f97ff; --g2: #a48cff; --g3: #3fd6c4;
     --grad-text: linear-gradient(115deg, #85b7eb, #b9a5ff);   /* light stops for dark bg (>=6.6:1) */
+    --cb-shadow: rgba(0,0,0,0.65);   /* stronger on dark — a faint black shadow vanishes there */
   }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -433,7 +435,19 @@ details.card[open] .chev { transform: rotate(90deg); }
   font-size: 14px; line-height: 1.5; color: var(--text);
 }
 /* code / diagram blocks — scroll inside themselves so they never break the page */
-.codeblock { background: var(--surface2); border-radius: 8px; padding: 10px 13px; margin: 9px 0; overflow-x: auto; }
+/* Wide diagrams scroll sideways on small screens. Scroll shadows (background-attachment:
+   local trick) appear only while there IS more content that way and vanish at the ends —
+   so a clipped edge reads as "swipe me", never as broken. Pure CSS, no JS to desync. */
+.codeblock { border-radius: 8px; padding: 10px 13px; margin: 9px 0; overflow-x: auto;
+  background:
+    linear-gradient(90deg, var(--surface2) 30%, transparent),
+    linear-gradient(270deg, var(--surface2) 30%, transparent) 100% 0,
+    radial-gradient(farthest-side at 0 50%, var(--cb-shadow), transparent),
+    radial-gradient(farthest-side at 100% 50%, var(--cb-shadow), transparent) 100% 0,
+    var(--surface2);
+  background-repeat: no-repeat;
+  background-size: 44px 100%, 44px 100%, 15px 100%, 15px 100%, auto;
+  background-attachment: local, local, scroll, scroll, local; }
 .codeblock pre { margin: 0; white-space: pre; color: var(--text); line-height: 1.55; font-size: 13px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .codeblock .cm { color: var(--text-ter); }   /* comments */

@@ -218,6 +218,46 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   ? ok('glossary is a vertical list on mobile (no deck-in-a-deck)') : bad('nested glossary swipe deck is back');
 (!/Explain \[a term you keep hearing\]/.test(html))
   ? ok('15-min card prompts extend (not duplicate) the try panel') : bad('15-min card duplicates the try-panel prompts again');
+// ---------- 2026-07-30 platform batch: return loop, games, PWA, clip mode ----------
+// return loop: misses persist + resurface, visits counted — all device-local
+(/qzRemember/.test(html) && html.includes("'baseline_quiz_missed'") && html.includes('qz-return') && html.includes('id="lcDay"'))
+  ? ok('return loop wired (missed questions persist + welcome-back + visit days)') : bad('return loop missing/regressed');
+// three micro-games present and honest (spot-the-fake declares its fabrication)
+(html.includes('id="spotFake"') && html.includes('One is a confident fabrication') && html.includes('id="glMatch"') && /initModelPick/.test(html) && html.includes('"card-models"'))
+  ? ok('all three micro-games present (fake-spotter self-declares the game)') : bad('a micro-game is missing');
+// PWA: manifest linked + files exist + SW is network-first + registration guarded for file://
+{
+  const mOk = fs.existsSync(path.join(__dirname, 'manifest.json')) && fs.existsSync(path.join(__dirname, 'sw.js'))
+    && fs.existsSync(path.join(__dirname, 'icon-192.png')) && fs.existsSync(path.join(__dirname, 'icon-512.png'));
+  const sw = mOk ? read('sw.js') : '';
+  (mOk && html.includes('rel="manifest"') && /network-first/i.test(sw) && /caches\.match/.test(sw)
+    && html.includes("location.protocol.startsWith('http')"))
+    ? ok('PWA complete (manifest + icons + network-first SW + guarded registration)')
+    : bad('PWA incomplete (missing file, non-network-first SW, or unguarded registration)');
+  let mf = null; try { mf = JSON.parse(read('manifest.json')); } catch (e) {}
+  (mf && mf.start_url === './' && mf.scope === './' && (mf.icons || []).length === 2)
+    ? ok('manifest is path-portable (relative start_url/scope, 2 icons)') : bad('manifest fields wrong');
+  // the sync pipeline must carry every PWA file or the deploy silently strips the app
+  (read('sync_hlur.sh').includes('manifest.json sw.js icon-192.png icon-512.png'))
+    ? ok('sync pipeline ships the PWA files') : bad('sync_hlur.sh does not copy the PWA files');
+  // CI must redeploy when a PWA file changes
+  (read('.github/workflows/deploy-hlur.yml').includes("'sw.js'"))
+    ? ok('CI paths trigger includes the PWA files') : bad('editing sw.js/manifest would never redeploy (CI paths)');
+  // host-site build must pass the PWA through its leak gate (cross-repo: check only when present)
+  const bd = '/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/build_dist.js';
+  if (fs.existsSync(bd)) {
+    const src = fs.readFileSync(bd, 'utf8');
+    (/PWA_FILES/.test(src) && /sw\.js/.test(src))
+      ? ok('host build ships + exempts the baseline PWA files')
+      : bad('Hlur build_dist.js would strip or reject the PWA (sw.js/manifest/icons)');
+  }
+}
+// progress transfer: export/import round-trip code paths + validation
+(html.includes("'BL1.'") && /pxApply/.test(html) && /JSON\.parse\(o\[k\]\)/.test(html))
+  ? ok('progress transfer present with per-key JSON validation') : bad('progress transfer missing/unvalidated');
+// clip mode: both variants + not reachable by accident (no in-page link to ?clip)
+(/data-clip/.test(html) && /clip=write\|peel|'write' && clip !== 'peel'/.test(html) && !/href="[^"]*\?clip=/.test(html))
+  ? ok('clip modes present and unlinked (recording tool, not nav)') : bad('clip mode broken or linked from page');
 // don't fake a produced video — point to the real one (verified https)
 (!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
   ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');

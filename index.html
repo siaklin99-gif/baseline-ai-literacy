@@ -9,6 +9,10 @@
 <!-- Absolute so the one file works at BOTH homes: hlur.ai/baseline/ and the standalone
      GitHub Pages build (where ../ would escape the repo root and 404). -->
 <link rel="apple-touch-icon" href="https://hlur.ai/apple-touch-icon.png" />
+<!-- PWA: relative paths on purpose — the same file serves hlur.ai/baseline/ AND the GitHub Pages home -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f9f8f6" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a18" />
 <link rel="icon" type="image/png" sizes="32x32" href="https://hlur.ai/favicon-32.png" />
 <link rel="icon" type="image/svg+xml" href="https://hlur.ai/favicon.svg" />
 <!-- social share cards -->
@@ -150,7 +154,7 @@ body {
 }
 .try-text { flex: 1; min-width: 200px; font-size: 15px; line-height: 1.5; color: var(--text); }
 .try-copy {
-  flex: 0 0 auto; min-height: 40px; cursor: pointer; border: none; border-radius: 999px;
+  flex: 0 0 auto; min-height: 44px; cursor: pointer; border: none; border-radius: 999px;
   background: var(--text); color: var(--bg); font-weight: 600; font-size: 14px; padding: 8px 18px;
   transition: background .2s ease;
 }
@@ -325,7 +329,7 @@ section { padding: 44px 0; }
 .lc-row.done .lc-t b { color: var(--text-sec); }
 .lc-go { color: var(--text-ter); flex: 0 0 auto; }
 .lc-reset {
-  display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; min-height: 40px;
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; min-height: 44px;
   background: transparent; color: var(--text-sec); border: 1px solid var(--border-med);
   border-radius: 999px; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
   transition: border-color .15s ease, color .15s ease;
@@ -434,7 +438,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codetoggle { margin: 10px 0; }
 .codetoggle:not([open]) > *:not(summary) { display: none; }   /* guarantee the code hides when closed */
 .codetoggle > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
-  min-height: 40px; padding: 8px 15px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  min-height: 44px; padding: 8px 15px; border-radius: 999px; font-size: 14px; font-weight: 600;
   color: var(--text-sec); background: var(--surface2); border: 1px solid var(--border-med); }
 .codetoggle > summary::-webkit-details-marker { display: none; }
 .codetoggle > summary::before { content: "›"; font-size: 17px; line-height: 1; display: inline-block; transition: transform .2s ease; }
@@ -540,7 +544,7 @@ details.card[open] .chev { transform: rotate(90deg); }
 .llm-pct { text-align: right; color: var(--text-ter); font-variant-numeric: tabular-nums; }
 .llm-prob-row.picked .llm-word, .llm-prob-row.picked .llm-pct { color: var(--text); font-weight: 700; }
 .llm-ctrls { display: flex; gap: 8px; margin-top: 13px; flex-wrap: wrap; }
-.llm-step, .llm-reset { min-height: 40px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; padding: 8px 16px; border: 1px solid var(--border-med); transition: opacity .15s ease; }
+.llm-step, .llm-reset { min-height: 44px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; padding: 8px 16px; border: 1px solid var(--border-med); transition: opacity .15s ease; }
 .llm-step { background: var(--text); color: var(--bg); border-color: transparent; }
 .llm-step:disabled { opacity: .4; cursor: default; }
 .llm-reset { background: var(--surface); color: var(--text-sec); }
@@ -589,6 +593,66 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-a { display: none; margin-top: 10px; margin-left: 38px; font-size: 14px; color: var(--text-sec); line-height: 1.5; }
 .qz.done .qz-a { display: block; }
 .qz-a b { color: var(--text); }
+/* return loop: welcome-back banner + missed-last-time flags */
+.qz-return { background: var(--amber-bg); color: var(--amber); border-radius: 10px;
+  padding: 11px 15px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
+.qz.retry { border-color: color-mix(in srgb, var(--amber) 45%, var(--border)); }
+.qz-flag { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 700; color: var(--amber); background: var(--amber-bg); border-radius: 5px;
+  padding: 2px 7px; vertical-align: 2px; margin-left: 4px; }
+.qz-next { display: block; margin-top: 6px; font-size: 14px; color: var(--text-sec); font-weight: 500; }
+.lc-day { text-align: center; font-size: 12px; color: var(--text-ter); margin-top: 10px; }
+.lc-tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+/* progress-transfer panel (accounts-free cross-device) */
+.px-panel { max-width: 560px; margin: 14px auto 0; background: var(--surface); border: 1px solid var(--border-med);
+  border-radius: 14px; padding: 15px 17px; }
+.px-line { font-size: 13px; color: var(--text-sec); line-height: 1.5; margin-bottom: 10px; }
+.px-row { display: flex; gap: 8px; margin-top: 8px; }
+.px-code { flex: 1; min-width: 0; min-height: 44px; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+  color: var(--text); background: var(--surface2); border: 1px solid var(--border-med); border-radius: 8px; padding: 8px 10px; }
+.px-btn { flex: 0 0 auto; min-height: 44px; cursor: pointer; border: none; border-radius: 999px;
+  background: var(--text); color: var(--bg); font-weight: 600; font-size: 13px; padding: 8px 16px; }
+.px-note { margin-top: 8px; font-size: 12px; color: var(--text-ter); min-height: 1em; }
+/* ---------- clip mode (?clip=write|peel): one component, full-bleed, looping —
+   for screen-recording vertical social clips. Not linked from the page. ---------- */
+html[data-clip] nav, html[data-clip] header.hero, html[data-clip] .trust,
+html[data-clip] section, html[data-clip] footer { display: none !important; }
+html[data-clip] body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+html[data-clip] .wrap { max-width: 640px; width: 100%; padding: 20px; }
+html[data-clip="write"] #howllm { display: block !important; background: none; padding: 0; }
+html[data-clip="write"] #howllm .slabel, html[data-clip="write"] #howllm .stitle,
+html[data-clip="write"] #howllm .ssub, html[data-clip="write"] #howllm details { display: none !important; }
+html[data-clip="write"] .gf-head-right { display: none; }
+html[data-clip="write"] .gptflow { margin: 0; }
+html[data-clip="peel"] #layers { display: block !important; padding: 0; }
+html[data-clip="peel"] #layers .slabel, html[data-clip="peel"] #layers .stitle,
+html[data-clip="peel"] #layers .ssub, html[data-clip="peel"] .pl-btns { display: none !important; }
+/* ---------- mini-games (shared: spot-the-fake, match four, model picker) ---------- */
+.mg { background: var(--surface); border: 1px solid var(--border-med); border-radius: 14px; padding: 16px 18px; margin-top: 24px; }
+.mg-incard { margin: 6px 0 18px; background: var(--surface2); border-color: var(--border); }
+.mg-head b { font-size: 15px; font-weight: 700; }
+.mg-tag { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 700; color: var(--accent); margin-right: 8px; }
+.mg-sub { display: block; margin-top: 3px; font-size: 13px; color: var(--text-sec); line-height: 1.45; }
+.mg-opt { display: block; width: 100%; text-align: left; cursor: pointer; background: var(--surface2);
+  border: 1px solid var(--border-med); border-radius: 10px; padding: 10px 13px; margin-top: 8px;
+  font-size: 14px; line-height: 1.45; color: var(--text); min-height: 44px;
+  transition: border-color .15s ease, background .15s ease; }
+.mg-incard .mg-opt { background: var(--surface); }
+.mg-opt:hover:not([disabled]) { border-color: var(--text-ter); }
+.mg-opt:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.mg-opt.picked { border-color: var(--g1); }
+.mg-opt.good { background: var(--green-bg); color: var(--green); border-color: transparent; }
+.mg-opt.badpick { background: var(--red-bg); color: var(--red); border-color: transparent; }
+.mg-opt[disabled] { cursor: default; }
+.mg-job { font-size: 14px; color: var(--text-sec); margin-top: 10px; }
+.mg-job b { color: var(--text); }
+.mg-note { margin-top: 10px; font-size: 13px; color: var(--text-sec); line-height: 1.5; }
+.mg-note b { color: var(--text); }
+.mg-again { margin-top: 8px; min-height: 44px; font-size: 13px; font-weight: 600; color: var(--text-sec);
+  background: var(--surface2); border: 1px solid var(--border-med); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.mg-again:hover { border-color: var(--text-ter); }
+.mg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
 .qz-src { display: block; margin-top: 8px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
   font-weight: 700; color: var(--text-ter); }
 @media (max-width: 560px) { .qz-a { margin-left: 0; } .qz-opt { min-width: 46px; padding: 8px 12px; } }
@@ -765,7 +829,24 @@ footer { margin-top: 30px; }
       </svg>
       <div id="lcList"></div>
     </div>
-    <button id="lcReset" class="lc-reset" type="button" hidden>↺ Reset my progress</button>
+    <div class="lc-day" id="lcDay"></div>
+    <div class="lc-tools">
+      <button id="pwaInstall" class="lc-reset" type="button" hidden>📲 Install as an app — works offline</button>
+      <button id="pxToggle" class="lc-reset" type="button">⇄ Move progress to another device</button>
+      <button id="lcReset" class="lc-reset" type="button" hidden>↺ Reset my progress</button>
+    </div>
+    <div class="px-panel" id="pxPanel" hidden>
+      <p class="px-line">No accounts here — your progress lives on this device. To carry it over, copy this code and paste it on the other device (same page, same panel):</p>
+      <div class="px-row">
+        <input class="px-code" id="pxCode" type="text" readonly aria-label="Your progress code" />
+        <button class="px-btn" id="pxCopy" type="button">Copy</button>
+      </div>
+      <div class="px-row">
+        <input class="px-code" id="pxIn" type="text" placeholder="…or paste a code from another device" aria-label="Paste a progress code" />
+        <button class="px-btn" id="pxApply" type="button">Apply</button>
+      </div>
+      <p class="px-note" id="pxNote" aria-live="polite"></p>
+    </div>
   </div>
 </section>
 
@@ -830,6 +911,14 @@ footer { margin-top: 30px; }
           <li>Truly understand or care — it predicts, it doesn't think</li>
         </ul>
       </div>
+    </div>
+
+    <!-- activity: train the "verify" reflex — tap the fabricated statement -->
+    <div class="mg" id="spotFake">
+      <div class="mg-head"><span class="mg-tag">Try it</span><b>Spot the fake</b>
+        <span class="mg-sub">Two of these are true. One is a confident fabrication — the kind AI produces. Tap the fake.</span></div>
+      <div class="mg-body" id="sfBody"></div>
+      <div class="mg-note" id="sfNote" aria-live="polite"></div>
     </div>
   </div>
 </section>
@@ -1294,7 +1383,8 @@ function layout(save){
   coreCard.classList.remove('boom');
   if (isCore) { void coreCard.offsetWidth; coreCard.classList.add('boom'); }
 
-  if (save) { try { localStorage.setItem('baseline_peel', String(cur)); } catch (e) {} }
+  // clip mode auto-advances forever — recording must never clobber a real visitor's position
+  if (save && !document.documentElement.dataset.clip) { try { localStorage.setItem('baseline_peel', String(cur)); } catch (e) {} }
 }
 plBtn.addEventListener('click', () => { cur = (cur >= N - 1) ? 0 : cur + 1; layout(true); });
 plUp.addEventListener('click', () => { if (cur > 0) { cur -= 1; layout(true); } });
@@ -1389,6 +1479,12 @@ const CARDS = [
      <p>No magic words, no "prompt engineering" course. Just tell it what you'd tell a capable assistant.</p>`],
   ["🔤", "AI jargon in plain English", "The words, decoded · 14 terms",
     `<p>Every acronym you've been nodding along to — each with a one-line meaning and a real-life analogy.</p>
+     <div class="mg mg-incard" id="glMatch">
+       <div class="mg-head"><span class="mg-tag">Warm up</span><b>Match four</b>
+         <span class="mg-sub">Tap a term, then its everyday analogy.</span></div>
+       <div class="mg-cols"><div id="gmTerms"></div><div id="gmDefs"></div></div>
+       <div class="mg-note" id="gmNote" aria-live="polite"></div>
+     </div>
      <div id="glossary"></div>`],
 
   ["🔒", "Privacy &amp; protecting yourself", "What leaves your device",
@@ -1414,7 +1510,7 @@ const CARDS = [
      <p><strong>"It's too late for me — I'm not technical."</strong> The chat-AI era is only a few years old; everyone is early. If you can send a text message, you can use AI. Fifteen minutes is enough to start.</p>
      <p><strong>"It's a computer, so it's always right."</strong> It's not a calculator — it's a predictor. Sometimes brilliantly right, sometimes confidently wrong. That's why you verify what matters.</p>`],
   /* --- intermediate --- */
-  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}],
+  ["🧭", "Pick the right model for the job", "Which LLM, and when", {data:"models"}, "card-models"],
   ["💳", "Setup &amp; what it costs", "Closed vs open weight", {data:"pricing"}],
   ["🎟️", "Tokens &amp; not burning money", "Input, output, cost, tracking",
     `<p>Models read and write in <strong>tokens</strong> — chunks of words (roughly ¾ of a word each). You're billed for tokens in (your prompt) <em>and</em> tokens out (its reply).</p>
@@ -1654,6 +1750,7 @@ QUIZ.forEach((q, i) => {
         ans.setAttribute('aria-label', `${ans.textContent} — correct answer`);
       }
       qzAnswered++; if (right) qzCorrect++;
+      qzRemember(i, right);
       updateScore();
     });
   });
@@ -1665,9 +1762,113 @@ function updateScore() {
     : qzCorrect >= 7 ? 'Strong — you\'re ahead of most of the internet.'
     : qzCorrect >= 4 ? 'Solid start — one more peel through the layers will lock it in.'
     : 'No worries — that\'s exactly what this page is for. Scroll back up.';
-  qzScore.innerHTML = `<b>You got ${qzCorrect} / ${QUIZ.length}.</b> ${msg}`;
+  const next = qzMissed.length
+    ? ` The ${qzMissed.length === 1 ? 'one' : qzMissed.length} you missed will be waiting next visit — spaced repeats are how it sticks.`
+    : (qzHadMissed ? ' You cleared everything you missed last time. That\'s the loop working.'
+                   : ' Come back tomorrow — what you got wrong resurfaces until it sticks.');
+  qzScore.innerHTML = `<b>You got ${qzCorrect} / ${QUIZ.length}.</b> ${msg}<span class="qz-next">${next}</span>`;
   qzScore.classList.add('final');
 }
+
+/* ---------- return loop: what you missed persists on-device and resurfaces ---------- */
+const QZ_KEY = 'baseline_quiz_missed';
+let qzMissed = [];
+try {
+  const s = JSON.parse(localStorage.getItem(QZ_KEY) || '[]');
+  if (Array.isArray(s)) qzMissed = s.filter(n => Number.isInteger(n) && n >= 0 && n < QUIZ.length);
+} catch (e) {}
+const qzHadMissed = qzMissed.length > 0;
+function qzRemember(i, right) {
+  const at = qzMissed.indexOf(i);
+  if (right && at > -1) qzMissed.splice(at, 1);
+  if (!right && at === -1) qzMissed.push(i);
+  try { localStorage.setItem(QZ_KEY, JSON.stringify(qzMissed)); } catch (e) {}
+}
+if (qzHadMissed) {
+  const qzEls = [...quiz.querySelectorAll('.qz')];
+  const b = document.createElement('div');
+  b.className = 'qz-return';
+  b.innerHTML = `<b>Welcome back.</b> Last visit you missed ${qzMissed.length === 1 ? 'one question' : qzMissed.length + ' questions'} — marked below. Beat them this round.`;
+  qzScore.after(b);
+  qzMissed.forEach(i => {
+    if (!qzEls[i]) return;
+    qzEls[i].classList.add('retry');
+    qzEls[i].querySelector('.qz-q').insertAdjacentHTML('beforeend', ' <span class="qz-flag">missed last time</span>');
+  });
+}
+
+/* visit-day counter — device-local, no accounts, honest ("this device" only) */
+try {
+  const VK = 'baseline_visits';
+  let days = [];
+  try { const v = JSON.parse(localStorage.getItem(VK) || '[]'); if (Array.isArray(v)) days = v.filter(x => typeof x === 'string').slice(-400); } catch (e) {}
+  const d = new Date();   // LOCAL date — an 8pm visit must not count as "tomorrow" (UTC would)
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  if (!days.includes(today)) { days.push(today); localStorage.setItem(VK, JSON.stringify(days)); }
+  const dayEl = document.getElementById('lcDay');
+  if (dayEl) dayEl.textContent = days.length > 1
+    ? `Visit ${days.length} · progress lives on this device`
+    : 'Progress lives on this device — come back anytime';
+} catch (e) {}
+
+/* ---------- PWA: offline app install (no store, no account) ---------- */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});   // sw is additive; failure = plain site
+}
+let pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  pwaPrompt = e;
+  const b = document.getElementById('pwaInstall');
+  if (b) b.hidden = false;
+});
+document.getElementById('pwaInstall').addEventListener('click', async () => {
+  if (!pwaPrompt) return;
+  pwaPrompt.prompt();
+  await pwaPrompt.userChoice;
+  pwaPrompt = null;
+  document.getElementById('pwaInstall').hidden = true;
+});
+
+/* ---------- progress transfer: a copyable code instead of accounts ---------- */
+(function initProgressTransfer(){
+  const KEYS = ['baseline_circle', 'baseline_quiz_missed', 'baseline_visits', 'baseline_peel'];
+  const panel = document.getElementById('pxPanel'), note = document.getElementById('pxNote');
+  const code = document.getElementById('pxCode');
+  const pack = () => {
+    const o = {};
+    KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) o[k] = v; });
+    return 'BL1.' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  };
+  document.getElementById('pxToggle').addEventListener('click', () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) { code.value = pack(); note.textContent = ''; }
+  });
+  document.getElementById('pxCopy').addEventListener('click', () => {
+    code.select();
+    const done = () => { note.textContent = 'Copied — paste it on the other device.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code.value).then(done).catch(done);
+    else { try { document.execCommand('copy'); } catch (e) {} done(); }
+  });
+  document.getElementById('pxApply').addEventListener('click', () => {
+    const raw = document.getElementById('pxIn').value.trim();
+    if (!raw.startsWith('BL1.')) { note.textContent = 'That doesn\'t look like a Baseline code (it starts with BL1.).'; return; }
+    try {
+      const o = JSON.parse(decodeURIComponent(escape(atob(raw.slice(4)))));
+      // validate EVERYTHING first, write only after — a corrupt key must not half-import
+      const staged = [];
+      KEYS.forEach(k => {
+        if (typeof o[k] !== 'string') return;
+        JSON.parse(o[k]);                    // any invalid key aborts the whole import
+        staged.push([k, o[k]]);
+      });
+      if (!staged.length) { note.textContent = 'Code was readable but held no progress.'; return; }
+      staged.forEach(([k, v]) => localStorage.setItem(k, v));
+      note.textContent = 'Progress applied — reloading…';
+      setTimeout(() => location.reload(), 600);
+    } catch (e) { note.textContent = 'Couldn\'t read that code — copy it again in one piece. Nothing was changed.'; }
+  });
+})();
 
 /* ---------- learning circle: six steps, tap to jump, tick to track ---------- */
 const CIRCLE = [
@@ -1916,9 +2117,169 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   });
 })();
 
+/* ---------- mini-game 1: spot the fake — trains the verify reflex ---------- */
+(function initSpotFake(){
+  const body = document.getElementById('sfBody'), note = document.getElementById('sfNote');
+  if (!body || !note) return;
+  // Two true statements + one DELIBERATE fabrication per round — the fabrication is the game.
+  const ROUNDS = [
+    { topic: 'the Moon', tell: 'Galileo died in 1642 — the title, the date, the confidence: all invented. Specific-sounding details are the classic tell.',
+      items: [['The Moon orbits Earth roughly every 27 days.', 0],
+              ['The Moon’s gravity is the main driver of ocean tides.', 0],
+              ['Galileo published the first Moon atlas, “Luna Nova,” in 1721.', 1]] },
+    { topic: 'famous books', tell: 'No such book exists. Real author + real prize + invented title — exactly how AI misremembers.',
+      items: [['“1984” was written by George Orwell.', 0],
+              ['“Pride and Prejudice” was written by Jane Austen.', 0],
+              ['Ian McEwan won the 1987 Booker Prize for “The Silent Meadow.”', 1]] },
+    { topic: 'the human body', tell: 'Plausible but wrong — that’s bone marrow’s job (the liver only does it before birth). Near-miss facts are the hardest fakes to catch.',
+      items: [['An adult human skeleton has 206 bones.', 0],
+              ['The human heart has four chambers.', 0],
+              ['In adults, red blood cells are made mainly by the liver.', 1]] }
+  ];
+  let r = 0, caught = 0;
+  function draw(){
+    const round = ROUNDS[r];
+    delete body.dataset.done;
+    body.innerHTML = '';
+    note.textContent = `Round ${r + 1} of ${ROUNDS.length} · topic: ${round.topic}`;
+    round.items.map((it, i) => i).sort(() => Math.random() - 0.5).forEach(idx => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mg-opt'; b.dataset.fake = round.items[idx][1];
+      b.textContent = round.items[idx][0];
+      b.addEventListener('click', () => {
+        if (body.dataset.done) return;
+        body.dataset.done = '1';
+        const kids = [...body.children];
+        kids.forEach(x => { x.disabled = true; });
+        const fakeBtn = kids.find(x => x.dataset.fake === '1');
+        const gotIt = b === fakeBtn;
+        if (gotIt) { caught++; b.classList.add('good'); }
+        else { b.classList.add('badpick'); }
+        fakeBtn.insertAdjacentHTML('beforeend', ' <span class="qz-flag">the fake</span>');
+        const lead = gotIt ? '<b>Caught it.</b> ' : '<b>That one’s actually true.</b> ';
+        const more = (r < ROUNDS.length - 1)
+          ? ' <button class="mg-again" type="button">Next round →</button>'
+          : ` <b>You caught ${caught} of ${ROUNDS.length}.</b> The reflex to keep: confident + specific ≠ true — verify what matters. <button class="mg-again" type="button">Play again ↺</button>`;
+        note.innerHTML = lead + esc(round.tell) + more;
+        note.querySelector(".mg-again").addEventListener('click', () => {
+          if (r < ROUNDS.length - 1) { r++; } else { r = 0; caught = 0; }
+          draw();
+        });
+      });
+      body.appendChild(b);
+    });
+  }
+  draw();
+})();
+
+/* ---------- mini-game 2: match four — glossary warm-up ---------- */
+(function initGlMatch(){
+  const tEl = document.getElementById('gmTerms'), dEl = document.getElementById('gmDefs'), note = document.getElementById('gmNote');
+  if (!tEl || !dEl || !note) return;
+  let pick = null, left = 0;
+  function newRound(){
+    const idxs = GLOSSARY.map((g, i) => i).sort(() => Math.random() - 0.5).slice(0, 4);
+    const defOrder = [...idxs].sort(() => Math.random() - 0.5);
+    left = 4; pick = null;
+    tEl.innerHTML = ''; dEl.innerHTML = ''; note.textContent = '';
+    idxs.forEach(i => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mg-opt'; b.dataset.k = i; b.textContent = GLOSSARY[i][0];
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        [...tEl.children].forEach(x => x.classList.remove('picked'));
+        pick = b; b.classList.add('picked');
+        note.textContent = 'Now tap its analogy on the right.';
+      });
+      tEl.appendChild(b);
+    });
+    defOrder.forEach(i => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mg-opt'; b.dataset.k = i; b.textContent = GLOSSARY[i][2];
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        if (!pick) { note.textContent = 'Tap a term on the left first.'; return; }
+        if (b.dataset.k === pick.dataset.k) {
+          b.disabled = true; pick.disabled = true;
+          b.classList.add('good'); pick.classList.add('good'); pick.classList.remove('picked');
+          pick = null; left--;
+          if (left) { note.textContent = `${4 - left} of 4 matched.`; }
+          else {
+            note.innerHTML = '<b>4 of 4 matched.</b> Ten more terms wait in the full list below. <button class="mg-again" type="button" id="gmAgain">New four →</button>';
+            note.querySelector('#gmAgain').addEventListener('click', newRound);
+          }
+        } else {
+          b.classList.add('badpick');
+          setTimeout(() => b.classList.remove('badpick'), 500);
+          note.textContent = 'Not that one — that analogy fits a different term.';
+        }
+      });
+      dEl.appendChild(b);
+    });
+  }
+  newRound();
+})();
+
+/* ---------- mini-game 3: flagship or small? — injected into the models card ---------- */
+(function initModelPick(){
+  const card = document.getElementById('card-models');
+  if (!card) return;
+  const host = document.createElement('div');
+  host.className = 'mg mg-incard'; host.id = 'modelPick';
+  host.innerHTML = `<div class="mg-head"><span class="mg-tag">Quick check</span><b>Flagship or small?</b>
+      <span class="mg-sub">Four everyday jobs — tap the right tool class for each.</span></div>
+    <div class="mg-body" id="mpBody"></div><div class="mg-note" id="mpNote" aria-live="polite"></div>`;
+  card.querySelector('.content').appendChild(host);
+  const JOBS = [
+    ['Draft a quick thank-you message to a friend', 'small', 'Simple and short — a small, cheap model does this instantly.'],
+    ['Untangle a 30-page contract and flag the risks', 'flagship', 'Long, high-stakes reasoning — exactly what the big models are for.'],
+    ['Auto-tag 10,000 support emails by topic', 'small', 'Each email is an easy call and there are thousands — cheap and fast wins.'],
+    ['Write and debug a tricky piece of code', 'flagship', 'Multi-step logic where mistakes compound — use the strongest reasoner.']
+  ];
+  const body = host.querySelector('#mpBody'), note = host.querySelector('#mpNote');
+  let n = 0, right = 0;
+  function draw(){
+    if (n >= JOBS.length) {
+      body.innerHTML = '';
+      // keep the final answer's explanation on screen — don't wipe it with the score
+      note.innerHTML = note.innerHTML + ` <b>${right} of ${JOBS.length}.</b> The rule of thumb sticks: flagship for hard reasoning, small for quick, high-volume, simple jobs. <button class="mg-again" type="button" id="mpAgain">Again ↺</button>`;
+      note.querySelector('#mpAgain').addEventListener('click', () => { n = 0; right = 0; note.textContent = ''; draw(); });
+      return;
+    }
+    body.innerHTML = `<p class="mg-job">${n + 1} of ${JOBS.length}: <b>${esc(JOBS[n][0])}</b></p>`;
+    ['flagship', 'small'].forEach(k => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'mg-opt';
+      b.textContent = k === 'flagship' ? 'Flagship model' : 'Small / cheap model';
+      b.addEventListener('click', () => {
+        const ok = k === JOBS[n][1];
+        if (ok) right++;
+        note.innerHTML = (ok ? '<b>Right.</b> ' : '<b>The other one, actually.</b> ') + esc(JOBS[n][2]);
+        n++; draw();
+      });
+      body.appendChild(b);
+    });
+  }
+  draw();
+})();
+
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));
 LEVELS.forEach(([key]) => initDeck(levelDeck[key]));   // one swipe deck per level group (mobile)
+
+/* ---------- clip mode: ?clip=write|peel — a looping component for recording social clips ---------- */
+(function initClipMode(){
+  const clip = new URLSearchParams(location.search).get('clip');
+  if (clip !== 'write' && clip !== 'peel') return;
+  document.documentElement.dataset.clip = clip;
+  if (clip === 'write') {
+    const b = document.getElementById('gfPause');
+    if (b) b.click();                                    // start immediately; IO keeps it running while visible
+  } else {
+    const b = document.querySelector('.pl-btn:not(.pl-up)');
+    if (b && !REDUCE) setInterval(() => b.click(), 1700); // peel loops back to layer 1 on its own
+  }
+})();
 </script>
 </body>
 </html>

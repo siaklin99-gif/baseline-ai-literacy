@@ -53,6 +53,11 @@ const sandbox = {
   addEventListener: () => {},
   // browser timer globals the page uses (animated flow); no-op stubs for the headless harness
   setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
+  // PWA globals (service worker registration guards on these)
+  navigator: {}, location: { protocol: 'file:', search: '' }, URLSearchParams,
+  btoa: (s) => Buffer.from(s, 'binary').toString('base64'),
+  atob: (s) => Buffer.from(s, 'base64').toString('binary'),
+  unescape, escape, encodeURIComponent, decodeURIComponent,
   Date, JSON, Math, parseInt, parseFloat,
 };
 sandbox.window = sandbox;

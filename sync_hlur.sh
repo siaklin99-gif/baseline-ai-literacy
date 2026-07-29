@@ -55,8 +55,8 @@ else
 fi
 
 mkdir -p "$DEST"
-cp index.html data.js og.png "$DEST/"
-echo "✓ synced index.html, data.js, og.png -> $DEST"
+cp index.html data.js og.png manifest.json sw.js icon-192.png icon-512.png "$DEST/"
+echo "✓ synced index.html, data.js, og.png, manifest.json, sw.js, icons -> $DEST"
 
 if [[ $DEPLOY -eq 0 ]]; then
   echo "  next: ./sync_hlur.sh --deploy   (or commit+deploy Hlur_Website, then: node parity.js)"

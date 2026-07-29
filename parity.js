@@ -56,6 +56,17 @@ async function get(url) {
       : bad(`data.js DIFFERS — local ${sha(localData)} vs live ${sha(liveData)} (stale deploy?)`);
   }
 
+  // the PWA files are fetched by the BROWSER (register(), manifest icons) — a deploy
+  // that drops any of them breaks install/offline INVISIBLY, so parity must fetch them
+  for (const f of ['manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png']) {
+    try {
+      const live = await get(SITE + '/' + f);
+      const local = fs.readFileSync(path.join(__dirname, f));
+      sha(live) === sha(local) ? ok(`${f} live == local (sha ${sha(live)})`)
+                               : bad(`${f} DIFFERS live vs local — PWA out of sync`);
+    } catch (e) { bad(`${f} not reachable live: ${e.message} — install/offline is broken on the deployed site`); }
+  }
+
   // index.html: assert the key structure survived the deploy
   if (liveIndex) {
     const html = liveIndex.toString();

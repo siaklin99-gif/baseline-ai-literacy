@@ -34,6 +34,10 @@ on:
       - 'index.html'
       - 'data.js'
       - 'og.png'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'icon-192.png'
+      - 'icon-512.png'
       - 'sync_hlur.sh'
       - '.github/workflows/deploy-hlur.yml'
   workflow_dispatch:   # lets you trigger a deploy by hand from the Actions tab

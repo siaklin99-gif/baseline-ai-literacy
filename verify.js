@@ -271,6 +271,10 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // clip mode: both variants + not reachable by accident (no in-page link to ?clip)
 (/data-clip/.test(html) && /clip=write\|peel|'write' && clip !== 'peel'/.test(html) && !/href="[^"]*\?clip=/.test(html))
   ? ok('clip modes present and unlinked (recording tool, not nav)') : bad('clip mode broken or linked from page');
+// the social clips must stay discoverable FROM the page, with absolute URLs (they only
+// exist on hlur.ai — a relative link would 404 on the GitHub Pages home)
+(html.includes('https://hlur.ai/baseline/clips/watch-it-write.mp4') && html.includes('https://hlur.ai/baseline/clips/peel-the-layers.mp4'))
+  ? ok('footer links both shareable clips (absolute URLs, both homes safe)') : bad('clip links missing from the page footer');
 // don't fake a produced video — point to the real one (verified https)
 (!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
   ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');

@@ -613,6 +613,20 @@ details.card[open] .chev { transform: rotate(90deg); }
 .px-btn { flex: 0 0 auto; min-height: 44px; cursor: pointer; border: none; border-radius: 999px;
   background: var(--text); color: var(--bg); font-weight: 600; font-size: 13px; padding: 8px 16px; }
 .px-note { margin-top: 8px; font-size: 12px; color: var(--text-ter); min-height: 1em; }
+/* ---------- share panel (pass it on) ---------- */
+.share-strip { padding: 6px 0 36px; }
+.share-panel { background: color-mix(in srgb, var(--g2) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--g2) 30%, var(--border-med));
+  border-radius: var(--radius); padding: 22px 24px; text-align: center; }
+.share-lead { font-size: 16px; color: var(--text); font-weight: 600; margin: 6px 0 14px; }
+.share-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.share-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 9px 18px;
+  border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; border: none;
+  background: var(--text); color: var(--bg); text-decoration: none; }
+.share-pill.ghost { background: var(--surface); color: var(--text-sec); border: 1px solid var(--border-med); font-weight: 600; }
+.share-pill.ghost:hover { border-color: var(--text-ter); }
+.share-pill:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.share-note { margin-top: 11px; font-size: 12px; color: var(--text-ter); }
 /* ---------- clip mode (?clip=write|peel): one component, full-bleed, looping —
    for screen-recording vertical social clips. Not linked from the page. ---------- */
 html[data-clip] nav, html[data-clip] header.hero, html[data-clip] .trust,
@@ -1273,6 +1287,22 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   </div>
 </section>
 
+<!-- ============ SHARE — pass it on ============ -->
+<div class="share-strip">
+  <div class="wrap">
+    <div class="share-panel">
+      <div class="slabel">Pass it on</div>
+      <p class="share-lead">Someone you know is anxious about AI. Send them the calm version.</p>
+      <div class="share-btns">
+        <button id="shareBtn" class="share-pill" type="button">🔗 Share this page</button>
+        <a class="share-pill ghost" href="https://hlur.ai/baseline/clips/watch-it-write.mp4">▸ 20s clip · watch it write</a>
+        <a class="share-pill ghost" href="https://hlur.ai/baseline/clips/peel-the-layers.mp4">▸ 20s clip · peel the layers</a>
+      </div>
+      <p class="share-note" id="shareNote" aria-live="polite">Clips are free to repost anywhere.</p>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="peek-wrap" aria-hidden="true">
     <svg viewBox="0 20 200 108" xmlns="http://www.w3.org/2000/svg">
@@ -1290,10 +1320,6 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
     <div class="foot-shell foot-note">
       <p class="line">Baseline is a starting point, not the last word — built to be honest about what's still uncertain.</p>
       <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified, and flag themselves when they age.</p>
-      <p>Share this page as a 20-second clip:
-         <a href="https://hlur.ai/baseline/clips/watch-it-write.mp4" style="color:var(--accent); text-underline-offset:3px;">watch it write</a> ·
-         <a href="https://hlur.ai/baseline/clips/peel-the-layers.mp4" style="color:var(--accent); text-underline-offset:3px;">peel the layers</a>
-         — free to repost anywhere.</p>
       <p>Spotted something stale, wrong, or confusing?
          <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
             style="color:var(--accent); text-underline-offset:3px;">Tell us here</a> — honest corrections are the point.</p>
@@ -2294,6 +2320,23 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
 initDeck(document.querySelector('.cols'));
 initDeck(document.getElementById('bodymap'));
 LEVELS.forEach(([key]) => initDeck(levelDeck[key]));   // one swipe deck per level group (mobile)
+
+/* ---------- share: native sheet on phones, copy-link everywhere else ---------- */
+(function initShare(){
+  const btn = document.getElementById('shareBtn'), note = document.getElementById('shareNote');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const data = { title: 'Baseline — reset your AI literacy',
+      text: 'What AI really is, from one calm page — free, no signup.',
+      url: 'https://hlur.ai/baseline/' };
+    if (navigator.share) {
+      try { await navigator.share(data); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }   // dismissed = done; real errors → copy fallback
+    }
+    try { await navigator.clipboard.writeText(data.url); note.textContent = 'Link copied — paste it anywhere.'; }
+    catch (e) { note.textContent = data.url; }
+  });
+})();
 
 /* ---------- clip mode: ?clip=write|peel — a looping component for recording social clips ---------- */
 (function initClipMode(){

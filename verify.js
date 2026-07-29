@@ -172,6 +172,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (['card-tokens','card-attention','card-training','card-assistant'].every(id => html.includes(`id="${id}"`)) && /king − man \+ woman ≈ queen/.test(html))
   ? ok('full mechanism ladder present (tokens · attention · training · fine-tuning)') : bad('a mechanism deep-dive card is missing');
 // the animated flow: 4 clickable stages + build chips → deep-dives, has a pause control, reduced-motion-safe
+// install button must have a no-prompt fallback (Safari never fires beforeinstallprompt)
+(/setTimeout\(\(\) => \{ if \(!pwaPrompt/.test(html) && html.includes('id="pwaHow"') && /display-mode: standalone/.test(html))
+  ? ok('install button has Safari fallback + standalone detection') : bad('install fallback missing — Safari users get no install path');
 (html.includes('id="gptflow"') && (html.match(/class="gf-stage/g) || []).length >= 4
   && html.includes('data-card="card-attention"') && html.includes('data-card="card-training"')
   && html.includes('id="gfPause"') && /prefers-reduced-motion[^}]*gf-fill/.test(html))

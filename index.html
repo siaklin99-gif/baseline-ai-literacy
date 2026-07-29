@@ -832,6 +832,12 @@ footer { margin-top: 30px; }
     <div class="lc-day" id="lcDay"></div>
     <div class="lc-tools">
       <button id="pwaInstall" class="lc-reset" type="button" hidden>📲 Install as an app — works offline</button>
+      <div class="px-panel" id="pwaHow" hidden>
+        <p class="px-line"><b>iPhone / iPad:</b> in Safari, tap the Share button → <b>Add to Home Screen</b>.</p>
+        <p class="px-line"><b>Mac (Safari):</b> File menu → <b>Add to Dock</b>.</p>
+        <p class="px-line"><b>Chrome / Edge:</b> browser menu → <b>Install Baseline</b> (or the install icon in the address bar).</p>
+        <p class="px-note">Once installed it opens like any app and keeps working offline.</p>
+      </div>
       <button id="pxToggle" class="lc-reset" type="button">⇄ Move progress to another device</button>
       <button id="lcReset" class="lc-reset" type="button" hidden>↺ Reset my progress</button>
     </div>
@@ -1815,19 +1821,34 @@ try {
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});   // sw is additive; failure = plain site
 }
+/* Install button, three situations:
+   1. Chrome/Edge fire beforeinstallprompt → native install dialog.
+   2. Safari NEVER fires it → after a short wait, show the button anyway and
+      open per-platform instructions (Share → Add to Home Screen / Add to Dock).
+   3. Already running as the installed app → no button at all. */
 let pwaPrompt = null;
+const pwaBtn = document.getElementById('pwaInstall');
+const pwaStandalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   pwaPrompt = e;
-  const b = document.getElementById('pwaInstall');
-  if (b) b.hidden = false;
+  if (pwaBtn && !pwaStandalone) pwaBtn.hidden = false;
 });
-document.getElementById('pwaInstall').addEventListener('click', async () => {
-  if (!pwaPrompt) return;
-  pwaPrompt.prompt();
-  await pwaPrompt.userChoice;
-  pwaPrompt = null;
-  document.getElementById('pwaInstall').hidden = true;
+if (!pwaStandalone && location.protocol.startsWith('http')) {
+  setTimeout(() => { if (!pwaPrompt && pwaBtn) pwaBtn.hidden = false; }, 2500);  // Safari path
+}
+pwaBtn.addEventListener('click', async () => {
+  if (pwaPrompt) {                                  // native prompt available
+    try {
+      pwaPrompt.prompt();
+      await pwaPrompt.userChoice;
+      pwaPrompt = null;
+      pwaBtn.hidden = true;
+      return;
+    } catch (e) { /* prompt refused (no gesture, already consumed) — fall through to instructions */ }
+  }
+  const note = document.getElementById('pwaHow');   // Safari & friends: show how instead
+  if (note) note.hidden = !note.hidden;
 });
 
 /* ---------- progress transfer: a copyable code instead of accounts ---------- */

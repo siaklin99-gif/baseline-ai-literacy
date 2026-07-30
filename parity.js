@@ -24,11 +24,23 @@ const ok  = (m) => { checks++; console.log('  \x1b[32m✓\x1b[0m ' + m); };
 const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b[0m'); };
 const sha = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 16);
 
-async function get(url) {
-  const ctl = AbortSignal.timeout(15000);
-  const r = await fetch(url, { redirect: 'follow', signal: ctl });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return Buffer.from(await r.arrayBuffer());
+/* Retry on transient network failure. This blocked CI twice with
+   "sw.js not reachable live: fetch failed" while the file was demonstrably 200 from
+   another machine seconds later. A guard that cries wolf on a flaky socket teaches
+   people to re-run it until it goes green, which is exactly how a REAL failure gets
+   waved through. Three tries with backoff; a genuine 404 or mismatch still fails,
+   because only the fetch is retried, never the comparison. */
+async function get(url, tries = 3) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    if (i) await new Promise(r => setTimeout(r, 1200 * i));
+    try {
+      const r = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(15000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);          // a 404 is real; still retried
+      return Buffer.from(await r.arrayBuffer());               // in case it is a cold edge
+    } catch (e) { last = e; }
+  }
+  throw new Error(`${last.message} (after ${tries} attempts)`);
 }
 
 (async () => {

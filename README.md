@@ -14,7 +14,30 @@ No build step, no framework, no server: open `index.html`.
 | `test/functions.test.js` | Adversarial unit tests of the page's real functions (escaping, freshness math, malformed data). |
 | `test/invariants.js` | Repo-wide syntax / forbidden-marker / leaked-token sweep. |
 | `crosscheck.js` | Renders the page in real Chrome (desktop/mobile × light/dark), checks layout + source⇄DOM parity, saves screenshots to `crosscheck_shots/`. |
+| `layout.js` | Width, alignment and **desktop-vs-mobile structure** across 4 viewports; compares against `layout_baseline.json`. |
+| `layout_baseline.json` | The committed layout fingerprint. Changing it is a reviewable diff, not a silent drift. |
 | `selfcheck` | Runs everything. |
+
+## Can I trust the layout?
+
+Not on anyone's word — run it. `crosscheck.js` measures the *container* and once passed
+52/52 while the footer rendered its text in a 560px column inside a 1200px shell, using
+under half the width the page had. `layout.js` exists because of that miss, and it fails
+on that exact code. It checks, at 1440 / 1280 / 768 / 390 px:
+
+1. **One column** — every content container shares one left edge and width. Anything
+   deliberately narrower must be declared in `NARROW_BY_DESIGN` *with a reason*, and an
+   exemption that stops being narrow is reported as stale.
+2. **Text fill** — no long paragraph renders under 55% of the box it sits in. Grid cells
+   are measured against their own column, so a real 3-up layout isn't a false alarm.
+3. **No horizontal overflow.**
+4. **Structure lock** — content widths and grid column counts are compared to
+   `layout_baseline.json`. If an edit turns the topic cards from 2-up to 1-up on desktop,
+   or the footer from 3 columns to 1, the run **fails** and names the change. Accepting a
+   change is deliberate: `node layout.js --update`, which shows up in the diff.
+
+Point 4 is the answer to "how do I know an update didn't break the desktop or mobile
+structure?" — you don't take my word for it, you re-run the harness and read the diff.
 
 ## Verifying it
 
@@ -23,9 +46,14 @@ No `npm install` — all Node built-ins.
 
 ```sh
 ./selfcheck          # fast, offline: static + units + invariants  (safe for pre-commit)
-./selfcheck --full   # also renders in headless Chrome and saves screenshots
+./selfcheck --full   # also renders in headless Chrome: crosscheck + layout, saves screenshots
 ./selfcheck --live   # fetches the deployed site and checks it matches local source
 ```
+
+**Every UI change should run `./selfcheck --full`**, which is the three-way cross-check:
+source (`verify.js`) ⇄ rendered desktop and mobile geometry (`layout.js`) ⇄ rendered DOM
+and pixels (`crosscheck.js`, which writes `crosscheck_shots/*.png` for a human to read).
+Numbers matching is not the same as looking right — open the PNGs.
 
 Deployed via **GitHub Pages** from `main` (root). `parity.js` proves the live
 site matches local: `data.js` must be byte-identical (SHA-256) and every key

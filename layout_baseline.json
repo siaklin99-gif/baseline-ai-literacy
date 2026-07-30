@@ -1,0 +1,42 @@
+{
+  "desktop-1440": {
+    "wrapX": 250,
+    "wrapW": 940,
+    "grids": {
+      "#cards .tg-deck": 2,
+      ".foot-cols": 3,
+      ".path-pick": 4,
+      ".trust": 1
+    }
+  },
+  "desktop-1280": {
+    "wrapX": 170,
+    "wrapW": 940,
+    "grids": {
+      "#cards .tg-deck": 2,
+      ".foot-cols": 3,
+      ".path-pick": 4,
+      ".trust": 1
+    }
+  },
+  "tablet-768": {
+    "wrapX": 0,
+    "wrapW": 768,
+    "grids": {
+      "#cards .tg-deck": 2,
+      ".foot-cols": 2,
+      ".path-pick": 4,
+      ".trust": 1
+    }
+  },
+  "mobile-390": {
+    "wrapX": 0,
+    "wrapW": 390,
+    "grids": {
+      "#cards .tg-deck": 8,
+      ".foot-cols": 1,
+      ".path-pick": 4,
+      ".trust": 1
+    }
+  }
+}

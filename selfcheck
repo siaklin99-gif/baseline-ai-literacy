@@ -31,6 +31,10 @@ step "universal invariants"               node test/invariants.js
 # heavy / live path — opt-in
 if [ "${1:-}" = "--full" ]; then
   step "rendered crosscheck (headless Chrome, 4 combos)" node crosscheck.js
+  # width/alignment/structure. crosscheck measures the CONTAINER and passed 52/52 on a
+  # footer whose text used 47% of its box — this measures the text and locks the
+  # desktop-vs-mobile structure to a committed baseline.
+  step "layout: width use + structure lock (4 viewports)" node layout.js
 elif [ "${1:-}" = "--live" ]; then
   step "source⇄live parity (fetches the deployed site)" node parity.js
 else

@@ -518,7 +518,12 @@ g(/mailto:hello@hlur\.ai\?subject=Baseline/.test(html), 'feedback no longer requ
     const code = fn.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
     const parts = [
       [/const EVENTS = \['load'/.test(code) && /EVENTS\.includes\(e\)/.test(code), 'allowlists events server-side'],
-      [!/headers\.get|x-forwarded-for|user-agent|cookie/i.test(code), 'reads no IP/user-agent/cookie'],
+      // Origin names a SITE, not a person, and is used only to reject cross-site posts —
+      // so reading it is allowed. Anything that identifies a HUMAN stays banned, and the
+      // header value must never reach the store either.
+      [!/x-forwarded-for|user-agent|['"]cookie|referer|client-ip|x-nf-/i.test(code)
+        && !/headers\.get\((?!\s*['"]origin['"])/i.test(code)
+        && !/set(JSON)?\([^)]*origin/i.test(code), 'reads no IP/user-agent/cookie/referer, and stores no header'],
       [/return null;/.test(code) && /import\('@netlify\/blobs'\)/.test(code), 'fails soft without storage']
     ];
     const failed = parts.filter(p => !p[0]).map(p => p[1]);

@@ -45,9 +45,15 @@ let fails = 0, checks = 0;
 const ok  = (m) => { checks++; console.log('  \x1b[32m✓\x1b[0m ' + m); };
 const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b[0m'); };
 
+// Dark mode used to be rendered but never COMPARED — crosscheck.js screenshots it and
+// nothing checked those pixels, so a dark-only regression (a colour that vanishes into the
+// background, a chip that turns invisible) could ship unnoticed. Both themes now diff, and
+// the contrast scan runs against dark surfaces too.
 const VIEWS = [
-  { name: 'desktop', w: 1280, h: 900, mobile: false },
-  { name: 'mobile',  w: 390,  h: 844, mobile: true },
+  { name: 'desktop',      w: 1280, h: 900, mobile: false, theme: 'light' },
+  { name: 'mobile',       w: 390,  h: 844, mobile: true,  theme: 'light' },
+  { name: 'desktop-dark', w: 1280, h: 900, mobile: false, theme: 'dark'  },
+  { name: 'mobile-dark',  w: 390,  h: 844, mobile: true,  theme: 'dark'  },
 ];
 const SECTIONS = ['header', '#try', '#circle', '#layers', '#reality', '#bodysec',
                   '#topics', '#labs', '#quizsec', '.share-strip', 'footer'];
@@ -243,7 +249,7 @@ async function main() {
 
     for (const v of VIEWS) {
       await send('Emulation.setDeviceMetricsOverride', { width: v.w, height: v.h, deviceScaleFactor: 1, mobile: v.mobile }, sid);
-      await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] }, sid);
+      await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: v.theme }] }, sid);
       await send('Page.navigate', { url: PAGE_URL }, sid);
       await sleep(1600);
       const { result } = await send('Runtime.evaluate', { expression: PROBE, returnByValue: true }, sid);

@@ -63,7 +63,10 @@
   :root {
     --bg: #1a1a18; --surface: #242422; --surface2: #2c2c2a;
     --border: rgba(255,255,255,0.08); --border-med: rgba(255,255,255,0.15);
-    --text: #f1f0ec; --text-sec: #b4b2a9; --text-ter: #888780;
+    /* #888780 was only 3.53:1 on the tinted dark panels — 82 low-contrast runs that
+       nothing checked until visual.js started diffing dark mode. #a09e94 clears 4.5
+       on every dark surface (worst 4.73:1). */
+    --text: #f1f0ec; --text-sec: #b4b2a9; --text-ter: #a09e94;
     --green: #5dcaa5; --green-bg: #085041;
     --red: #f09595; --red-bg: #501313;
     --amber: #ef9f27; --amber-bg: #412402;
@@ -71,7 +74,7 @@
     --violet: #b6a2f5; --violet-bg: #241a45;
     /* brand chrome tokens, dark variants (match the rest of the site) */
     --teal: #4fae9d; --lur-body: #9AD3C6; --coral-btn: #f0a58f; --coral-btn-text: #1c130e;
-    --accent: #6f97ff;
+    --accent: #7ba1ff;   /* +1 step: #6f97ff sat at 4.4999:1 on the dark example panels */
     --g1: #6f97ff; --g2: #a48cff; --g3: #3fd6c4;
     --grad-text: linear-gradient(115deg, #85b7eb, #b9a5ff);   /* light stops for dark bg (>=6.6:1) */
     --cb-shadow: rgba(0,0,0,0.65);   /* stronger on dark — a faint black shadow vanishes there */
@@ -458,6 +461,10 @@ details.card[open] .chev { transform: rotate(90deg); }
 .codeblock pre { margin: 0; white-space: pre; color: var(--text); line-height: 1.55; font-size: 13px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .codeblock .cm { color: var(--text-ter); }   /* comments */
+/* Safety net: an <a> in card prose with no colour rule falls back to the browser's
+   default blue, which is 1.65:1 on a dark background — effectively invisible. That
+   shipped on the two Karpathy links. One rule so it cannot happen again. */
+.content a, .ssub a, .foot-note a { color: var(--accent); text-underline-offset: 3px; }
 /* code hidden behind a click — opt-in for readers who want the source */
 .codetoggle { margin: 10px 0; }
 .codetoggle:not([open]) > *:not(summary) { display: none; }   /* guarantee the code hides when closed */

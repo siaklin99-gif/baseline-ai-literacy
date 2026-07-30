@@ -35,6 +35,9 @@ if [ "${1:-}" = "--full" ]; then
   # footer whose text used 47% of its box — this measures the text and locks the
   # desktop-vs-mobile structure to a committed baseline.
   step "layout: width use + structure lock (4 viewports)" node layout.js
+  # the visual pass, automated: contrast/clipping/overlap/blank scans that need no
+  # reference, plus a pixel diff of every section against committed approved images.
+  step "visual: defect scans + pixel diff vs approved refs" node visual.js
 elif [ "${1:-}" = "--live" ]; then
   step "source⇄live parity (fetches the deployed site)" node parity.js
 else

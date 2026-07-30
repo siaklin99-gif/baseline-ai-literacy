@@ -1,2 +1,5 @@
 .DS_Store
 crosscheck_shots/
+
+# visual diffs are run output, not source (references in visual_ref/ ARE committed)
+visual_diff/

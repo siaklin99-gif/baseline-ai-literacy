@@ -16,6 +16,8 @@ No build step, no framework, no server: open `index.html`.
 | `crosscheck.js` | Renders the page in real Chrome (desktop/mobile × light/dark), checks layout + source⇄DOM parity, saves screenshots to `crosscheck_shots/`. |
 | `layout.js` | Width, alignment and **desktop-vs-mobile structure** across 4 viewports; compares against `layout_baseline.json`. |
 | `layout_baseline.json` | The committed layout fingerprint. Changing it is a reviewable diff, not a silent drift. |
+| `visual.js` | **The visual pass, automated**: contrast / clipped text / overlapping controls / blank sections, plus a pixel diff of every section against `visual_ref/`. |
+| `visual_ref/` | Approved reference images (11 sections × desktop + mobile). `node visual.js --update` re-approves. |
 | `selfcheck` | Runs everything. |
 
 ## Can I trust the layout?
@@ -38,6 +40,28 @@ on that exact code. It checks, at 1440 / 1280 / 768 / 390 px:
 
 Point 4 is the answer to "how do I know an update didn't break the desktop or mobile
 structure?" — you don't take my word for it, you re-run the harness and read the diff.
+
+## Does it still *look* right?
+
+`visual.js` answers that without anyone opening a PNG:
+
+- **Defect scans** (no reference needed, so they can fail on a first run): text below its
+  WCAG contrast minimum, text clipped by its own box, overlapping tap targets, sections
+  that render tall but empty.
+- **Pixel diff**: each of 11 sections × desktop + mobile is compared to an approved image
+  in `visual_ref/`. Dates and shuffles are pinned before page load so runs are identical;
+  a real change fails the run, names the section and the changed region, and writes
+  before/after crops to `visual_diff/`.
+
+Both layers were **falsified before being trusted**: a 4px padding change and a subtle text
+colour change each make it fail; the unchanged page diffs 0.00%. Its own first run produced
+54 contrast "failures" that were all the harness's bugs — gradient backgrounds, and
+`color(srgb 0.96 …)` values parsed as if they were 0–255. Those are fixed; the 54 became a
+real, smaller finding (accent blue and tertiary grey fell below 4.5:1 on tinted panels),
+which is why `--accent` and `--text-ter` are slightly deeper than they used to be.
+
+What it still cannot do: tell you the design is *good*. It tells you the design is what you
+last approved, and that it breaks no objective rule.
 
 ## Verifying it
 

@@ -31,14 +31,21 @@
 :root {
   --bg: #f9f8f6; --surface: #ffffff; --surface2: #f1f0ec;
   --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.15);
-  --text: #1a1a18; --text-sec: #5f5e5a; --text-ter: #6e6d67;   /* AA-compliant on light bg (4.9:1); dark mode keeps #888780 */
+  /* #6e6d67 was AA on the PAGE background (4.89:1) but only 4.20:1 on the tinted
+     example panels, where most tertiary text actually sits. #68675f clears 4.5 on
+     every surface the page uses. Measured by visual.js, not guessed. */
+  --text: #1a1a18; --text-sec: #5f5e5a; --text-ter: #68675f;   /* AA on every surface incl. tinted panels (worst 4.60:1) */
   --green: #0f6e56; --green-bg: #e1f5ee;
   --red: #a32d2d; --red-bg: #fcebeb;
   --amber: #854f0b; --amber-bg: #faeeda;
   --blue: #185fa5; --blue-bg: #e6f1fb;
   --violet: #6d4bd8; --violet-bg: #efeaff;
   --radius: 14px; --radius-sm: 8px;
-  --accent: #2f6bff;
+  /* was #2f6bff — only 3.64:1 on the tinted panels where the small "Like"/"Everyday"
+     labels and glossary terms live. #285bd9 is the same blue, deep enough to clear 4.5
+     on every surface (worst 4.74:1). --g1 below is UNCHANGED, so the gradient that
+     carries the brand identity looks exactly as it did. */
+  --accent: #285bd9;
   /* AI gradient identity: electric blue -> violet -> teal */
   --g1: #2f6bff; --g2: #7a5cff; --g3: #12b8a6;
   --grad: linear-gradient(115deg, var(--g1), var(--g2) 52%, var(--g3));

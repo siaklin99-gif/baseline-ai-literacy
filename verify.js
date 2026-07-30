@@ -483,6 +483,16 @@ g(/\.codeblock \{[^}]*background-attachment: local, local, scroll, scroll, local
 g(/hide: \['#howllm'/.test(html) && /hide: \['#try'/.test(html), 'start paths hide off-path sections (not just tint rows)');
 g(html.includes('.path-off { display: none !important; }'), 'off-path content is hidden by class (restorable, not deleted)');
 g(html.includes("id=\"pathAll\"") || html.includes("'pathAll'"), 'a one-tap "Show everything" escape exists');
+// Shortening the page must stay OPT-IN. Hiding four sections the moment someone picks a
+// starting point makes the page look like it holds less than it does, and a reader who
+// did not ask for less should not silently get less.
+g(html.includes("say(key, false);                       // nothing hidden until asked"),
+  'picking a start path hides NOTHING by default — it only marks the route');
+g(html.includes("id=\"pathFocus\"") && /Show just this path/.test(html),
+  'focusing is an explicit, labelled choice the reader makes');
+g(/only the PATH is restored, never the focused state/.test(html),
+  'a returning visitor always lands on the complete page (focus is never persisted)');
+g(/id="lab-checking" open/.test(html), 'Lab 002 is expanded by default, like Lab 001');
 g(html.includes("t.closest('.path-off')"), 'links into hidden content reveal it instead of scrolling to nothing');
 // labs must not carry an undated promise, and must offer a way to be reached
 g(!/More labs land here/.test(html), 'undated "more labs coming" promise removed');

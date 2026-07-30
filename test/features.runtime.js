@@ -111,10 +111,16 @@ async function main() {
     await nav(390, 844, true);
     await evl(`document.querySelectorAll('details').forEach(d=>d.open=true); void document.body.offsetHeight;`);
     const base = await measure('base');
+    // picking a path must hide NOTHING; focusing is a second, explicit tap
     await evl(`[...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='new').click(); void document.body.offsetHeight;`);
+    const marked = await measure('marked');
+    (marked.hidden === 0 && marked.status.includes('whole page is still here'))
+      ? ok('path pick marks the route and hides nothing (shortening is opt-in)')
+      : bad(`path pick hid ${marked.hidden} section(s) without being asked: ${marked.status}`);
+    await evl(`document.getElementById('pathFocus').click(); void document.body.offsetHeight;`);
     const asNew = await measure('new');
     (asNew.words < base.words && asNew.hidden >= 2)
-      ? ok(`path "New to AI": ${base.words} → ${asNew.words} words, ${base.screens} → ${asNew.screens} screens, ${asNew.hidden} sections tucked away`)
+      ? ok(`focus "New to AI": ${base.words} → ${asNew.words} words, ${base.screens} → ${asNew.screens} screens, ${asNew.hidden} sections tucked away`)
       : bad(`path "New to AI" did not filter: ${JSON.stringify(asNew)}`);
     (asNew.words < 3000 && asNew.screens < 15)
       ? ok(`path "New to AI" meets the target (<3000 words, <15 screens)`)
@@ -131,6 +137,7 @@ async function main() {
     await nav(390, 844, true);
     await evl(`document.querySelectorAll('details').forEach(d=>d.open=true); void document.body.offsetHeight;`);
     await evl(`[...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='tech').click(); void document.body.offsetHeight;`);
+    await evl(`document.getElementById('pathFocus').click(); void document.body.offsetHeight;`);
     const asTech = await measure('tech');
     (asTech.words < base.words && asTech.hidden >= 2)
       ? ok(`path "Techie": ${base.words} → ${asTech.words} words, ${asTech.screens} screens, ${asTech.hidden} sections tucked away`)
@@ -142,6 +149,7 @@ async function main() {
     await nav(390, 844, true);
     r = await evl(`(function(){
       [...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='tech').click();
+      document.getElementById('pathFocus').click();
       const hiddenBefore = document.querySelectorAll('.path-off').length;
       const tryHidden = !!document.querySelector('#try.path-off');
       // the hero CTA points at #try, which the techie path hides
@@ -158,6 +166,7 @@ async function main() {
     await nav(390, 844, true);
     r = await evl(`(function(){
       [...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='new').click();
+      document.getElementById('pathFocus').click();
       const hidden = !!document.querySelector('#howllm.path-off');
       // the numbered ring node for step 6 ("Peek under the hood") is NOT a link
       const node = document.querySelectorAll('.lc-node')[5] || document.querySelectorAll('[class*=lc-node]')[5];
@@ -173,6 +182,7 @@ async function main() {
     await send('Page.navigate', { url: 'about:blank' }, sid); await sleep(250);
     await send('Page.navigate', { url: PAGE_URL + '#howllm' }, sid); await sleep(1600);
     r = await evl(`(function(){
+      const f=document.getElementById('pathFocus'); if(f) f.click();
       const el=document.getElementById('howllm');
       return { hidden: !!el.closest('.path-off'), display: getComputedStyle(el).display,
                otherStillHidden: document.querySelectorAll('.path-off').length };

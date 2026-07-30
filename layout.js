@@ -23,7 +23,7 @@
                           silently. `--update` rewrites the baseline on purpose,
                           which shows up as a reviewable diff.
 
-   Checks 1-4 are absolute rules. Check 5 is the regression lock: it is what makes
+   Checks 1-2 are absolute rules. Check 3 is the regression lock: it is what makes
    "I didn't break the layout" a fact you can re-run rather than a claim you have
    to take on trust.
    ============================================================ */
@@ -201,8 +201,9 @@ async function main() {
         : bad(`${tag} ${r.starved.length} text block(s) waste their box: ` +
               r.starved.slice(0, 3).map(s => `<${s.tag}${s.cls ? '.' + s.cls.split(' ')[0] : ''}> ${s.w}px in ${s.parent}px (${s.pct}%) "${s.txt}…"`).join(' | '));
 
-      // 4. overflow
-      r.overflow <= 0 ? ok(`${tag} no horizontal overflow`) : bad(`${tag} horizontal overflow: ${r.overflow}px`);
+      // NOTE: horizontal overflow is deliberately NOT checked here — crosscheck.js already
+      // owns it. Two harnesses asserting the same thing drift apart, and the bug lives at
+      // the seam (ONE SOURCE OF TRUTH).
 
       // 5. structure lock
       fresh[v.name] = { wrapX: xs[0], wrapW: ws_[0], grids: r.grids };

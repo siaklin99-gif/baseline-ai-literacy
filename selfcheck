@@ -26,6 +26,10 @@ echo "=================================================="
 # fast / offline path — safe for a pre-commit hook (no network, no browser)
 step "static + data + regression guards"  node verify.js
 step "adversarial unit tests"             node test/functions.test.js
+# property/oracle over RANDOM scenarios, with an oracle that does NOT import the page's
+# constants. Fixture tests pin the output shape and cement a wrong claim as the baseline;
+# this asserts invariants no single example can cement (Generated-Claims Rule).
+step "generated-claims property harness"  node test/claims_harness.js
 step "universal invariants"               node test/invariants.js
 
 # heavy / live path — opt-in
@@ -38,6 +42,11 @@ if [ "${1:-}" = "--full" ]; then
   # the visual pass, automated: contrast/clipping/overlap/blank scans that need no
   # reference, plus a pixel diff of every section against committed approved images.
   step "visual: defect scans + pixel diff vs approved refs" node visual.js
+  # the interaction tests: these drive the real page (spaced repetition, path filtering,
+  # tally gating, Labs) in a browser. They used to live in a temp dir, which meant nobody
+  # but me could re-run them — the opposite of the point.
+  step "runtime: return loop + spaced repetition"  node test/return-loop.runtime.js
+  step "runtime: paths, playground, labs, tally"   node test/features.runtime.js
 elif [ "${1:-}" = "--live" ]; then
   step "source⇄live parity (fetches the deployed site)" node parity.js
 else

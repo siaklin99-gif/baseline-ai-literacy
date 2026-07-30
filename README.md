@@ -12,6 +12,9 @@ No build step, no framework, no server: open `index.html`.
 | `data.js` | **The only file to edit when facts change** (models, prices, books). Each entry has an `asOf` date; the page stamps every card with its freshness. |
 | `verify.js` | Static + data-shape + regression checks. |
 | `test/functions.test.js` | Adversarial unit tests of the page's real functions (escaping, freshness math, malformed data). |
+| `test/claims_harness.js` | **Property/oracle** harness: random scenarios against an independent oracle, so a wrong *sentence* can't hide behind a right *number*. |
+| `test/features.runtime.js`, `test/return-loop.runtime.js` | Drive the real page in a browser: spaced repetition, path filtering, tally gating, Labs. |
+| `test/_load.js` | Shared loader that runs the page's inline script headless — one copy, so the suites can't drift. |
 | `test/invariants.js` | Repo-wide syntax / forbidden-marker / leaked-token sweep. |
 | `crosscheck.js` | Renders the page in real Chrome (desktop/mobile × light/dark), checks layout + source⇄DOM parity, saves screenshots to `crosscheck_shots/`. |
 | `layout.js` | Width, alignment and **desktop-vs-mobile structure** across 4 viewports; compares against `layout_baseline.json`. |
@@ -62,6 +65,23 @@ which is why `--accent` and `--text-ter` are slightly deeper than they used to b
 
 What it still cannot do: tell you the design is *good*. It tells you the design is what you
 last approved, and that it breaks no objective rule.
+
+## Are the *sentences* true?
+
+Tests check arithmetic; they do not check English, and a correct number inside a false
+sentence passes everything else here — that already happened once, when the footer claimed
+the page "counts two things" while the code sent four.
+
+`test/claims_harness.js` runs **random** scenarios (400 schedule cases, 200 monotonicity
+cases, 16 hostile storage payloads) and asserts invariants no single example can cement:
+the chip text always matches what was stored, a wrong answer can never say "locked in", a
+correct answer never makes things worse, and untrusted storage can never produce a count
+the page cannot justify. **The oracle is re-declared inside the harness, never imported** —
+a shared constant would be a shared bug.
+
+It was falsified before being trusted: changing the schedule from 7 to 8 days, granting
+un-spaced wins, or dropping the de-dup guard each make it fail, and it names which
+invariant broke.
 
 ## Verifying it
 

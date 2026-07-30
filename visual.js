@@ -172,7 +172,11 @@ const PROBE = `(function(){
     if (!el || !vis(el)) { rects[sel] = null; return; }
     const r = el.getBoundingClientRect();
     rects[sel] = { x: Math.max(0, Math.round(r.x + scrollX)), y: Math.max(0, Math.round(r.y + scrollY)),
-                   w: Math.round(r.width), h: Math.min(Math.round(r.height), 4000) };
+                   // 4000 silently truncated #topics (6013px on mobile): a THIRD of the
+                   // biggest section was never compared, so a regression there would pass.
+                   // 16000 is Chrome's practical capture ceiling; beyond it we FLAG rather
+                   // than quietly diff a partial image and call it a match.
+                   w: Math.round(r.width), h: Math.round(r.height), tooTall: r.height > 16000 };
   });
 
   return { faint, clipped, overlaps, blank, rects };
@@ -263,6 +267,7 @@ async function main() {
       for (const sel of SECTIONS) {
         const rect = r.rects[sel];
         if (!rect || rect.w < 10 || rect.h < 10) continue;
+        if (rect.tooTall) { bad(`${tag} ${sel} is ${rect.h}px — beyond capture range, NOT diffed`); continue; }
         const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true,
           clip: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, scale: SCALE } }, sid);
         const b64 = shot.result.data;

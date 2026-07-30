@@ -191,9 +191,45 @@ async function main() {
                mail: !!document.querySelector('.lab-next a[href^="mailto:"]'),
                undated: document.body.innerText.includes('More labs land here') };
     })()`);
-    (r.present && r.mail && !r.undated && /Lab 002/.test(r.text))
-      ? ok('Labs: 002 named, reachable by email, undated promise gone')
+    // Lab 002 SHIPPED, so the next-block no longer names it. What must stay true is the
+    // substance: reachable without an account, and no undated promise of a specific lab.
+    (r.present && r.mail && !r.undated && /No schedule promised/.test(r.text))
+      ? ok('Labs: reachable by email, and promises no cadence it might not keep')
       : bad('Labs next block: ' + JSON.stringify(r));
+
+    /* ---- Lab 002: triage exercise ---- */
+    await evl(`localStorage.clear()`);
+    await nav(390, 844, true);
+    r = await evl(`(function(){
+      const cards=[...document.querySelectorAll('#triage .tri-c')];
+      if(cards.length!==5) return {err:'expected 5 claims, got '+cards.length};
+      // flag the two that matter (indexes 1 and 2) and nothing else
+      cards[1].click(); cards[2].click();
+      const pressed=cards.filter(c=>c.getAttribute('aria-pressed')==='true').length;
+      document.getElementById('triGo').click();
+      const out=document.getElementById('triOut').textContent;
+      const hits=document.querySelectorAll('#triage .tri-c.hit').length;
+      const musts=document.querySelectorAll('#triage .tri-c.must').length;
+      const safes=document.querySelectorAll('#triage .tri-c.safe').length;
+      const everyTagged=cards.every(c=>c.querySelector('.tri-tag'));
+      // clicking again after scoring must not change anything
+      cards[0].click();
+      const afterLock=document.querySelectorAll('#triage .tri-c.on').length;
+      document.getElementById('triAgain').click();
+      const reset=document.querySelectorAll('#triage .tri-tag').length;
+      return {pressed,out:out.slice(0,60),hits,musts,safes,everyTagged,afterLock,reset,
+              goHidden:document.getElementById('triGo').hidden};
+    })()`);
+    if (r.err) bad('lab002: ' + r.err);
+    else {
+      (r.pressed === 2 && r.hits === 2 && r.musts === 2 && r.safes === 3)
+        ? ok('lab002: 5 claims, 2 must-check / 3 safe, both caught scored correctly')
+        : bad(`lab002: pressed=${r.pressed} hits=${r.hits} musts=${r.musts} safes=${r.safes}`);
+      r.out.includes('Exactly right') ? ok('lab002: perfect triage gets the "exactly right" verdict') : bad('lab002 verdict: ' + r.out);
+      r.everyTagged ? ok('lab002: every claim explains itself after scoring') : bad('lab002: a claim had no explanation');
+      r.afterLock === 0 ? ok('lab002: claims lock after scoring (no re-answering)') : bad('lab002: still editable after scoring');
+      (r.reset === 0 && !r.goHidden) ? ok('lab002: reset restores a clean, replayable state') : bad(`lab002 reset: tags=${r.reset} goHidden=${r.goHidden}`);
+    }
 
     /* ---- tally must be inert off hlur.ai ---- */
     const tallyCalls = requests.filter(u => u.includes('/tally'));

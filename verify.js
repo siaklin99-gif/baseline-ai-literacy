@@ -486,6 +486,15 @@ g(html.includes("id=\"pathAll\"") || html.includes("'pathAll'"), 'a one-tap "Sho
 g(html.includes("t.closest('.path-off')"), 'links into hidden content reveal it instead of scrolling to nothing');
 // labs must not carry an undated promise, and must offer a way to be reached
 g(!/More labs land here/.test(html), 'undated "more labs coming" promise removed');
+// Lab 002 must stay an EXERCISE, not an essay: tappable claims, a scored verdict, a reset,
+// and the honesty label saying the sample answer is written for the lab, not quoted.
+g(html.includes('id="lab-checking"') && html.includes('id="triage"'), 'Lab 002 present as an interactive triage');
+g(/must: true/.test(html) && (html.match(/must: (true|false)/g) || []).length >= 5,
+  'Lab 002 classifies at least 5 claims by whether they are worth checking');
+g(/not quoted from any real assistant/.test(html) && /nothing here is legal advice/.test(html),
+  'Lab 002 labels its sample answer as constructed, and disclaims legal advice');
+g(html.includes('id="triAgain"'), 'Lab 002 is replayable (reset control)');
+g(!/Lab 002[^<]*In progress/.test(html), 'the "Lab 002 in progress" promise is discharged, not still pending');
 g(/Lab 002/.test(html) && /mailto:hello@hlur\.ai\?subject=labs/.test(html), 'Lab 002 named + a zero-infra way to be told when it lands');
 g(/shipped 2026-\d{2}-\d{2}/.test(html), 'Lab 001 carries its ship date');
 // the usage tally: allowlisted, host-gated, non-fatal, and honestly disclosed

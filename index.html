@@ -572,6 +572,23 @@ details.card[open] .chev { transform: rotate(90deg); }
 .lab-score b { color: var(--green); }
 .lab-copy { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: none; background: var(--text); color: var(--bg);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+/* lab 002: triage a confident answer — tap what you'd verify */
+.tri { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 14px 0; }
+.tri-q { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+.tri-a { display: flex; flex-direction: column; gap: 8px; }
+.tri-c { text-align: left; font: inherit; font-size: 14px; line-height: 1.55; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border-med); border-radius: 9px;
+  padding: 11px 13px; min-height: 44px; cursor: pointer; }
+.tri-c.on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.tri-c .tri-tag { display: block; margin-top: 6px; font-size: 12px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase; }
+.tri-c.hit .tri-tag, .tri-c.must .tri-tag { color: var(--red); }
+.tri-c.safe .tri-tag { color: var(--green); }
+.tri-c .tri-why { display: block; margin-top: 4px; font-size: 13px; font-weight: 400;
+  text-transform: none; letter-spacing: 0; color: var(--text-sec); }
+.tri-foot { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 13px; }
+.tri-out { margin-top: 12px; font-size: 14px; color: var(--text-sec); line-height: 1.6; }
+.tri-out b { color: var(--text); }
 .lab-next { border: 1px dashed var(--border-med); border-radius: 12px; padding: 15px 18px; margin-top: 14px; }
 .lab-next-t { font-size: 15px; color: var(--text); margin-bottom: 5px; }
 .lab-next-s { font-size: 14px; color: var(--text-sec); line-height: 1.55; }
@@ -793,7 +810,7 @@ footer { margin-top: 30px; }
    the link row use — 13px prose across 1200px is an unreadable line length. The three notes
    then run side by side inside it, so the block uses the width instead of stacking. */
 .foot-note { max-width: var(--wrap); text-align: center; color: var(--text-ter); font-size: 13px; margin-bottom: 22px; }
-.foot-note .line { max-width: 620px; margin: 0 auto 16px; }
+.foot-note .line { max-width: var(--read); margin: 0 auto 16px; }   /* one prose measure page-wide */
 /* auto-fit, not a fixed 3: at ~700px three columns would squeeze to 170px each. This
    gives 3 on desktop, 2 on a tablet and 1 on a phone with no breakpoint to get wrong. */
 .foot-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 26px; text-align: left; }
@@ -896,7 +913,7 @@ footer { margin-top: 30px; }
     <span class="trust-pill">No course to sell</span>
     <span class="trust-by">Made at <a href="https://hlur.ai" target="_blank" rel="noopener">hlur.ai</a></span>
     <!-- update this line whenever something ships — it's how returning visitors see the page grow -->
-    <span class="whats-new"><b>New</b> · Lab 001 (prompting), tap-a-word attention playground, 1·3·7-day spaced re-quiz, pick-your-path start <i>2026-07-29</i></span>
+    <span class="whats-new"><b>New</b> · Lab 002 (checking AI's work), Lab 001 (prompting), tap-a-word attention playground, 1·3·7-day spaced re-quiz <i>2026-07-31</i></span>
   </div>
 </div>
 
@@ -1425,12 +1442,37 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
       </div>
     </details>
 
-    <!-- What's next, named — an undated "more coming" promise is worth less than nothing
-         on a page whose pitch is honesty. Reaching the reader again costs no infrastructure:
-         a reply-to-a-human beats a mailing list nobody wants to join. -->
+    <details class="card feature" id="lab-checking">
+      <summary>
+        <div class="idx">🔎</div>
+        <div class="head"><div class="t">Lab 002 · Checking AI's work</div><div class="s">You can't verify everything — learn what's worth checking · shipped 2026-07-31</div></div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="content">
+        <p>Lab 001 was about asking. This one is about what comes back. "Check everything" is advice nobody follows — there's too much of it, and most of it doesn't matter. The skill is <strong>triage</strong>: knowing which sentence would hurt you if it were wrong.</p>
+        <p>Below is a made-up AI answer to a real kind of question. It's fluent, confident, and mostly fine. <strong>Tap the parts you'd check before acting on them</strong>, then see how your instincts compare.</p>
+
+        <div class="tri" id="triage">
+          <div class="tri-q">"I want to sublet my flat for three months. Am I allowed to?"</div>
+          <div class="tri-a" id="triA" role="group" aria-label="Tap the claims you would verify before acting"></div>
+          <div class="tri-foot">
+            <button class="lab-copy" id="triGo" type="button">Show me what matters</button>
+            <button class="mg-again" id="triAgain" type="button" hidden>Reset ↺</button>
+          </div>
+          <div class="tri-out" id="triOut" aria-live="polite"></div>
+        </div>
+
+        <p><strong>The rule worth keeping:</strong> a claim is worth checking when it is <em>specific enough to be wrong</em>, <em>about your particular situation</em>, and <em>expensive if it's wrong</em>. Named sections, numbers, dates and citations score high on all three — which is exactly where a confident model invents most freely. General background and plain advice are where it's safest, because there's nothing there to be precisely wrong about.</p>
+        <p style="opacity:.8">The answer above is written for this exercise, not quoted from any real assistant, and nothing here is legal advice — the point is the triage habit, not the tenancy law.</p>
+      </div>
+    </details>
+
+    <!-- Reaching the reader again costs no infrastructure: a reply-to-a-human beats a
+         mailing list nobody wants to join. No cadence is promised, because an undated
+         promise on a page about honesty is worth less than nothing. -->
     <div class="lab-next">
-      <div class="lab-next-t"><b>Lab 002 · Checking AI's work</b> — the habit that makes every other one safe. In progress.</div>
-      <div class="lab-next-s">Want to know when it lands? Email <a href="mailto:hello@hlur.ai?subject=labs">hello@hlur.ai</a> with the word <b>labs</b> and I'll reply once, when it's up. No list, no newsletter, no account.</div>
+      <div class="lab-next-t"><b>More labs when they're ready.</b> No schedule promised — you'd be right not to believe one.</div>
+      <div class="lab-next-s">Want a nudge when the next one lands? Email <a href="mailto:hello@hlur.ai?subject=labs">hello@hlur.ai</a> with the word <b>labs</b> and I'll reply once, when it's up. No list, no newsletter, no account.</div>
     </div>
   </div>
 </section>
@@ -2546,6 +2588,82 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
     setTimeout(() => { copyBtn.textContent = 'Copy it — try it in any chatbot'; }, 2200);
   });
   render();
+})();
+
+/* ---------- lab 002: triage a confident answer ----------
+   Five claims from one fluent reply. Two are load-bearing and checkable — the ones a
+   confident model invents most freely. Scoring rewards catching those AND leaving the
+   harmless ones alone, because "check everything" is the advice nobody follows. */
+(function initTriage(){
+  const host = document.getElementById('triA');
+  if (!host) return;
+  const CLAIMS = [
+    { t: 'Subletting is when you rent your home, or part of it, to someone else while your own tenancy continues.',
+      must: false, tag: 'Nothing to check',
+      why: 'A definition. Too general to be wrong in a way that costs you anything.' },
+    { t: 'Your tenancy agreement almost certainly requires your landlord’s written permission before you sublet.',
+      must: true, tag: 'Check — it’s about YOUR document',
+      why: 'Confident about a document it has never seen. Open your actual agreement; this is the one fact that decides the answer.' },
+    { t: 'This is set out in Section 15 of the Housing Act 1988.',
+      must: true, tag: 'Check — a citation is the classic invention',
+      why: 'A named section and year is precise, checkable, and exactly the shape models fabricate. Look it up before you repeat it to anyone.' },
+    { t: 'Subletting without permission can put you in breach of your agreement.',
+      must: false, tag: 'Reasonable background',
+      why: 'Broad and cautious. Worth knowing, but nothing here is precise enough to act on incorrectly.' },
+    { t: 'Ask your landlord in writing so you have a record of the answer.',
+      must: false, tag: 'Advice, not a fact',
+      why: 'There is no claim to verify — only a suggestion you can judge for yourself.' }
+  ];
+  const out = document.getElementById('triOut');
+  const go = document.getElementById('triGo');
+  const again = document.getElementById('triAgain');
+  const picked = new Set();
+  let done = false;
+
+  CLAIMS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tri-c'; b.textContent = c.t;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      if (done) return;
+      picked.has(i) ? picked.delete(i) : picked.add(i);
+      b.classList.toggle('on', picked.has(i));
+      b.setAttribute('aria-pressed', String(picked.has(i)));
+    });
+    host.appendChild(b);
+  });
+
+  go.addEventListener('click', () => {
+    if (done) return;
+    done = true; tally('lab');
+    const kids = [...host.children];
+    let caught = 0, falseAlarms = 0;
+    CLAIMS.forEach((c, i) => {
+      const el = kids[i];
+      el.classList.remove('on');
+      el.classList.add(c.must ? 'must' : 'safe');
+      if (c.must && picked.has(i)) { el.classList.add('hit'); caught++; }
+      if (!c.must && picked.has(i)) falseAlarms++;
+      el.insertAdjacentHTML('beforeend',
+        `<span class="tri-tag">${c.must && picked.has(i) ? '✓ you flagged it · ' : ''}${esc(c.tag)}<span class="tri-why">${esc(c.why)}</span></span>`);
+    });
+    const musts = CLAIMS.filter(c => c.must).length;
+    let verdict;
+    if (caught === musts && falseAlarms === 0) verdict = '<b>Exactly right.</b> You found both claims that could actually cost you something, and left the harmless ones alone.';
+    else if (caught === musts) verdict = `<b>You caught both that matter</b> — and flagged ${falseAlarms} that couldn’t hurt you. No harm done, but checking everything is how people end up checking nothing.`;
+    else if (caught > 0) verdict = `<b>You found ${caught} of ${musts}.</b> The one to notice is the specific, checkable claim — a named section, a date, a number — about <em>your</em> situation.`;
+    else verdict = '<b>Both of the risky ones slipped through.</b> That is the normal result, and it is why the habit is worth building.';
+    out.innerHTML = verdict + ' Two questions do most of the work: <b>would anything change if this were false?</b> and <b>can I check it in under a minute?</b>';
+    go.hidden = true; again.hidden = false;
+  });
+
+  again.addEventListener('click', () => {
+    done = false; picked.clear(); out.innerHTML = '';
+    [...host.children].forEach((el, i) => {
+      el.className = 'tri-c'; el.textContent = CLAIMS[i].t; el.setAttribute('aria-pressed', 'false');
+    });
+    go.hidden = false; again.hidden = true;
+  });
 })();
 
 /* ---------- interactive next-word demo (How an LLM works) ---------- */

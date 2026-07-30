@@ -52,7 +52,9 @@ const VIEWPORTS = [
 
 // Grids whose column count IS the mobile-vs-desktop structure. If one of these
 // silently goes from 3-up to 1-up (or back), the page's shape changed.
-const GRIDS = ['#cards .tg-deck', '.foot-cols', '.path-pick', '.trust'];
+// '.trust' was a wrapper whose only child is .wrap — column count 1 at every viewport,
+// forever, locking nothing. Target the element that actually lays the pills out.
+const GRIDS = ['#cards .tg-deck', '.foot-cols', '.path-pick', '.trust .wrap'];
 
 // Containers that are DELIBERATELY narrower than the main content column, with the
 // reason. Anything narrow that isn't declared here is a bug; adding to this list is
@@ -76,49 +78,53 @@ const PROBE = `(function(){
   const footNote = document.querySelector('.foot-note');
   if (footNote) wraps.push({ id: 'foot-note', x: round(footNote.getBoundingClientRect().x), w: round(footNote.getBoundingClientRect().width) });
 
-  // 2/3. text fill: every block of real prose vs the box it sits in
+  // 2/3. CAPPED TEXT. The bug this exists for is a max-width that starves a text block of
+  // width the page already has (the footer: 560px inside a 1200px shell). Detecting it by
+  // rendered ratio proved unworkable in both directions — a wrapper div defeated it, and
+  // ordinary card padding tripped it. So look for the CAUSE: an explicit max-width, on the
+  // block or any ancestor up to the content column, that is far below the column itself.
   const TEXTY = 'p, li, .ssub, .hero-sub, .lead, .fineprint, .mg-sub, .path-status';
   const starved = [];
-  const fills = [];
+  // The floor is the page's OWN declared readable measure (--read, ~78 characters), not a
+  // number invented here. Capping prose at a readable line length is correct typography;
+  // the bug is a cap BELOW it, which wastes width for no reading benefit. That is exactly
+  // what the footer did (520/560px) while the rest of the page used the full column.
+  const READ = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--read')) || 640;
+  const CAP_MIN = 0.75;
   [...document.querySelectorAll(TEXTY)].forEach(el => {
     const txt = (el.innerText || '').trim();
-    if (txt.length < 90) return;                       // short labels may be centred/narrow
+    if (txt.length < 90) return;
     const r = el.getBoundingClientRect();
-    if (!r.width || !r.height) return;                 // hidden
+    if (!r.width || !r.height) return;
     if (el.closest('.path-off, [hidden]')) return;
-    // the box it should be filling: nearest ancestor that is wider than it
-    let p = el.parentElement, pw = 0;
-    while (p && p !== document.body) {
-      const w = p.getBoundingClientRect().width;
-      if (w > 0) { pw = w; break; }
-      p = p.parentElement;
-    }
-    if (!pw) return;
-    // A cell in a multi-column grid/flex SHOULD be a fraction of its container — measure
-    // it against its own column, not the whole row, or every deliberate multi-up layout
-    // reads as "starved". (This was the harness's own first false positive.)
-    let cols = 1;
-    if (p) {
-      const pd = getComputedStyle(p).display;
-      if (pd === 'grid' || pd === 'flex' || pd === 'inline-grid' || pd === 'inline-flex') {
-        const sibs = [...p.children].filter(c => c.getBoundingClientRect().width > 0);
-        cols = Math.max(1, new Set(sibs.map(c => Math.round(c.getBoundingClientRect().x))).size);
+    const col = el.closest('.wrap, .foot-note');
+    if (!col || col === el) return;
+    const ccs = getComputedStyle(col);
+    const colW = col.getBoundingClientRect().width
+      - (parseFloat(ccs.paddingLeft) || 0) - (parseFloat(ccs.paddingRight) || 0);
+    if (colW <= 0) return;
+    // centred hero-style leads may be capped on purpose; a LEFT-aligned block may not
+    for (let n = el; n && n !== col; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      const mw = parseFloat(cs.maxWidth);
+      if (!cs.maxWidth || cs.maxWidth === 'none' || !isFinite(mw)) continue;
+      if (mw >= READ - 1) continue;                 // at or above the declared readable measure
+      if (mw >= colW * CAP_MIN) continue;           // or simply not narrow relative to the column
+      // a cap inside a multi-column grid cell is measuring the wrong thing
+      const par = n.parentElement;
+      if (par) {
+        const pd = getComputedStyle(par).display;
+        if (/grid|flex/.test(pd)) {
+          const sibs = [...par.children].filter(c => c.getBoundingClientRect().width > 0);
+          if (new Set(sibs.map(c => Math.round(c.getBoundingClientRect().x))).size > 1) break;
+        }
       }
+      starved.push({ tag: n.tagName.toLowerCase(), cls: String(n.className || '').split(' ')[0],
+        cap: Math.round(mw), col: Math.round(colW), pct: Math.round(100 * mw / colW),
+        align: cs.textAlign, txt: txt.slice(0, 40) });
+      break;
     }
-    const cell = pw / cols;
-    const ratio = r.width / cell;
-    fills.push(ratio);
-    if (ratio < 0.55) starved.push({
-      cols,
-      tag: el.tagName.toLowerCase(),
-      cls: (el.className || '').toString().slice(0, 28),
-      w: round(r.width), parent: round(pw), pct: Math.round(ratio * 100),
-      txt: txt.slice(0, 40)
-    });
   });
-
-  // 4. page-level overflow
-  const cs = document.scrollingElement;
 
   // 5. structural fingerprint: grid column counts (distinct child left-edges)
   const grids = {};
@@ -132,8 +138,8 @@ const PROBE = `(function(){
   return {
     viewport: window.innerWidth,
     wraps, starved, grids,
-    minFillPct: fills.length ? Math.round(Math.min(...fills) * 100) : 100,
-    overflow: cs.scrollWidth - cs.clientWidth
+
+    // NOTE: page overflow is crosscheck.js's job, deliberately not duplicated here.
   };
 })()`;
 
@@ -194,12 +200,25 @@ async function main() {
       // staleness is a cross-viewport question: a 720px cap cannot narrow anything on a
       // 390px phone, so "not narrower here" proves nothing. Tallied and judged after the loop.
       declared.forEach(d => { if (d.w < (ws_[0] || 0)) narrowedSomewhere.add(d.id); });
+      // An exemption is a NARROWER-WIDTH allowance, not a blind spot. Exempted containers
+      // must still be centred in the main column and still have their width locked, or
+      // #layers could be crushed to 200px and jammed left with an all-green run.
+      declared.forEach(d => {
+        const mainMid = (xs[0] || 0) + (ws_[0] || 0) / 2;
+        const offset = Math.abs((d.x + d.w / 2) - mainMid);
+        offset <= 2 ? ok(`${tag} "${d.id}" is narrower by design but still centred (w=${d.w})`)
+                    : bad(`${tag} "${d.id}" is off-centre by ${Math.round(offset)}px — exempt from WIDTH, not from alignment`);
+        fresh[v.name + ':' + d.id] = d.w;
+        const prevW = prev && prev[v.name + ':' + d.id];
+        if (prevW !== undefined && !UPDATE && Math.abs(prevW - d.w) > 2)
+          bad(`${tag} "${d.id}" width ${prevW} → ${d.w} — declared-narrow containers are locked too`);
+      });
 
       // 2/3. text fill
       r.starved.length === 0
-        ? ok(`${tag} no starved text block (narrowest prose fills ${r.minFillPct}% of its box)`)
-        : bad(`${tag} ${r.starved.length} text block(s) waste their box: ` +
-              r.starved.slice(0, 3).map(s => `<${s.tag}${s.cls ? '.' + s.cls.split(' ')[0] : ''}> ${s.w}px in ${s.parent}px (${s.pct}%) "${s.txt}…"`).join(' | '));
+        ? ok(`${tag} no prose capped below the page's own --read measure`)
+        : bad(`${tag} ${r.starved.length} capped text block(s): ` +
+              r.starved.slice(0, 3).map(s => `<${s.tag}${s.cls ? '.' + s.cls : ''}> max-width ${s.cap}px in a ${s.col}px column (${s.pct}%, ${s.align}) "${s.txt}…"`).join(' | '));
 
       // NOTE: horizontal overflow is deliberately NOT checked here — crosscheck.js already
       // owns it. Two harnesses asserting the same thing drift apart, and the bug lives at
@@ -211,14 +230,28 @@ async function main() {
         const b = prev[v.name];
         const drift = [];
         if (Math.abs(b.wrapW - ws_[0]) > 2) drift.push(`content width ${b.wrapW} → ${ws_[0]}`);
+        // wrapX was RECORDED and never compared, so the baseline only looked like it locked
+        // the left edge: body{padding-left:120px} shifted every container and still passed.
+        if (b.wrapX !== undefined && Math.abs(b.wrapX - xs[0]) > 2) drift.push(`left edge ${b.wrapX} → ${xs[0]}`);
         for (const g of Object.keys(b.grids || {})) {
           if (b.grids[g] !== r.grids[g]) drift.push(`${g} columns ${b.grids[g]} → ${r.grids[g]}`);
+        }
+        for (const g of Object.keys(r.grids)) {
+          if (r.grids[g] === null || r.grids[g] === 0) drift.push(`${g} has VANISHED (${r.grids[g]})`);
         }
         drift.length === 0
           ? ok(`${tag} structure matches the committed baseline`)
           : bad(`${tag} STRUCTURE CHANGED: ${drift.join('; ')} — intended? re-run with --update to accept`);
       } else if (UPDATE) {
-        ok(`${tag} baseline recorded (w=${ws_[0]}, grids ${JSON.stringify(r.grids)})`);
+        // refuse to bless a structure that is already broken — a vanished grid recorded as
+        // `0` makes every future run agree that zero columns is correct
+        const gone = Object.keys(r.grids).filter(g => r.grids[g] === null || r.grids[g] === 0);
+        gone.length === 0
+          ? ok(`${tag} baseline recorded (w=${ws_[0]}, grids ${JSON.stringify(r.grids)})`)
+          : bad(`${tag} refusing to record a baseline: ${gone.join(', ')} has no columns`);
+      } else {
+        // a newly added viewport used to get no structure check and no message at all
+        bad(`${tag} has no entry in the baseline — run 'node layout.js --update' deliberately`);
       }
     }
   } catch (e) {

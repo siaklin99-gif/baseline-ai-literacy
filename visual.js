@@ -55,9 +55,15 @@ const VIEWS = [
   { name: 'desktop-dark', w: 1280, h: 900, mobile: false, theme: 'dark'  },
   { name: 'mobile-dark',  w: 390,  h: 844, mobile: true,  theme: 'dark'  },
 ];
-const SECTIONS = ['header', '#try', '#circle', '#layers', '#reality', '#bodysec',
-                  '#topics', '#labs', '#quizsec', '.share-strip', 'footer'];
-const DIFF_PCT_FAIL = 0.12;   // measured: an unchanged run diffs 0.00%, so this is pure signal
+// Derived from the DOM, not hand-listed: the hand-list silently omitted #howllm — the
+// largest deep-dive section on the page — while the green line "11 sections pixel-identical"
+// read as full coverage. A list you maintain by hand is a list that forgets.
+const EXTRA_SECTIONS = ['header', '.share-strip', 'footer'];
+// An absolute pixel count, NOT a percentage. 0.12% of the 2.97M-pixel #topics reference
+// was 3,569 pixels of licence — enough to recolour a whole badge and still pass. Changed
+// pixels do not get cheaper because the section is tall.
+const DIFF_PX_FAIL = 260;     // at SCALE 0.5 this is ~a word of text
+const DIFF_PX_NOISE = 120;    // observed run-to-run render noise; reported, never silent
 const SCALE = 0.5;            // halve it: smaller refs in git, and less antialias noise
 
 /* Pinned before ANY page script runs, so dates and shuffles are identical every run. */
@@ -89,8 +95,13 @@ const PROBE = `(function(){
   // are 0-1, so dividing by 255 read a near-white panel as black and produced 48 bogus
   // "low contrast" hits. The canvas normalises rgb/hsl/color()/oklch alike.
   const _c = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-  const rgba = (c) => { try { _c.clearRect(0,0,1,1); _c.fillStyle = '#000';
-      _c.fillStyle = c; if (_c.fillStyle === '#000' && !/^#0{3,6}$|black|rgb\\(0, 0, 0\\)/i.test(c)) return null;
+  // Sentinel test. The previous version set '#000' then compared fillStyle to '#000' —
+  // Chrome serialises that as '#000000', so the comparison was ALWAYS false and any
+  // unparseable colour was silently read as pure black, fabricating a pass or an alarm.
+  const rgba = (c) => { try {
+      _c.fillStyle = '#ff00ff';                 // magenta sentinel
+      _c.fillStyle = c;                         // ignored by the canvas if c is invalid
+      if (_c.fillStyle === '#ff00ff' && !/^#ff00ff$|magenta|fuchsia/i.test(String(c).trim())) return null;
       _c.clearRect(0,0,1,1); _c.fillRect(0,0,1,1);
       const d = _c.getImageData(0,0,1,1).data; return [d[0], d[1], d[2], d[3]/255];
     } catch (e) { return null; } };
@@ -132,14 +143,41 @@ const PROBE = `(function(){
       px: Math.round(size), txt: el.textContent.trim().slice(0,34) });
   });
 
-  // A2 clipped text (a box hiding its own content sideways)
+  // A2 clipped text — scan the elements that ACTUALLY clip, both axes.
+  // The old version listed p,li,h1..,button,summary,.qz-q — of which 0 of 347 had hidden
+  // overflow, while 56 other elements on the page did. It printed green every run and
+  // could not fail. It also only tested scrollWidth, so a fixed-height box hiding lines
+  // of text was never checked at all.
   const clipped = [];
-  document.querySelectorAll('p,li,h1,h2,h3,.t,.s,button,summary,.qz-q').forEach(el => {
+  document.querySelectorAll('*').forEach(el => {
     if (!vis(el)) return;
     const cs = getComputedStyle(el);
-    if (cs.overflowX !== 'hidden' && cs.overflow !== 'hidden') return;
-    if (el.scrollWidth - el.clientWidth > 2) clipped.push({ t: el.tagName.toLowerCase(),
-      over: el.scrollWidth - el.clientWidth, txt: el.textContent.trim().slice(0,34) });
+    const hx = cs.overflowX === 'hidden' || cs.overflow === 'hidden';
+    const hy = cs.overflowY === 'hidden' || cs.overflow === 'hidden';
+    if (!hx && !hy) return;
+    const txt = (el.innerText || '').trim();
+    if (txt.length < 8) return;                       // decorative boxes carry no words
+    // Measure the TEXT, not the box. scrollWidth counts decorative children and ::before
+    // glows, so the hero header read as "39px clipped" while every word was fully visible.
+    // A Range over the element's own text nodes is what the reader actually sees.
+    let tr = null;
+    for (const n of el.childNodes) {
+      if (n.nodeType !== 3 || !n.textContent.trim()) continue;
+      const rg = document.createRange(); rg.selectNodeContents(n);
+      for (const r of rg.getClientRects()) {
+        if (!r.width || !r.height) continue;
+        tr = tr ? { l: Math.min(tr.l, r.left), r: Math.max(tr.r, r.right),
+                    t: Math.min(tr.t, r.top), b: Math.max(tr.b, r.bottom) }
+                : { l: r.left, r: r.right, t: r.top, b: r.bottom };
+      }
+    }
+    if (!tr) return;                                  // no direct text of its own
+    const box = el.getBoundingClientRect();
+    const dx = hx ? Math.round(Math.max(0, tr.r - box.right, box.left - tr.l)) : 0;
+    const dy = hy ? Math.round(Math.max(0, tr.b - box.bottom, box.top - tr.t)) : 0;
+    if (dx > 2 || dy > 2) clipped.push({ t: el.tagName.toLowerCase(),
+      cls: String(el.className || '').split(' ')[0], axis: dx > 2 ? 'x' : 'y',
+      over: Math.max(dx, dy), txt: txt.slice(0, 34) });
   });
 
   // A3 overlapping tap targets (two controls sharing pixels = one is unclickable)
@@ -171,9 +209,13 @@ const PROBE = `(function(){
     if (r.height > 220 && (s.innerText || '').trim().length < 40) blank.push({ id: s.id, h: Math.round(r.height) });
   });
 
-  // capture rects, in page coordinates
+  // capture rects, in page coordinates. Selectors are DERIVED: every <section id> on the
+  // page plus the fixed extras, so a new section is covered the day it ships and cannot be
+  // forgotten out of a hand-list.
+  const sels = [...${JSON.stringify(EXTRA_SECTIONS)}];
+  document.querySelectorAll('section[id]').forEach(s => sels.push('#' + s.id));
   const rects = {};
-  ${JSON.stringify(SECTIONS)}.forEach(sel => {
+  sels.forEach(sel => {
     const el = document.querySelector(sel);
     if (!el || !vis(el)) { rects[sel] = null; return; }
     const r = el.getBoundingClientRect();
@@ -222,10 +264,12 @@ async function main() {
   fs.mkdirSync(REF_DIR, { recursive: true });
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const changed = [];
+  const pending = [];   // staged reference writes, committed only on a clean run
 
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + PORT, '--hide-scrollbars',
     '--force-device-scale-factor=1', '--no-first-run', '--no-default-browser-check',
     '--user-data-dir=/tmp/baseline-visual-' + PORT], { stdio: 'ignore' });
+  chrome.on('error', (e) => bad('chrome failed to start: ' + e.message));
   let ws;
   try {
     let ver, tries = 0;
@@ -269,19 +313,28 @@ async function main() {
         : bad(`${tag} blank section(s): ` + r.blank.map(b => `#${b.id} ${b.h}px tall, no text`).join(', '));
 
       // ---- B. pixel diff per section ----
-      let same = 0, missing = 0;
-      for (const sel of SECTIONS) {
+      let same = 0, recorded = 0;
+      for (const sel of Object.keys(r.rects)) {
         const rect = r.rects[sel];
-        if (!rect || rect.w < 10 || rect.h < 10) continue;
+        // A section that VANISHES used to be skipped in silence — no message, no count, no
+        // failure — so `#quizsec{display:none}` produced an all-green run. Absence is the
+        // failure mode these harnesses were worst at; make it loud.
+        if (!rect) { bad(`${tag} ${sel} is missing or invisible — NOT diffed`); continue; }
+        if (rect.w < 10 || rect.h < 10) { bad(`${tag} ${sel} collapsed to ${rect.w}x${rect.h} — NOT diffed`); continue; }
         if (rect.tooTall) { bad(`${tag} ${sel} is ${rect.h}px — beyond capture range, NOT diffed`); continue; }
         const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true,
           clip: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, scale: SCALE } }, sid);
         const b64 = shot.result.data;
         const safe = sel.replace(/[^a-z0-9]/gi, '_');
         const refPath = path.join(REF_DIR, `${v.name}_${safe}.png`);
-        if (UPDATE || !fs.existsSync(refPath)) {
-          fs.writeFileSync(refPath, Buffer.from(b64, 'base64'));
-          missing++;
+        // Writes are BUFFERED and only committed at the end, and only when nothing failed —
+        // otherwise `--update` on a broken page blesses the breakage as the new truth (it
+        // did: an injected invisible-text bug got recorded into all 44 references).
+        if (UPDATE) { pending.push([refPath, b64]); recorded++; continue; }
+        if (!fs.existsSync(refPath)) {
+          // A missing reference is NOT a pass. Silently recording it meant a fresh clone,
+          // or a lost visual_ref/, made the whole pixel layer self-approve and exit 0.
+          bad(`${tag} ${sel} has no approved reference — run 'node visual.js --update' deliberately`);
           continue;
         }
         const refB64 = fs.readFileSync(refPath).toString('base64');
@@ -293,22 +346,40 @@ async function main() {
           bad(`${tag} ${sel} SIZE CHANGED ${d.a} → ${d.b} — the section resized`);
           fs.writeFileSync(path.join(OUT_DIR, `${v.name}_${safe}_now.png`), Buffer.from(b64, 'base64'));
           changed.push(`${v.name} ${sel} (resized ${d.a}→${d.b})`);
-        } else if (d.pct > DIFF_PCT_FAIL) {
-          bad(`${tag} ${sel} LOOKS DIFFERENT: ${d.pct}% of pixels changed` +
+        } else if (d.n > DIFF_PX_FAIL) {
+          bad(`${tag} ${sel} LOOKS DIFFERENT: ${d.n} pixels changed (${d.pct}%)` +
               (d.box ? `, region ${d.box.w}×${d.box.h} at (${d.box.x},${d.box.y})` : ''));
           fs.writeFileSync(path.join(OUT_DIR, `${v.name}_${safe}_now.png`), Buffer.from(b64, 'base64'));
           fs.copyFileSync(refPath, path.join(OUT_DIR, `${v.name}_${safe}_ref.png`));
-          changed.push(`${v.name} ${sel} (${d.pct}%)`);
-        } else same++;
+          changed.push(`${v.name} ${sel} (${d.n}px)`);
+        } else {
+          // Under the fail line but above pure noise: surfaced, never silent, so the
+          // render instability that would otherwise block tightening the gate stays visible.
+          if (d.n > DIFF_PX_NOISE) console.log(`     \x1b[2m· ${tag} ${sel}: ${d.n}px differ (under the ${DIFF_PX_FAIL}px gate)\x1b[0m`);
+          same++;
+        }
       }
-      if (missing) ok(`${tag} recorded ${missing} new reference image(s)`);
-      if (same) ok(`${tag} ${same} section(s) pixel-identical to the approved reference`);
+      if (recorded) ok(`${tag} ${recorded} reference(s) staged for --update`);
+      if (same) ok(`${tag} ${same} section(s) match the approved reference`);
     }
   } catch (e) {
     bad('harness error (failing closed): ' + e.message);
   } finally {
     try { ws && ws.close(); } catch {}
     try { chrome.kill('SIGKILL'); } catch {}
+  }
+
+  // Commit staged references ONLY if the whole run was clean. Writing them per-section
+  // inside the loop meant `--update` on a page with failing contrast rewrote every
+  // reference and made the broken render the approved baseline.
+  if (UPDATE) {
+    if (fails === 0) {
+      pending.forEach(([p, b]) => fs.writeFileSync(p, Buffer.from(b, 'base64')));
+      console.log(`\n  wrote ${pending.length} reference image(s) — commit them`);
+    } else {
+      console.log(`\n  REFUSING to update ${pending.length} reference(s): ${fails} check(s) failed.`);
+      console.log('  Fix the page first — otherwise the broken render becomes the approved baseline.');
+    }
   }
 
   if (changed.length) {

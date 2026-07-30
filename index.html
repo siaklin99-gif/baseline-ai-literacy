@@ -775,9 +775,19 @@ footer { margin-top: 30px; }
 .foot-copy { font-size: 13px; color: var(--text-ter); }
 .foot-copy b { color: var(--text-sec); font-weight: 600; }
 /* this page's own footer note (version, corrections link) sits above the site row */
-.foot-note { text-align: center; color: var(--text-ter); font-size: 13px; margin-bottom: 22px; }
-.foot-note p { max-width: 560px; margin: 0 auto 10px; }
-.foot-note .line { max-width: 520px; }
+/* The note text sits in the CONTENT column (940px), not the 1200px site chrome the nav and
+   the link row use — 13px prose across 1200px is an unreadable line length. The three notes
+   then run side by side inside it, so the block uses the width instead of stacking. */
+.foot-note { max-width: var(--wrap); text-align: center; color: var(--text-ter); font-size: 13px; margin-bottom: 22px; }
+.foot-note .line { max-width: 620px; margin: 0 auto 16px; }
+/* auto-fit, not a fixed 3: at ~700px three columns would squeeze to 170px each. This
+   gives 3 on desktop, 2 on a tablet and 1 on a phone with no breakpoint to get wrong. */
+.foot-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 26px; text-align: left; }
+.foot-cols p { margin: 0; line-height: 1.6; }
+.foot-cols b { display: inline-block; margin-bottom: 3px; color: var(--text-sec);
+  font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.foot-cols a { color: var(--accent); text-underline-offset: 3px; }
+.foot-cols a.quiet { color: var(--text-ter); }
 
 /* ---------- mobile: tighter rhythm, not just desktop scaled down ----------
    (placed last so these overrides win by source order) */
@@ -790,6 +800,13 @@ footer { margin-top: 30px; }
   section { padding: 30px 0; }
   .hero h1 { font-size: clamp(30px, 9vw, 40px); }
   .foot-note { margin-bottom: 16px; }
+  /* one column on a phone — three 110px columns would be unreadable. AFTER the base
+     grid rule on purpose: equal specificity means source order decides. */
+  .foot-cols { grid-template-columns: 1fr; gap: 14px; }
+  /* stacked, each label costs a whole line (~63px of a phone screen for three words).
+     Run them inline with their text instead — same information, three lines shorter. */
+  .foot-cols p br { display: none; }
+  .foot-cols b { margin: 0 6px 0 0; }
   /* ---------- mobile swipe decks (hlur.ai pattern) ----------
      Can/Can't and Topics become horizontal scroll-snap decks; the next
      card peeks at the edge, native momentum scroll, progress dots below.
@@ -1446,20 +1463,18 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   <div class="foot-body">
     <div class="foot-shell foot-note">
       <p class="line">Baseline is a starting point, not the last word — built to be honest about what's still uncertain.</p>
-      <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified, and flag themselves when they age.</p>
-      <p>Spotted something stale, wrong, or confusing?
-         <a href="mailto:hello@hlur.ai?subject=Baseline%20correction"
-            style="color:var(--accent); text-underline-offset:3px;">Email hello@hlur.ai</a> — honest corrections are the point.
-         <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
-            style="color:var(--text-ter); text-underline-offset:3px;">Or open an issue</a> if you'd rather.</p>
-      <!-- honest disclosure of the ONLY thing this page counts, next to the numbers themselves -->
-      <p id="numbers">This page counts four things, and nothing else: page loads, quiz finishes,
-         lab-prompt copies, and which starting point people pick. Daily totals only — no cookies,
-         no accounts, no identifiers, and nothing stored that could point back at you.
-         <a href="https://hlur.ai/.netlify/functions/tally" target="_blank" rel="noopener"
-         style="color:var(--accent); text-underline-offset:3px;">See the numbers</a> — they're public,
-         because a page about honesty should show its own. They're a rough signal, not a proof:
-         the endpoint is open, so anyone could inflate them.</p>
+      <!-- three short notes side by side: stacked and capped at 560px they made a tall narrow
+           column in a 1200px shell, using under half the width the page already had -->
+      <div class="foot-cols">
+        <p><b>Freshness</b><br>v1 · concepts are evergreen. Data cards show when they were last checked, and flag themselves when they age.</p>
+        <p><b>Corrections</b><br>Something stale, wrong or confusing?
+           <a href="mailto:hello@hlur.ai?subject=Baseline%20correction">Email hello@hlur.ai</a> — corrections are the point. Or
+           <a class="quiet" href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener">open an issue</a>.</p>
+        <p id="numbers"><b>What's counted</b><br>Four things, nothing else: loads, quiz finishes, lab copies,
+           start-path picks. Daily totals; no cookies, no accounts, nothing stored that could point back at you.
+           <a href="https://hlur.ai/.netlify/functions/tally" target="_blank" rel="noopener">See the numbers</a>
+           — the endpoint is open, so a rough signal, not a proof.</p>
+      </div>
     </div>
     <div class="foot-shell foot-inner">
       <div class="foot-links">

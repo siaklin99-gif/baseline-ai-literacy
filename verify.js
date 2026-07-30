@@ -530,8 +530,15 @@ g(/mailto:hello@hlur\.ai\?subject=Baseline/.test(html), 'feedback no longer requ
 g(/--functions netlify\/functions/.test(fs.readFileSync(path.join(__dirname, 'sync_hlur.sh'), 'utf8')),
   'deploy ships the functions directory');
 // cold audit 2026-07-30: every one of these was a real defect found after the batch "passed"
-g(/tally\('lab'\)/.test(html) && /tally\('path'\)/.test(html) && /counts four things/.test(html),
-  'the disclosure names every event actually sent (all four, not two)');
+// check the SUBSTANCE (every event is named) rather than one sentence — a wording guard
+// fires on a rewrite that is still honest, and gets "fixed" by weakening it
+{
+  const m = html.match(/id="numbers"[\s\S]*?<\/p>/);
+  const t = m ? m[0] : '';
+  const named = ['loads', 'quiz finishes', 'lab copies', 'start-path picks'].filter(x => t.includes(x));
+  g(/tally\('lab'\)/.test(html) && /tally\('path'\)/.test(html) && /Four things, nothing else/.test(t) && named.length === 4,
+    `the disclosure names every event actually sent (${named.length}/4 named)`);
+}
 g(/nothing stored that could point back/.test(html),
   'privacy claim is scoped to what is STORED (the request itself still reaches the host)');
 g(/rough signal, not a proof/.test(html), 'public counters are labelled forgeable, not presented as evidence');

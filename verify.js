@@ -448,6 +448,114 @@ g(/class="whats-new"/.test(html) && /<i>\d{4}-\d{2}-\d{2}<\/i>/.test(html), 'dat
 g(/\.codeblock \{[^}]*background-attachment: local, local, scroll, scroll, local/.test(html)
   && html.includes('--cb-shadow'), 'codeblocks carry self-hiding scroll shadows (mobile swipe affordance)');
 
+/* ---------- 6. regression guards: 2026-07-30 cold-audit batch ---------- */
+// attention must be CAUSAL: row i may only reference indexes <= i, or the playground
+// teaches a mechanism the rest of the page spends ten layers contradicting.
+{
+  const m = html.match(/const ATTN = \[([\s\S]*?)\n  \];/);
+  if (!m) bad('ATTN table missing');
+  else {
+    const rows = [...m[1].matchAll(/w: \[(.*?)\], why/g)].map(x => x[1]);
+    let fwd = 0, bad_sum = 0;
+    rows.forEach((r, i) => {
+      const pairs = [...r.matchAll(/\[(\d+),\s*([\d.]+)\]/g)].map(p => [+p[1], parseFloat(p[2])]);
+      pairs.forEach(([t]) => { if (t > i) fwd++; });
+      if (Math.abs(pairs.reduce((s, p) => s + p[1], 0) - 1) > 0.001) bad_sum++;
+    });
+    (rows.length === 9 && fwd === 0)
+      ? ok('attention playground is causal (no word attends to a later word)')
+      : bad(`attention playground has ${fwd} forward-looking weight(s) across ${rows.length} rows — contradicts next-word prediction`);
+    bad_sum === 0 ? ok('every attention row sums to 1.00') : bad(`${bad_sum} attention row(s) do not sum to 1.00`);
+  }
+  g(/look back at the words before it/.test(html), 'attention copy says backwards-only, matching the data');
+}
+// spot-the-fake must be solvable by REASONING: each tell has to point at the other statements
+{
+  const m = html.match(/const ROUNDS = \[([\s\S]*?)\n  \];/);
+  const tells = m ? [...m[1].matchAll(/tell: '((?:[^'\\]|\\.)*)'/g)].map(x => x[1]) : [];
+  const deducible = tells.filter(t => /other two|each other|next to it|from the other|arithmetic|contradic|rule[sd]? .*out|fenced/i.test(t));
+  (tells.length === 3 && deducible.length === 3)
+    ? ok('all 3 spot-the-fake rounds are solvable from the statements shown (not trivia recall)')
+    : bad(`${deducible.length}/${tells.length} spot-the-fake tells cite the other statements — the rest test recall`);
+  g(!/Luna Nova/.test(html), 'trivia-only Galileo round retired');
+}
+// start-path picker must actually FILTER, not just tint, and must be reversible
+g(/hide: \['#howllm'/.test(html) && /hide: \['#try'/.test(html), 'start paths hide off-path sections (not just tint rows)');
+g(html.includes('.path-off { display: none !important; }'), 'off-path content is hidden by class (restorable, not deleted)');
+g(html.includes("id=\"pathAll\"") || html.includes("'pathAll'"), 'a one-tap "Show everything" escape exists');
+g(html.includes("t.closest('.path-off')"), 'links into hidden content reveal it instead of scrolling to nothing');
+// labs must not carry an undated promise, and must offer a way to be reached
+g(!/More labs land here/.test(html), 'undated "more labs coming" promise removed');
+g(/Lab 002/.test(html) && /mailto:hello@hlur\.ai\?subject=labs/.test(html), 'Lab 002 named + a zero-infra way to be told when it lands');
+g(/shipped 2026-\d{2}-\d{2}/.test(html), 'Lab 001 carries its ship date');
+// the usage tally: allowlisted, host-gated, non-fatal, and honestly disclosed
+g(/function tally\(e\)/.test(html) && /TALLY_OK = \['load'/.test(html), 'tally() sends only allowlisted event names');
+g(html.includes("location.hostname !== 'hlur.ai'"), 'tally is host-gated (GitHub Pages mirror stays silent)');
+g(/tally\('load'\)/.test(html) && /tally\('quiz'\)/.test(html), 'tally covers the two numbers that answer "is this working?"');
+// scope to the rendered pills: the phrase legitimately survives in the comment explaining
+// why it was retired, and a guard must test the CLAIM, not the documentation of the claim
+g(!/<span class="trust-pill">Nothing tracked<\/span>/.test(html),
+  'the "Nothing tracked" pill is gone now that the page counts loads');
+g(/No cookies · no account/.test(html) && html.includes('id="numbers"'), 'counting is disclosed on the page, next to the public numbers');
+g(/mailto:hello@hlur\.ai\?subject=Baseline/.test(html), 'feedback no longer requires a GitHub account');
+// the function itself must exist, be allowlisted, and fail soft
+// ONE check, emitted in EVERY environment. A conditional that emits 3 checks locally and
+// 1 in CI deadlocks the claim gate forever — the exact bug this file already hit once at
+// ~line 250. The host repo lives at $DEST/.. in CI and beside this repo locally.
+{
+  const cands = [
+    process.env.DEST && path.join(process.env.DEST, '..', 'netlify/functions/tally.mjs'),
+    path.join(__dirname, '../LLC/Hlur_Website/netlify/functions/tally.mjs'),
+    '/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/netlify/functions/tally.mjs'
+  ].filter(Boolean);
+  const fnPath = cands.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  let why = 'host repo not present here — checked wherever it is';
+  let good = true;
+  if (fnPath) {
+    const fn = fs.readFileSync(fnPath, 'utf8');
+    // strip comments first: the file DOCUMENTS that it avoids these, and a guard that reads
+    // its own documentation as a violation is a false positive, not a check
+    const code = fn.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+    const parts = [
+      [/const EVENTS = \['load'/.test(code) && /EVENTS\.includes\(e\)/.test(code), 'allowlists events server-side'],
+      [!/headers\.get|x-forwarded-for|user-agent|cookie/i.test(code), 'reads no IP/user-agent/cookie'],
+      [/return null;/.test(code) && /import\('@netlify\/blobs'\)/.test(code), 'fails soft without storage']
+    ];
+    const failed = parts.filter(p => !p[0]).map(p => p[1]);
+    good = failed.length === 0;
+    why = good ? 'allowlisted, no identifiers, fails soft' : 'VIOLATIONS: ' + failed.join(', ');
+  }
+  g(good, `tally function is privacy-safe (${why})`);
+}
+g(/--functions netlify\/functions/.test(fs.readFileSync(path.join(__dirname, 'sync_hlur.sh'), 'utf8')),
+  'deploy ships the functions directory');
+// cold audit 2026-07-30: every one of these was a real defect found after the batch "passed"
+g(/tally\('lab'\)/.test(html) && /tally\('path'\)/.test(html) && /counts four things/.test(html),
+  'the disclosure names every event actually sent (all four, not two)');
+g(/nothing stored that could point back/.test(html),
+  'privacy claim is scoped to what is STORED (the request itself still reaches the host)');
+g(/rough signal, not a proof/.test(html), 'public counters are labelled forgeable, not presented as evidence');
+g(html.includes("t.closest('.path-off') && window.baselineShowAll"),
+  'ring/row navigation reveals hidden sections (they are not links — the click handler misses them)');
+g(html.includes('if (linked && el.contains(linked)) return;'),
+  'a deep-linked #anchor is never hidden by a saved start path');
+g(!/meaning of "animal\."/.test(html), 'stale "animal" from the canonical Transformer example is gone');
+{
+  // both deploy paths publish a full snapshot: one missing --functions silently deletes the other's function
+  const dep = ['/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/deploy.sh',
+               process.env.DEST && path.join(process.env.DEST, '..', 'deploy.sh')]
+    .filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  g(!dep || /--functions netlify\/functions/.test(fs.readFileSync(dep, 'utf8')),
+    'the host repo\'s own deploy path also ships functions (a snapshot deploy without it deletes them)');
+}
+{
+  const bd = ['/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/build_dist.js',
+              process.env.DEST && path.join(process.env.DEST, '..', 'build_dist.js')]
+    .filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  g(!bd || /\\\.\[cm\]\?js\$/.test(fs.readFileSync(bd, 'utf8')),
+    'the publish-dir leak gate rejects .mjs/.cjs as well as .js');
+}
+
 /* ---------- result ---------- */
 console.log('---------------');
 console.log(`${checks} checks, ${fails} failure(s)`);

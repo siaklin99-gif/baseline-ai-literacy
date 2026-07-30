@@ -558,6 +558,10 @@ details.card[open] .chev { transform: rotate(90deg); }
 .lab-score b { color: var(--green); }
 .lab-copy { min-height: 44px; padding: 8px 16px; border-radius: 999px; border: none; background: var(--text); color: var(--bg);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.lab-next { border: 1px dashed var(--border-med); border-radius: 12px; padding: 15px 18px; margin-top: 14px; }
+.lab-next-t { font-size: 15px; color: var(--text); margin-bottom: 5px; }
+.lab-next-s { font-size: 14px; color: var(--text-sec); line-height: 1.55; }
+.lab-next-s a { color: var(--accent); }
 /* running output + build-time chips */
 .gf-out { margin-top: 14px; display: flex; align-items: baseline; gap: 9px; padding: 9px 13px; background: var(--surface2); border-radius: 10px; flex-wrap: wrap; }
 .gf-out-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-ter); font-weight: 700; }
@@ -662,6 +666,12 @@ details.card[open] .chev { transform: rotate(90deg); }
 .path-chip:hover { border-color: var(--text-ter); }
 .path-chip:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 .path-chip.on { background: var(--text); color: var(--bg); border-color: transparent; }
+/* off-path content is hidden, never removed — one tap in .path-status brings it all back */
+.path-off { display: none !important; }
+.path-status { text-align: center; font-size: 13px; color: var(--text-sec); margin: -12px 0 18px; line-height: 1.5; }
+.path-status b { color: var(--text); }
+.path-status button { min-height: 44px; padding: 0 6px; border: none; background: none; font: inherit;
+  font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer; }
 .lc-row.lc-rec { border-color: color-mix(in srgb, var(--g1) 45%, var(--border)); }
 .lc-rec-chip { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
   color: var(--accent); background: color-mix(in srgb, var(--g1) 10%, var(--surface2)); border-radius: 5px;
@@ -848,7 +858,10 @@ footer { margin-top: 30px; }
 <div class="trust" role="note" aria-label="Why you can trust this page">
   <div class="wrap">
     <span class="trust-pill">Free · no signup</span>
-    <span class="trust-pill">Nothing tracked</span>
+    <!-- was "Nothing tracked" until 2026-07-30. The page now counts anonymous page loads
+         and quiz finishes — integers only, no cookies, no identifiers — so this claim was
+         narrowed to what is still exactly true. The counts are public: /baseline/#numbers -->
+    <span class="trust-pill">No cookies · no account</span>
     <span class="trust-pill">No course to sell</span>
     <span class="trust-by">Made at <a href="https://hlur.ai" target="_blank" rel="noopener">hlur.ai</a></span>
     <!-- update this line whenever something ships — it's how returning visitors see the page grow -->
@@ -895,6 +908,7 @@ footer { margin-top: 30px; }
       <button class="path-chip" type="button" aria-pressed="false" data-path="some">Used it a bit</button>
       <button class="path-chip" type="button" aria-pressed="false" data-path="tech">Techie</button>
     </div>
+    <div class="path-status" id="pathStatus" role="status" hidden></div>
     <div class="lc-wrap">
       <svg id="lcSvg" viewBox="0 0 240 240" role="img" aria-label="Learning circle: a progress ring with seven steps around it">
         <defs>
@@ -1008,7 +1022,7 @@ footer { margin-top: 30px; }
     <!-- activity: train the "verify" reflex — tap the fabricated statement -->
     <div class="mg" id="spotFake">
       <div class="mg-head"><span class="mg-tag">Try it</span><b>Spot the fake</b>
-        <span class="mg-sub">Two of these are true. One is a confident fabrication — the kind AI produces. Tap the fake.</span></div>
+        <span class="mg-sub">Two of these are true. One is a confident fabrication — the kind AI produces. You don't need to know the topic: the two true statements rule the fake out. Tap it.</span></div>
       <div class="mg-body" id="sfBody"></div>
       <div class="mg-note" id="sfNote" aria-live="polite"></div>
     </div>
@@ -1247,7 +1261,7 @@ king − man + woman  =   0.9     1.0    ← lands right on queen</pre></div>
       </summary>
       <div class="content">
         <p>The catch: a word's meaning depends on the words around it. In "the <strong>bank</strong> of the river" versus "money in the <strong>bank</strong>," the same token means two different things.</p>
-        <p><strong>Attention</strong> lets every word look at every other word and pull in what's relevant. Try it — tap any word in the sentence and see where it looks:</p>
+        <p><strong>Attention</strong> lets every word look back at the words before it and pull in what's relevant. Only backwards — a model writing one word at a time can't peek at words it hasn't written yet. Try it: tap any word and see where it looks.</p>
         <div class="attn-play" id="attnPlay">
           <div class="attn-sent" role="group" aria-label="Tap a word to see which other words it pays attention to"></div>
           <div class="attn-out">
@@ -1256,7 +1270,7 @@ king − man + woman  =   0.9     1.0    ← lands right on queen</pre></div>
           </div>
         </div>
         <p style="opacity:.8">Illustrative weights — the mechanism is real; the exact numbers are learned, and real models track hundreds of these per word at once.</p>
-        <p>The model works out "how much should this word pay attention to each other word?", then blends their vectors together, weighted by those scores. Now "it" carries the meaning of "animal." Do that for every word, all at once — that's the <strong>Transformer</strong>.</p>
+        <p>The model works out "how much should this word pay attention to each earlier word?", then blends their vectors together, weighted by those scores. Now "it" carries the meaning of "dog." Do that for every word, all at once — that's the <strong>Transformer</strong>.</p>
         <p><strong>How it all fits together:</strong></p>
         <div class="codeblock"><pre>text → tokens → embeddings → [ attention block ] ×dozens → next-token odds
                                     ↑ stacked deep — where context gets woven in
@@ -1353,12 +1367,12 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   <div class="wrap">
     <div class="slabel">Labs · level 2</div>
     <h2 class="stitle">Baseline Labs</h2>
-    <div class="ssub">The page above is the foundation. Labs are where you practice — one skill each, built as an exercise, not an essay. More labs land here as they're ready.</div>
+    <div class="ssub">The page above is the foundation. Labs are where you practice — one skill each, built as an exercise, not an essay.</div>
 
     <details class="card feature" id="lab-prompting" open>
       <summary>
         <div class="idx">🧪</div>
-        <div class="head"><div class="t">Lab 001 · Prompting mastery</div><div class="s">The one skill that upgrades every answer you get</div></div>
+        <div class="head"><div class="t">Lab 001 · Prompting mastery</div><div class="s">The one skill that upgrades every answer you get · shipped 2026-07-29</div></div>
         <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </summary>
       <div class="content">
@@ -1379,6 +1393,14 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
         <p>The pattern behind all four: say <strong>who it should be</strong>, <strong>exactly what you want</strong>, <strong>what shape to return it in</strong>, and <strong>give it permission to disagree</strong>. That one habit beats any list of "magic prompts" — and it works because of what you saw under the hood: the more precisely your words pin down the context, the better the next-word machine can aim.</p>
       </div>
     </details>
+
+    <!-- What's next, named — an undated "more coming" promise is worth less than nothing
+         on a page whose pitch is honesty. Reaching the reader again costs no infrastructure:
+         a reply-to-a-human beats a mailing list nobody wants to join. -->
+    <div class="lab-next">
+      <div class="lab-next-t"><b>Lab 002 · Checking AI's work</b> — the habit that makes every other one safe. In progress.</div>
+      <div class="lab-next-s">Want to know when it lands? Email <a href="mailto:hello@hlur.ai?subject=labs">hello@hlur.ai</a> with the word <b>labs</b> and I'll reply once, when it's up. No list, no newsletter, no account.</div>
+    </div>
   </div>
 </section>
 
@@ -1426,8 +1448,18 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
       <p class="line">Baseline is a starting point, not the last word — built to be honest about what's still uncertain.</p>
       <p>v1 · concepts are evergreen · market-data cards carry the date they were last verified, and flag themselves when they age.</p>
       <p>Spotted something stale, wrong, or confusing?
+         <a href="mailto:hello@hlur.ai?subject=Baseline%20correction"
+            style="color:var(--accent); text-underline-offset:3px;">Email hello@hlur.ai</a> — honest corrections are the point.
          <a href="https://github.com/siaklin99-gif/baseline-ai-literacy/issues" target="_blank" rel="noopener"
-            style="color:var(--accent); text-underline-offset:3px;">Tell us here</a> — honest corrections are the point.</p>
+            style="color:var(--text-ter); text-underline-offset:3px;">Or open an issue</a> if you'd rather.</p>
+      <!-- honest disclosure of the ONLY thing this page counts, next to the numbers themselves -->
+      <p id="numbers">This page counts four things, and nothing else: page loads, quiz finishes,
+         lab-prompt copies, and which starting point people pick. Daily totals only — no cookies,
+         no accounts, no identifiers, and nothing stored that could point back at you.
+         <a href="https://hlur.ai/.netlify/functions/tally" target="_blank" rel="noopener"
+         style="color:var(--accent); text-underline-offset:3px;">See the numbers</a> — they're public,
+         because a page about honesty should show its own. They're a rough signal, not a proof:
+         the endpoint is open, so anyone could inflate them.</p>
     </div>
     <div class="foot-shell foot-inner">
       <div class="foot-links">
@@ -1445,6 +1477,23 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 <script>
 /* one source of truth for motion preference — every smooth scroll/animation must respect it */
 const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- tally(): the smallest honest answer to "is anyone using this?" ----------
+   Increments a public counter. Sends ONE word from a fixed list and nothing else —
+   no cookies, no id, no session, no referrer, no personal data of any kind; the
+   server stores integers per day. Only runs on hlur.ai, so the GitHub Pages mirror
+   and any local copy stay completely silent. Wrapped so it can never break the page:
+   if the endpoint is missing, slow, or blocked, nothing happens and nobody notices. */
+const TALLY_OK = ['load', 'quiz', 'lab', 'path'];   // must match EVENTS in netlify/functions/tally.mjs
+function tally(e) {
+  try {
+    if (location.hostname !== 'hlur.ai' || !TALLY_OK.includes(e)) return;
+    const body = JSON.stringify({ e });
+    if (navigator.sendBeacon) navigator.sendBeacon('/.netlify/functions/tally', new Blob([body], { type: 'application/json' }));
+    else fetch('/.netlify/functions/tally', { method: 'POST', body, keepalive: true }).catch(() => {});
+  } catch (err) {}
+}
+tally('load');
 
 /* one share-out for the whole page: native sheet where real, copy fallback;
    AbortError = the person closed the sheet, which is an answer, not an error */
@@ -1702,6 +1751,7 @@ const levelDeck = {};
 LEVELS.forEach(([key, label, sub], gi) => {
   const g = document.createElement('div');
   g.className = 'tg';
+  g.dataset.lvl = key;                 // lets the start-path picker filter whole levels
   g.innerHTML = `<div class="tg-head"><span class="tg-badge">${gi + 1}</span>
       <div class="tg-t"><b>${label}</b><span>${sub}</span></div></div>
     <div class="tg-deck" data-level="${key}"></div>`;
@@ -1929,6 +1979,7 @@ function updateScore() {
                    : ' Miss one and it comes back after 1, 3, then 7 days until it sticks — the same spacing your memory actually uses.');
   qzScore.innerHTML = `<b>You got ${qzCorrect} / ${QUIZ.length}.</b> ${msg}<span class="qz-next">${next}</span>`;
   qzScore.classList.add('final');
+  tally('quiz');            // reached the end of the page and finished the quiz
   qzScore.insertAdjacentHTML('beforeend', ' <button class="mg-again" id="qzShare" type="button">📣 Share your score</button> <span class="qz-share-note" aria-live="polite"></span>');
   qzScore.querySelector('#qzShare').addEventListener('click', () =>
     shareOut(`I got ${qzCorrect}/${QUIZ.length} on Baseline — where's your AI baseline?`, qzScore.querySelector('.qz-share-note')));
@@ -2112,6 +2163,11 @@ const lcList = document.getElementById('lcList');
 function lcNavigate(i) {
   const t = document.querySelector(CIRCLE[i][2]);
   if (!t) return;
+  // The numbered ring and the row body call this DIRECTLY — they are not links, so the
+  // document-level reveal handler never sees them. Without this, tapping a step whose
+  // section the current start-path tucked away scrolls to a display:none element and
+  // looks broken. Navigation must always beat filtering.
+  if (t.closest('.path-off') && window.baselineShowAll) window.baselineShowAll();
   if (t.tagName === 'DETAILS') t.open = true;
   t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
   // if the target card sits in a horizontal deck (mobile), bring it into the deck's view too
@@ -2172,28 +2228,80 @@ document.getElementById('lcReset').addEventListener('click', () => {
 });
 lcUpdate();
 
-/* ---------- guided start: three starting points light up a path ---------- */
+/* ---------- guided start: three starting points light up AND shorten the page ----------
+   The page carries ~5,000 words for four different readers. Picking a start hides the
+   parts that aren't for you — never permanently: one tap restores everything, and any
+   in-page link INTO a hidden part reveals it automatically, so nothing becomes
+   unreachable. Off-path content is hidden, never deleted. */
 (function initPathPick(){
-  // step indexes per starting point (0-based into CIRCLE)
-  const PATHS = { new: [0, 1, 3], some: [2, 4, 6], tech: [5, 6] };
+  const PATHS = {
+    // "new" keeps the hero, the 2-minute try, the peel, the reality check, the body map,
+    // the 8 beginner cards and the quiz — and tucks away the mechanism deep-dive, the
+    // level-2 lab, and the two card groups that aren't day-one. "some" is the full page.
+    new:  { steps: [0, 1, 3], hide: ['#howllm', '#labs', '.tg[data-lvl="intermediate"]', '.tg[data-lvl="advanced"]'] },
+    some: { steps: [2, 4, 6], hide: [] },
+    tech: { steps: [5, 6],    hide: ['#try', '.tg[data-lvl="beginner"]'] }
+  };
+  const LABEL = { new: 'New to AI', some: 'Used it a bit', tech: 'Techie' };
   const chips = [...document.querySelectorAll('.path-chip')];
   const rows = () => [...document.querySelectorAll('#lcList .lc-row')];
+  const status = document.getElementById('pathStatus');
+  function clearHides() {
+    document.querySelectorAll('.path-off').forEach(el => { el.classList.remove('path-off'); el.removeAttribute('aria-hidden'); });
+  }
+  // exposed so lcNavigate() (the ring + row taps, which aren't links) can un-hide before scrolling
+  window.baselineShowAll = () => {
+    clearHides();
+    if (status && !status.hidden) status.textContent = 'Everything is showing again.';
+  };
   function apply(key) {
-    rows().forEach((r, i) => {
+    rows().forEach(r => {
       r.classList.remove('lc-rec');
       const old = r.querySelector('.lc-rec-chip'); if (old) old.remove();
     });
+    clearHides();
     chips.forEach(c => { const on = c.dataset.path === key; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
-    if (!key) return;
-    const steps = PATHS[key] || [];
+    if (!key) { if (status) { status.hidden = true; status.textContent = ''; } return; }
+    const p = PATHS[key] || { steps: [], hide: [] };
     rows().forEach((r, i) => {
-      if (!steps.includes(i)) return;
+      if (!p.steps.includes(i)) return;
       r.classList.add('lc-rec');
-      if (i === steps[0]) r.querySelector('.lc-t b').insertAdjacentHTML('beforeend', '<span class="lc-rec-chip">start here</span>');
+      if (i === p.steps[0]) r.querySelector('.lc-t b').insertAdjacentHTML('beforeend', '<span class="lc-rec-chip">start here</span>');
     });
+    // never hide the thing someone was linked to: a shared/bookmarked #anchor must win
+    // over a saved path, or the reader arrives at a page missing the reason they came.
+    const linked = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    let n = 0;
+    p.hide.forEach(sel => document.querySelectorAll(sel).forEach(el => {
+      if (linked && el.contains(linked)) return;
+      el.classList.add('path-off'); el.setAttribute('aria-hidden', 'true'); n++;
+    }));
+    if (status) {
+      status.hidden = false;
+      status.innerHTML = n
+        ? `Showing the <b>${LABEL[key]}</b> path — ${n} ${n === 1 ? 'section is' : 'sections are'} tucked away. <button type="button" id="pathAll">Show everything</button>`
+        : `Showing the <b>${LABEL[key]}</b> path — the whole page suits you; the steps below are just the order to take it in.`;
+      const all = document.getElementById('pathAll');
+      if (all) all.addEventListener('click', () => {
+        clearHides();
+        status.innerHTML = `Everything is showing again. <b>${LABEL[key]}</b> steps stay marked below.`;
+      });
+    }
   }
+  // a link INTO hidden content must reveal it rather than scroll to nothing
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"], [data-card]');
+    if (!a) return;
+    const id = a.getAttribute('href') ? a.getAttribute('href').slice(1) : a.dataset.card;
+    const t = id && document.getElementById(id);
+    if (t && t.closest('.path-off')) {
+      clearHides();
+      if (status && !status.hidden) status.textContent = 'Everything is showing again.';
+    }
+  }, true);
   chips.forEach(c => c.addEventListener('click', () => {
     const key = c.classList.contains('on') ? null : c.dataset.path;   // tap again to clear
+    if (key) tally('path');            // on the click only — restoring a saved path must not re-count
     // stored JSON-encoded: the progress-transfer import JSON.parses every key it carries,
     // so a raw string here would make the WHOLE transfer code unreadable on import
     try { key ? localStorage.setItem('baseline_path', JSON.stringify(key)) : localStorage.removeItem('baseline_path'); } catch (e) {}
@@ -2321,16 +2429,19 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   if (!play) return;
   const WORDS = ['The', 'dog', 'ignored', 'the', 'bone', 'because', 'it', 'was', 'full'];
   // per word: top-3 [targetIndex, weight] + one line of why
+  /* CAUSAL by construction: row i may only reference indexes <= i. A model that
+     writes one word at a time cannot peek at words it hasn't written yet, so every
+     weight here points backwards. A regression guard in verify.js enforces it. */
   const ATTN = [
-    { w: [[1, .85], [2, .10], [4, .05]], why: '"The" mostly points at the noun it introduces — <b>dog</b>.' },
-    { w: [[2, .45], [6, .35], [4, .20]], why: '"dog" links to what it did (<b>ignored</b>) and to "<b>it</b>", the word that refers back to it.' },
-    { w: [[1, .55], [4, .35], [5, .10]], why: '"ignored" needs its actor (<b>dog</b>) and its object (<b>bone</b>).' },
-    { w: [[4, .85], [1, .10], [0, .05]], why: 'Same trick as the first "The" — this one points at <b>bone</b>.' },
-    { w: [[2, .50], [1, .35], [3, .15]], why: '"bone" looks at the verb that acted on it (<b>ignored</b>) and at who did the ignoring.' },
-    { w: [[7, .40], [2, .35], [8, .25]], why: '"because" is a bridge — it ties the action to the reason.' },
-    { w: [[1, .80], [4, .15], [8, .05]], why: '"it" resolves to <b>dog</b> — bones aren\'t full. This is the classic move attention makes.' },
-    { w: [[6, .60], [8, .30], [5, .10]], why: '"was" connects its subject (<b>it</b>) to its state (<b>full</b>).' },
-    { w: [[6, .55], [1, .30], [7, .15]], why: '"full" describes <b>it</b> — and through "it", the <b>dog</b>.' }
+    { w: [[0, 1.00]], why: 'The first word has nothing behind it — it can only look at itself. Attention only ever looks <b>backwards</b>, which is exactly what lets the model predict what comes <em>next</em>.' },
+    { w: [[0, .60], [1, .40]], why: '"dog" looks back at "<b>The</b>" — the word marking it as one particular dog.' },
+    { w: [[1, .70], [0, .20], [2, .10]], why: '"ignored" needs its actor, so it looks back at <b>dog</b>.' },
+    { w: [[2, .55], [1, .30], [3, .15]], why: 'This second "the" leans on <b>ignored</b> — the verb telling it an object is coming.' },
+    { w: [[2, .60], [1, .25], [3, .15]], why: '"bone" looks back at the verb that acted on it (<b>ignored</b>) and at who did the ignoring.' },
+    { w: [[2, .45], [4, .35], [1, .20]], why: '"because" is a bridge — it looks back at the action (<b>ignored</b>) it is about to explain.' },
+    { w: [[1, .80], [4, .15], [5, .05]], why: '"it" resolves to <b>dog</b> — bones aren\'t full. This is the classic move attention makes.' },
+    { w: [[6, .55], [1, .30], [5, .15]], why: '"was" connects back to its subject, "<b>it</b>" — and through it, the dog.' },
+    { w: [[6, .50], [1, .30], [7, .20]], why: '"full" describes <b>it</b> — and through "it", the <b>dog</b>. That chain is how the sentence holds together.' }
   ];
   const sent = play.querySelector('.attn-sent');
   const bars = document.getElementById('attnBars');
@@ -2400,6 +2511,7 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
   }));
   const copyBtn = document.getElementById('labCopy');
   copyBtn.addEventListener('click', async () => {
+    tally('lab');
     try { await navigator.clipboard.writeText(text()); copyBtn.textContent = 'Copied ✓ — paste it into any chatbot'; }
     catch (e) { copyBtn.textContent = 'Select the prompt above and copy it'; }
     setTimeout(() => { copyBtn.textContent = 'Copy it — try it in any chatbot'; }, 2200);
@@ -2467,20 +2579,23 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
 (function initSpotFake(){
   const body = document.getElementById('sfBody'), note = document.getElementById('sfNote');
   if (!body || !note) return;
-  // Two true statements + one DELIBERATE fabrication per round — the fabrication is the game.
+  /* Two true statements + one DELIBERATE fabrication per round. The fabrication is always
+     RULED OUT BY THE OTHER TWO — no outside knowledge needed, so what the reader practises
+     is the transferable move (check a claim against the facts already in front of you),
+     not trivia recall. Tells must not reference position: the items are shuffled. */
   const ROUNDS = [
-    { topic: 'the Moon', tell: 'Galileo died in 1642 — the title, the date, the confidence: all invented. Specific-sounding details are the classic tell.',
-      items: [['The Moon orbits Earth roughly every 27 days.', 0],
-              ['The Moon’s gravity is the main driver of ocean tides.', 0],
-              ['Galileo published the first Moon atlas, “Luna Nova,” in 1721.', 1]] },
-    { topic: 'famous books', tell: 'No such book exists. Real author + real prize + invented title — exactly how AI misremembers.',
-      items: [['“1984” was written by George Orwell.', 0],
-              ['“Pride and Prejudice” was written by Jane Austen.', 0],
-              ['Ian McEwan won the 1987 Booker Prize for “The Silent Meadow.”', 1]] },
-    { topic: 'the human body', tell: 'Plausible but wrong — that’s bone marrow’s job (the liver only does it before birth). Near-miss facts are the hardest fakes to catch.',
-      items: [['An adult human skeleton has 206 bones.', 0],
-              ['The human heart has four chambers.', 0],
-              ['In adults, red blood cells are made mainly by the liver.', 1]] }
+    { topic: 'the Moon', tell: 'You didn’t need to know any astronomy. If the same side always faces us, 85% cannot be right — the fake contradicts a fact sitting next to it. (The true figure is about 59%: the Moon rocks slightly, so we get a peek around the edges.)',
+      items: [['The Moon takes roughly 27 days to orbit Earth.', 0],
+              ['The same side of the Moon always faces Earth.', 0],
+              ['From Earth we can see about 85% of the Moon’s surface over one month.', 1]] },
+    { topic: 'a real historical figure', tell: 'Check the dates against each other: she died in 1852, so she cannot have published in 1871. Two true facts fenced the fake in — that is the whole method.',
+      items: [['Ada Lovelace wrote her notes on Babbage’s Analytical Engine in 1843.', 0],
+              ['Ada Lovelace died in 1852, aged 36.', 0],
+              ['In 1871 Lovelace published a follow-up paper on programming the engine.', 1]] },
+    { topic: 'everyday numbers', tell: 'Do the arithmetic from the other two: 212 − 32 = 180 Fahrenheit degrees span the same range as 100 Celsius degrees. That is 1.8 per degree, not 2.5. A confident number is still checkable.',
+      items: [['At sea level water freezes at 0 °C and boils at 100 °C.', 0],
+              ['On the Fahrenheit scale those points are 32 °F and 212 °F.', 0],
+              ['A change of 1 °C is the same as a change of 2.5 °F.', 1]] }
   ];
   let r = 0, caught = 0;
   function draw(){
@@ -2505,7 +2620,7 @@ document.querySelectorAll('a.try-more, a.xref').forEach(a => {
         const lead = gotIt ? '<b>Caught it.</b> ' : '<b>That one’s actually true.</b> ';
         const more = (r < ROUNDS.length - 1)
           ? ' <button class="mg-again" type="button">Next round →</button>'
-          : ` <b>You caught ${caught} of ${ROUNDS.length}.</b> The reflex to keep: confident + specific ≠ true — verify what matters. <button class="mg-again" type="button">Play again ↺</button>`;
+          : ` <b>You caught ${caught} of ${ROUNDS.length}.</b> The reflex to keep: don't ask "does this sound right?" — ask "does this square with what I already know is true?" That check works on any topic, including ones you know nothing about. <button class="mg-again" type="button">Play again ↺</button>`;
         note.innerHTML = lead + esc(round.tell) + more;
         note.querySelector(".mg-again").addEventListener('click', () => {
           if (r < ROUNDS.length - 1) { r++; } else { r = 0; caught = 0; }

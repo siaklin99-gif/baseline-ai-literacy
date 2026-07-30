@@ -85,7 +85,10 @@ echo "▶ deploy hlur.ai"
 ( cd "$SITE" && node build_dist.js | tail -1 )
 # NETLIFY_SITE_ID/NETLIFY_AUTH_TOKEN are only needed in CI; locally the CLI is already
 # logged in and reads .netlify/state.json, so both stay unset and this is a no-op.
-( cd "$SITE" && netlify deploy --prod --dir _dist ${NETLIFY_SITE_ID:+--site "$NETLIFY_SITE_ID"} \
+# --functions ships netlify/functions/ (the aggregate-only usage tally). It is NOT part of
+# _dist and never can be: _dist is the public web root and rejects .js/.mjs by design.
+( cd "$SITE" && netlify deploy --prod --dir _dist --functions netlify/functions \
+    ${NETLIFY_SITE_ID:+--site "$NETLIFY_SITE_ID"} \
     | grep -E 'Production URL|Website URL' )
 
 echo

@@ -80,9 +80,15 @@ jobs:
       - name: Install Playwright (visual_check renders the pages)
         working-directory: hlur-site
         run: |
-          npm init -y >/dev/null 2>&1 || true
+          # the repo now ships its own package.json (for the tally function's @netlify/blobs);
+          # install it rather than clobbering it with `npm init -y`
+          [ -f package.json ] || npm init -y >/dev/null 2>&1
+          npm install >/dev/null
           npm i --no-save playwright >/dev/null
           npx playwright install --with-deps chromium
+          # fail loudly here rather than silently deploying a function with no storage
+          node -e "require.resolve('@netlify/blobs/package.json')" \
+            || { echo "::error::@netlify/blobs missing — the tally function would deploy in log-only mode"; exit 1; }
 
       - name: Install Netlify CLI
         run: npm i -g netlify-cli >/dev/null

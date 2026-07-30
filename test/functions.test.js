@@ -45,7 +45,11 @@ if (!m) { console.log('\x1b[31mCould not locate inline script in index.html\x1b[
 const dataSrc = fs.readFileSync(path.join(__dirname, '..', 'data.js'), 'utf8');
 const sandbox = {
   document: { getElementById: () => stubEl(), createElement: () => stubEl(), createElementNS: () => stubEl(),
-              querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl() },
+              querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl(),
+              // the page attaches a document-level click listener (reveal-on-link for hidden
+              // path sections); the stub needs it or loading the page functions throws
+              addEventListener: () => {}, removeEventListener: () => {},
+              documentElement: stubEl() },
   localStorage: { getItem: () => null, setItem() {} },
   console: { log() {}, warn() {}, error() {} },
   getComputedStyle: () => ({ paddingLeft: '0px', display: 'block' }),

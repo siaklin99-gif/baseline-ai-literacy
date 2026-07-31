@@ -21,6 +21,8 @@ No build step, no framework, no server: open `index.html`.
 | `layout_baseline.json` | The committed layout fingerprint. Changing it is a reviewable diff, not a silent drift. |
 | `visual.js` | **The visual pass, automated**: contrast / clipped text / overlapping controls / blank sections, plus a pixel diff of every section against `visual_ref/`. |
 | `visual_ref/` | Approved reference images (11 sections × desktop + mobile). `node visual.js --update` re-approves. |
+| `tools/record-clip.js` | Records a clip mode (`write`/`peel`/`attn`/`triage`) as a 1080×1920 MP4. Needs ffmpeg. |
+| `tools/make-hook.js` | Renders the on-screen hook overlays used on the published clips. |
 | `selfcheck` | Runs everything. |
 
 ## Can I trust the layout?
@@ -135,3 +137,23 @@ and `node verify.js` catches it before you ship.
   by theme, so the first glance is never a wall of text.
 - **Honest about churn:** model/price data is deliberately band-level and dated rather
   than pinned to version numbers that go stale within weeks.
+
+## Making a clip
+
+The page has hidden recording modes — `?clip=write|peel|attn|triage` — that strip the
+chrome and loop one component full-bleed. They are not linked from anywhere; they exist
+to be screen-recorded.
+
+```sh
+node tools/record-clip.js peel out.mp4 18     # 1080x1920, silent, ready to post
+node tools/make-hook.js                       # writes /tmp/hook_<clip>.png overlays
+```
+
+Burning a hook into the first ~2.7s (the exact ffmpeg incantation is in `make-hook.js`)
+matters more than music: these are silent explainers, and a viewer needs to know within
+one second why the frame is worth watching.
+
+Two traps, both hit while building this. macOS ffmpeg often ships **without `drawtext`**,
+which is why the text is rendered in Chrome and composited. And a still-image overlay
+input **must** use `-loop 1 -t 3`: a single frame lives only at t=0, so without it the
+fades and the overlay window silently do nothing at all.

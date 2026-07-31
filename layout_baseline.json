@@ -4,7 +4,7 @@
     "wrapX": 366,
     "wrapW": 940,
     "grids": {
-      "#cards .tg-deck": 2,
+      "#cards .tg-deck": null,
       ".foot-cols": 3,
       ".path-pick": 4,
       ".trust .wrap": 4
@@ -15,7 +15,7 @@
     "wrapX": 286,
     "wrapW": 940,
     "grids": {
-      "#cards .tg-deck": 2,
+      "#cards .tg-deck": null,
       ".foot-cols": 3,
       ".path-pick": 4,
       ".trust .wrap": 4
@@ -26,7 +26,7 @@
     "wrapX": 0,
     "wrapW": 768,
     "grids": {
-      "#cards .tg-deck": 2,
+      "#cards .tg-deck": null,
       ".foot-cols": 2,
       ".path-pick": 4,
       ".trust .wrap": 4
@@ -37,7 +37,7 @@
     "wrapX": 0,
     "wrapW": 390,
     "grids": {
-      "#cards .tg-deck": 8,
+      "#cards .tg-deck": null,
       ".foot-cols": 1,
       ".path-pick": 4,
       ".trust .wrap": 2

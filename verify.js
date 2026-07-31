@@ -138,8 +138,8 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
 const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 9 ? ok('all 9 section titles are real <h2> headings (incl. Baseline Labs)')
-          : bad(`expected 9 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+h2s === 10 ? ok('all 10 section titles are real <h2> headings (incl. the layer-2 doorway)')
+           : bad(`expected 10 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -191,7 +191,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // flow: nothing moves until the user presses Play, and each prediction shows ITS OWN odds
 (/let userPaused = true/.test(html) && /const PRED = /.test(html) && /\[\['today', 60\]/.test(html))
   ? ok('flow is play-on-demand with per-prediction odds (today gets its own bars)') : bad('flow autoplays or the odds bars are static again');
-(html.indexOf('<section id="topics">') < html.indexOf('<section id="howllm">'))
+// match by ID, not a literal tag string — the sections gained a class and this guard
+// silently started comparing -1 < -1, reporting a break that had not happened
+(html.indexOf('id="topics"') < html.indexOf('id="howllm"') && html.indexOf('id="topics"') > -1)
   ? ok('beginner path unbroken: topic cards come before Under the hood') : bad('Under the hood interrupts the beginner path again');
 (!/\.pills \{/.test(html) && !/c\[5\]/.test(html))
   ? ok('dead filter-pill CSS and orphaned card field stay removed') : bad('dead pills CSS / orphaned c[5] came back');
@@ -485,7 +487,12 @@ g(/\.codeblock \{[^}]*background-attachment: local, local, scroll, scroll, local
   g(!/Luna Nova/.test(html), 'trivia-only Galileo round retired');
 }
 // start-path picker must actually FILTER, not just tint, and must be reversible
-g(/hide: \['#howllm'/.test(html) && /hide: \['#try'/.test(html), 'start paths hide off-path sections (not just tint rows)');
+// Superseded by layer 2. The picker's hide-lists existed to shorten a 27-screen page;
+// moving the four deep-dives off the main scroll did that far better, so the lists are
+// now empty and the picker marks the route only. Guarding that they stay empty keeps
+// two mechanisms from re-growing to solve the same problem.
+g(/new:  \{ steps: \[0, 1, 3\], hide: \[\] \}/.test(html) && /tech: \{ steps: \[5, 6\],    hide: \[\] \}/.test(html),
+  'the path picker marks only — layer 2 replaced its hide-lists rather than duplicating them');
 g(html.includes('.path-off { display: none !important; }'), 'off-path content is hidden by class (restorable, not deleted)');
 g(html.includes("id=\"pathAll\"") || html.includes("'pathAll'"), 'a one-tap "Show everything" escape exists');
 // Shortening the page must stay OPT-IN. Hiding four sections the moment someone picks a
@@ -504,7 +511,26 @@ g(/id="lab-checking" open/.test(html) && !/id="lab-prompting" open/.test(html),
 // Entries MUST be derived from the DOM — a hand-list is how #howllm went missing from the
 // visual harness for a week.
 g(html.includes('id="rail"') && html.includes('id="railNav"'), 'desktop rail present');
-g(/document\.querySelectorAll\('section\[id\]'\)/.test(html) && /secs\.map\(sec =>/.test(html),
+/* ---- LAYER 2: the four deep-dives open on top instead of extending the scroll ---- */
+{
+  const deep = (html.match(/<section id="(bodysec|topics|howllm|labs)" class="deep">/g) || []).length;
+  g(deep === 4, `4 deep sections marked for layer 2 (found ${deep})`);
+}
+g(/\.deep \{ display: none; \}/.test(html) && /\.deep\.open \{/.test(html),
+  'deep sections are HIDDEN, never removed — the page stays one crawlable document and every #anchor still resolves');
+g(html.includes('id="deepGrid"') && /const DEEP = \{/.test(html),
+  'a doorway lists the deep sections rather than hiding them from the reader');
+g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
+  'any link into layer 2 opens it — one interception, not a per-link list');
+g(/const deepHost = t\.closest\('\.deep'\)/.test(html),
+  'learning-circle steps into layer 2 open it (they navigate directly, bypassing link handlers)');
+g(/e\.key === 'Escape'/.test(html) && html.includes('id="deepClose"'),
+  'the layer closes by Escape and by a visible control');
+g(/history\.pushState\(\{ deep: id \}/.test(html) && /addEventListener\('popstate'/.test(html),
+  'an open layer is a real history entry — shareable, and Back closes it');
+g(/html\[data-deep\] \{ overflow: hidden; \}/.test(html),
+  'the page behind a layer cannot scroll');
+g(/document\.querySelectorAll\('section\[id\]'\)/.test(html) && /all\.map\(sec =>/.test(html),
   'rail entries are derived from the sections on the page, never hand-listed');
 g(/@media \(min-width: 1180px\)/.test(html) && /\.rail \{ display: none; \}/.test(html),
   'rail is desktop-only — mobile keeps its swipe decks untouched');

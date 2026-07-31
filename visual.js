@@ -59,6 +59,8 @@ const VIEWS = [
 // largest deep-dive section on the page — while the green line "11 sections pixel-identical"
 // read as full coverage. A list you maintain by hand is a list that forgets.
 const EXTRA_SECTIONS = ['header', '.share-strip', 'footer'];
+// layer-2 sections: hidden until opened, so the capture opens each one in turn
+const DEEP_IDS = ['bodysec', 'topics', 'howllm', 'labs'];
 // An absolute pixel count, NOT a percentage. 0.12% of the 2.97M-pixel #topics reference
 // was 3,569 pixels of licence — enough to recolour a whole badge and still pass. Changed
 // pixels do not get cheaper because the section is tall.
@@ -81,6 +83,14 @@ const DETERMINISM = `
 
 /* Defect scans + per-section capture geometry, measured in the page. */
 const PROBE = `(function(){
+  // Layer 2 is display:none until opened. Open all four in place (static, not fixed) so
+  // they are measured and diffed exactly like the rest — otherwise the four deep-dives,
+  // which hold most of the page's content, would never be visually checked at all.
+  document.querySelectorAll('.deep').forEach(d => {
+    d.classList.add('open'); d.style.position = 'static'; d.style.overflow = 'visible';
+    d.style.padding = '0'; d.style.animation = 'none';
+  });
+  document.documentElement.removeAttribute('data-deep');
   document.querySelectorAll('details.card').forEach(d => d.open = true);
   const st = document.createElement('style');
   st.textContent = '*{transition:none!important;animation:none!important;caret-color:transparent!important}';

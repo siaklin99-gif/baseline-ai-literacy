@@ -180,6 +180,48 @@ a.xref { color: var(--accent); font-weight: 600; text-decoration: underline; tex
 
 /* ---------- section ---------- */
 section { padding: 44px 0; }
+/* ---------- LAYER 2: four deep sections that open ON TOP of the page ----------
+   Nine sections stacked was ~11 screens and no amount of navigation aid changes that a
+   reader must travel through it. So the four deep-dives leave the main scroll entirely
+   and open as a full-screen layer (the Oura pattern): the essentials stay one short
+   page, and depth is one tap away without losing your place.
+
+   They stay IN THE DOM, in document order — hidden, not removed — so the page is still
+   one crawlable document, every #anchor still resolves, and a shared link to any of it
+   still works. Opening is a CSS state change, not a DOM move, so every card's existing
+   JS keeps its element references. */
+.deep { display: none; }
+.deep.open {
+  display: block; position: fixed; inset: 0; z-index: 60; overflow-y: auto;
+  background: var(--bg); padding: 68px 0 40px; -webkit-overflow-scrolling: touch;
+}
+html[data-deep] { overflow: hidden; }           /* the page behind must not scroll */
+.deep-close {
+  position: fixed; top: 14px; right: 18px; z-index: 61; min-height: 44px;
+  padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border-med);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px;
+  font-weight: 700; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,.10);
+}
+.deep-close:hover { border-color: var(--text-ter); }
+.deep-close:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+/* the doorway */
+.deep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.deep-card {
+  text-align: left; font: inherit; cursor: pointer; background: var(--surface);
+  border: 1px solid var(--border-med); border-radius: var(--radius); padding: 16px 18px;
+  min-height: 44px; color: var(--text);
+}
+.deep-card:hover { border-color: var(--text-ter); }
+.deep-card:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.deep-card b { display: block; font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+.deep-card span { display: block; font-size: 14px; color: var(--text-sec); line-height: 1.5; }
+.deep-card i { display: block; margin-top: 9px; font-style: normal; font-size: 13px;
+  font-weight: 700; color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .deep.open { animation: deepIn .22s cubic-bezier(.22,.9,.24,1) both; }
+  @keyframes deepIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+}
+
 /* ---------- desktop rail: the page stops being long by becoming navigable ---------- */
 .rail { display: none; }
 @media (min-width: 1180px) {
@@ -197,6 +239,9 @@ section { padding: 44px 0; }
   .rail-a.on { background: var(--surface2); color: var(--text); font-weight: 700;
     border-left-color: var(--accent); }
   .rail-a .rail-done { color: var(--green); margin-left: 5px; font-weight: 700; }
+  /* layer-2 entries read as doors, not as places you are currently standing */
+  .rail-deep { color: var(--text-ter); }
+  .rail-deep::after { content: ' ↗'; font-size: 11px; opacity: .7; }
   .rail-foot { margin: 12px 0 0 12px; font-size: 12px; color: var(--text-ter); }
   .rail-foot span { color: var(--text-sec); font-weight: 700; }
   /* the rail gives orientation, so the per-section preamble can breathe less */
@@ -1140,7 +1185,7 @@ footer { margin-top: 30px; }
 </section>
 
 <!-- ============ BODY MAP ============ -->
-<section id="bodysec">
+<section id="bodysec" class="deep">
   <div class="wrap">
     <div class="slabel">The whole system, in one picture</div>
     <h2 class="stitle">AI, mapped to a body</h2>
@@ -1201,7 +1246,7 @@ footer { margin-top: 30px; }
 </section>
 
 <!-- ============ TOPIC CLUSTERS ============ -->
-<section id="topics">
+<section id="topics" class="deep">
   <div class="wrap">
     <div class="slabel">Go further</div>
     <h2 class="stitle">Costs, privacy, jobs &amp; more</h2>
@@ -1211,7 +1256,7 @@ footer { margin-top: 30px; }
 </section>
 
 <!-- ============ UNDER THE HOOD (mechanism deep-dives; grows over time) ============ -->
-<section id="howllm">
+<section id="howllm" class="deep">
   <div class="wrap">
     <div class="slabel">Under the hood</div>
     <h2 class="stitle">How AI actually works</h2>
@@ -1473,7 +1518,7 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 </section>
 
 <!-- ============ LABS — level 2: practice, not reading ============ -->
-<section id="labs">
+<section id="labs" class="deep">
   <div class="wrap">
     <div class="slabel">Labs · level 2</div>
     <h2 class="stitle">Baseline Labs</h2>
@@ -1539,6 +1584,16 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   </div>
 </section>
 
+<!-- ============ GO DEEPER — the doorway to layer 2 ============ -->
+<section id="deeper">
+  <div class="wrap">
+    <div class="slabel">When you want more</div>
+    <h2 class="stitle">Go deeper, one door at a time</h2>
+    <div class="ssub">The essentials are above. These four open on top of the page, so you can look at one without losing your place — close it and you're back exactly where you were.</div>
+    <div class="deep-grid" id="deepGrid"></div>
+  </div>
+</section>
+
 <!-- ============ SELF-QUIZ ============ -->
 <section id="quizsec">
   <div class="wrap">
@@ -1548,6 +1603,8 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
     <div id="quiz"></div>
   </div>
 </section>
+
+<button class="deep-close" id="deepClose" type="button" hidden aria-label="Close and go back">✕ Close</button>
 
 <!-- ============ SHARE — pass it on ============ -->
 <div class="share-strip">
@@ -2320,6 +2377,15 @@ function lcNavigate(i) {
   // section the current start-path tucked away scrolls to a display:none element and
   // looks broken. Navigation must always beat filtering.
   if (t.closest('.path-off') && window.baselineShowAll) window.baselineShowAll();
+  // four of the seven steps point into layer 2 — open it rather than scrolling to a
+  // hidden element, which is what "the step does nothing" would have looked like
+  const deepHost = t.closest('.deep');
+  if (deepHost) {
+    deepOpen(deepHost.id);
+    if (t.tagName === 'DETAILS') t.open = true;
+    if (t !== deepHost) setTimeout(() => t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }), 60);
+    return;
+  }
   if (t.tagName === 'DETAILS') t.open = true;
   t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' });
   // if the target card sits in a horizontal deck (mobile), bring it into the deck's view too
@@ -2402,9 +2468,14 @@ lcUpdate();
 (function initPathPick(){
   const PATHS = {
     // what "focus" would tuck away for each starting point. "some" is already the whole page.
-    new:  { steps: [0, 1, 3], hide: ['#howllm', '#labs', '.tg[data-lvl="intermediate"]', '.tg[data-lvl="advanced"]'] },
+    // Since the four deep-dives moved to layer 2, "focus" no longer has much to hide:
+    // #howllm, #labs and the topic groups are already out of the main scroll. What is
+    // left in layer 1 is the essentials, and hiding those would hurt more than help.
+    // The picker now MARKS the route only — the same conclusion the layer-2 rebuild
+    // reached, arrived at from the other direction.
+    new:  { steps: [0, 1, 3], hide: [] },
     some: { steps: [2, 4, 6], hide: [] },
-    tech: { steps: [5, 6],    hide: ['#try', '.tg[data-lvl="beginner"]'] }
+    tech: { steps: [5, 6],    hide: [] }
   };
   const LABEL = { new: 'New to AI', some: 'Used it a bit', tech: 'Techie' };
   const chips = [...document.querySelectorAll('.path-chip')];
@@ -2486,6 +2557,86 @@ lcUpdate();
   } catch (e) {}
 })();
 
+/* ---------- LAYER 2: open a deep section on top of the page ----------
+   Everything that used to scroll to these sections must now OPEN them instead — four
+   learning-circle steps, four in-card cross-references, the rail, and any shared link.
+   So the rule is one function and one interception point, not a list of call sites
+   patched one by one; a list is what gets missed. */
+const DEEP = {
+  bodysec: ['AI, mapped to a body', 'The parts you keep hearing about — LLM, API, RAG, agents — as body parts that work together.'],
+  topics:  ['Costs, privacy, jobs & more', 'Sixteen cards, grouped by where you are: money, privacy, scams, bias, the honest answer on jobs.'],
+  howllm:  ['How AI actually works', 'Optional, hands-on deep dives: tokens, embeddings, attention, training, fine-tuning.'],
+  labs:    ['Baseline Labs', 'Level 2 — practice, not reading. Prompting mastery, and checking AI\'s work.']
+};
+function deepOpen(id, push) {
+  const sec = document.getElementById(id);
+  if (!sec || !sec.classList.contains('deep')) return false;
+  document.querySelectorAll('.deep.open').forEach(d => d.classList.remove('open'));
+  sec.classList.add('open');
+  document.documentElement.dataset.deep = id;
+  const btn = document.getElementById('deepClose');
+  if (btn) { btn.hidden = false; btn.focus({ preventScroll: true }); }
+  sec.scrollTop = 0;
+  // shareable + back-button friendly: the layer is a real history entry
+  if (push !== false && location.hash !== '#' + id) history.pushState({ deep: id }, '', '#' + id);
+  tally('lab');
+  return true;
+}
+function deepClose(pop) {
+  const open = document.querySelector('.deep.open');
+  if (!open) return;
+  open.classList.remove('open');
+  delete document.documentElement.dataset.deep;
+  const btn = document.getElementById('deepClose');
+  if (btn) btn.hidden = true;
+  const back = document.querySelector(`[data-deep-open="${open.id}"]`);
+  if (back) back.focus({ preventScroll: true });        // return focus where it came from
+  if (pop !== false && location.hash) history.pushState({}, '', location.pathname);
+}
+(function initDeep(){
+  const grid = document.getElementById('deepGrid');
+  if (grid) {
+    Object.keys(DEEP).forEach(id => {
+      const [t, d] = DEEP[id];
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'deep-card'; b.dataset.deepOpen = id;
+      b.innerHTML = `<b>${esc(t)}</b><span>${esc(d)}</span><i>Open →</i>`;
+      b.addEventListener('click', () => deepOpen(id));
+      grid.appendChild(b);
+    });
+  }
+  const btn = document.getElementById('deepClose');
+  if (btn) btn.addEventListener('click', () => deepClose());
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.querySelector('.deep.open')) deepClose(); });
+  addEventListener('popstate', () => {
+    const id = location.hash.slice(1);
+    const sec = id && document.getElementById(id);
+    if (sec && sec.classList.contains('deep')) deepOpen(id, false); else deepClose(false);
+  });
+  // ONE interception point: any link into layer-2 content opens the layer instead of
+  // scrolling to a hidden element. Covers the circle steps, the in-card cross-references,
+  // the rail, and anything added later without anyone remembering to wire it up.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const t = document.getElementById(a.getAttribute('href').slice(1));
+    const host = t && t.closest('.deep');
+    if (!host) return;
+    e.preventDefault();
+    deepOpen(host.id);
+    if (t !== host) {                                    // deep link to a card inside
+      if (t.tagName === 'DETAILS') t.open = true;
+      setTimeout(() => t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }), 60);
+    }
+  }, true);
+  // a shared link that lands directly on a deep section
+  if (location.hash.length > 1) {
+    const sec = document.getElementById(location.hash.slice(1));
+    const host = sec && sec.closest('.deep');
+    if (host) setTimeout(() => deepOpen(host.id, false), 60);
+  }
+})();
+
 /* ---------- desktop rail: index + scroll-spy + read-progress ----------
    Entries are DERIVED from the sections on the page, never hand-listed — a hand-list is
    how #howllm went missing from the visual harness for a week. If a section ships, it is
@@ -2497,13 +2648,16 @@ lcUpdate();
   if (!nav) return;
   // short labels: the section's own <h2>, trimmed to fit a 196px rail
   const SHORT = { try: 'Do one thing', circle: 'Your learning circle', layers: 'What AI is — 10 layers',
-                  reality: "Can, can't & unreliable", bodysec: 'AI, mapped to a body',
-                  topics: 'Costs, privacy, jobs', howllm: 'How AI actually works',
-                  labs: 'Labs', quizsec: 'Check your baseline' };
-  const secs = [...document.querySelectorAll('section[id]')];
-  const links = secs.map(sec => {
+                  reality: "Can, can't & unreliable", deeper: 'Go deeper', quizsec: 'Check your baseline',
+                  bodysec: 'AI, mapped to a body', topics: 'Costs, privacy, jobs',
+                  howllm: 'How AI actually works', labs: 'Labs' };
+  // Layer-1 sections scroll-spy; layer-2 entries open the layer (the global click
+  // interception handles the actual opening, so nothing is wired twice).
+  const all = [...document.querySelectorAll('section[id]')];
+  const secs = all.filter(sec => !sec.classList.contains('deep'));   // only these can be "current"
+  const links = all.map(sec => {
     const a = document.createElement('a');
-    a.className = 'rail-a';
+    a.className = 'rail-a' + (sec.classList.contains('deep') ? ' rail-deep' : '');
     a.href = '#' + sec.id;
     a.textContent = SHORT[sec.id] || (sec.querySelector('.stitle') || {}).textContent || sec.id;
     a.dataset.sec = sec.id;

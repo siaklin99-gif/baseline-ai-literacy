@@ -73,7 +73,12 @@ function assertionExpr(expected) {
     const st = document.createElement('style');
     st.textContent = '*{transition:none!important;animation:none!important}';
     document.head.appendChild(st);
-    // expand EVERYTHING so the screenshot and parity check see all content
+    // expand EVERYTHING so the screenshot and parity check see all content — including
+    // layer 2, whose four sections are display:none until opened. Without this the parity
+    // check reports 16 data strings "missing from the DOM" when they are merely closed.
+    document.querySelectorAll('.deep').forEach(d => d.classList.add('open'));
+    document.documentElement.removeAttribute('data-deep');       // keep the page scrollable
+    document.querySelectorAll('.deep.open').forEach(d => { d.style.position = 'static'; d.style.overflow = 'visible'; });
     document.querySelectorAll('details.card').forEach(d => d.open = true);
     void document.body.offsetHeight; // force reflow after class/style changes
     const cs = document.documentElement;

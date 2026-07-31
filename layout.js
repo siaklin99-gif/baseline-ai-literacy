@@ -69,7 +69,11 @@ const PROBE = `(function(){
   const round = n => Math.round(n);
 
   // 1. every content container: same left edge, same width
-  const wraps = [...document.querySelectorAll('section > .wrap')].map(el => ({
+  // A closed layer-2 section is display:none and reports 0x0. It is not a broken
+  // container — it is a door. Skip it here; visual.js diffs it by opening it.
+  const wraps = [...document.querySelectorAll('section > .wrap')]
+    .filter(el => el.getBoundingClientRect().width > 0)
+    .map(el => ({
     id: (el.closest('section') || {}).id || '?',
     x: round(el.getBoundingClientRect().x),
     w: round(el.getBoundingClientRect().width)
@@ -131,6 +135,9 @@ const PROBE = `(function(){
     const el = document.querySelector(sel);
     if (!el) { grids[sel] = null; return; }
     const kids = [...el.children].filter(c => c.getBoundingClientRect().width > 0);
+    // same for grids that live inside a closed layer — absent-because-closed is not
+    // absent-because-broken, so record null (skipped) rather than 0 (vanished)
+    if (el.closest('.deep') && !el.closest('.deep').classList.contains('open')) { grids[sel] = null; return; }
     grids[sel] = kids.length ? new Set(kids.map(c => Math.round(c.getBoundingClientRect().x))).size : 0;
   });
 
@@ -236,11 +243,15 @@ async function main() {
         // wrapX was RECORDED and never compared, so the baseline only looked like it locked
         // the left edge: body{padding-left:120px} shifted every container and still passed.
         if (b.wrapX !== undefined && Math.abs(b.wrapX - xs[0]) > 2) drift.push(`left edge ${b.wrapX} → ${xs[0]}`);
+        // null now means "inside a closed layer-2 section, deliberately not measured".
+        // 0 still means "present but has no columns", i.e. genuinely broken. Conflating
+        // the two would either cry wolf on every run or hide a real collapse.
         for (const g of Object.keys(b.grids || {})) {
+          if (b.grids[g] === null || r.grids[g] === null) continue;
           if (b.grids[g] !== r.grids[g]) drift.push(`${g} columns ${b.grids[g]} → ${r.grids[g]}`);
         }
         for (const g of Object.keys(r.grids)) {
-          if (r.grids[g] === null || r.grids[g] === 0) drift.push(`${g} has VANISHED (${r.grids[g]})`);
+          if (r.grids[g] === 0) drift.push(`${g} has VANISHED (0 columns)`);
         }
         drift.length === 0
           ? ok(`${tag} structure matches the committed baseline`)
@@ -248,7 +259,7 @@ async function main() {
       } else if (UPDATE) {
         // refuse to bless a structure that is already broken — a vanished grid recorded as
         // `0` makes every future run agree that zero columns is correct
-        const gone = Object.keys(r.grids).filter(g => r.grids[g] === null || r.grids[g] === 0);
+        const gone = Object.keys(r.grids).filter(g => r.grids[g] === 0);
         gone.length === 0
           ? ok(`${tag} baseline recorded (w=${ws_[0]}, grids ${JSON.stringify(r.grids)})`)
           : bad(`${tag} refusing to record a baseline: ${gone.join(', ')} has no columns`);

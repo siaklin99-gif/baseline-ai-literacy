@@ -111,101 +111,25 @@ async function main() {
     await nav(390, 844, true);
     await evl(`document.querySelectorAll('details').forEach(d=>d.open=true); void document.body.offsetHeight;`);
     const base = await measure('base');
-    // picking a path must hide NOTHING; focusing is a second, explicit tap
+    // Layer 2 replaced focus-hiding: the deep-dives are out of the main scroll already,
+    // so picking a path now only MARKS the route. Nothing should hide, and no focus
+    // control should be offered for a path with nothing left to hide.
     await evl(`[...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='new').click(); void document.body.offsetHeight;`);
-    const marked = await measure('marked');
-    (marked.hidden === 0 && marked.status.includes('whole page is still here'))
-      ? ok('path pick marks the route and hides nothing (shortening is opt-in)')
-      : bad(`path pick hid ${marked.hidden} section(s) without being asked: ${marked.status}`);
-    await evl(`document.getElementById('pathFocus').click(); void document.body.offsetHeight;`);
     const asNew = await measure('new');
-    (asNew.words < base.words && asNew.hidden >= 2)
-      ? ok(`focus "New to AI": ${base.words} → ${asNew.words} words, ${base.screens} → ${asNew.screens} screens, ${asNew.hidden} sections tucked away`)
-      : bad(`path "New to AI" did not filter: ${JSON.stringify(asNew)}`);
-    (asNew.words < 3000 && asNew.screens < 15)
-      ? ok(`path "New to AI" meets the target (<3000 words, <15 screens)`)
-      : bad(`path "New to AI" MISSES target: ${asNew.words} words / ${asNew.screens} screens (want <3000 / <15)`);
-    asNew.status.includes('tucked away') ? ok('path status honestly reports what was hidden') : bad('path status text: ' + asNew.status);
-
-    // reversible
-    await evl(`document.getElementById('pathAll').click(); void document.body.offsetHeight;`);
-    const restored = await measure('restored');
-    (restored.hidden === 0 && restored.words >= base.words - 40)
-      ? ok('"Show everything" restores the full page')
-      : bad(`restore failed: ${JSON.stringify(restored)}`);
+    (asNew.hidden === 0 && !asNew.status.includes('tucked away'))
+      ? ok('picking a path hides nothing — layer 2 already removed the bulk from the scroll')
+      : bad(`path pick hid ${asNew.hidden} section(s): ${asNew.status}`);
+    asNew.status.includes('marked below')
+      ? ok('path status says what it actually did: marked the route')
+      : bad('path status text: ' + asNew.status);
 
     await nav(390, 844, true);
     await evl(`document.querySelectorAll('details').forEach(d=>d.open=true); void document.body.offsetHeight;`);
     await evl(`[...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='tech').click(); void document.body.offsetHeight;`);
-    await evl(`document.getElementById('pathFocus').click(); void document.body.offsetHeight;`);
-    const asTech = await measure('tech');
-    (asTech.words < base.words && asTech.hidden >= 2)
-      ? ok(`path "Techie": ${base.words} → ${asTech.words} words, ${asTech.screens} screens, ${asTech.hidden} sections tucked away`)
-      : bad(`path "Techie" did not filter: ${JSON.stringify(asTech)}`);
 
-    // a link INTO hidden content must reveal it.
-    // clear the saved path first: a second click on an already-on chip is toggle-to-CLEAR
-    await evl(`localStorage.removeItem('baseline_path')`);
-    await nav(390, 844, true);
-    r = await evl(`(function(){
-      [...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='tech').click();
-      document.getElementById('pathFocus').click();
-      const hiddenBefore = document.querySelectorAll('.path-off').length;
-      const tryHidden = !!document.querySelector('#try.path-off');
-      // the hero CTA points at #try, which the techie path hides
-      const cta = document.querySelector('a[href="#try"]');
-      if (cta) cta.click();
-      return { hiddenBefore, tryHidden, hiddenAfter: document.querySelectorAll('.path-off').length };
-    })()`);
-    (r.tryHidden && r.hiddenAfter === 0)
-      ? ok('a link into hidden content reveals it instead of scrolling to nothing')
-      : bad(`reveal-on-link failed: ${JSON.stringify(r)}`);
-
-    /* ---- cold-audit fixes: ring nav + deep link must beat filtering ---- */
-    await evl(`localStorage.removeItem('baseline_path')`);
-    await nav(390, 844, true);
-    r = await evl(`(function(){
-      [...document.querySelectorAll('.path-chip')].find(c=>c.dataset.path==='new').click();
-      document.getElementById('pathFocus').click();
-      const hidden = !!document.querySelector('#howllm.path-off');
-      // the numbered ring node for step 6 ("Peek under the hood") is NOT a link
-      const node = document.querySelectorAll('.lc-node')[5] || document.querySelectorAll('[class*=lc-node]')[5];
-      if (node) node.dispatchEvent(new MouseEvent('click', {bubbles:true}));
-      return { hidden, stillHidden: !!document.querySelector('#howllm.path-off'), hadNode: !!node };
-    })()`);
-    (r.hidden && r.hadNode && !r.stillHidden)
-      ? ok('ring-node tap on an off-path step reveals it (was silently dead)')
-      : bad(`ring nav reveal: ${JSON.stringify(r)}`);
-
-    // deep link must survive a saved path
-    await evl(`localStorage.setItem('baseline_path', JSON.stringify('new'))`);
-    await send('Page.navigate', { url: 'about:blank' }, sid); await sleep(250);
-    await send('Page.navigate', { url: PAGE_URL + '#howllm' }, sid); await sleep(1600);
-    r = await evl(`(function(){
-      const f=document.getElementById('pathFocus'); if(f) f.click();
-      const el=document.getElementById('howllm');
-      return { hidden: !!el.closest('.path-off'), display: getComputedStyle(el).display,
-               otherStillHidden: document.querySelectorAll('.path-off').length };
-    })()`);
-    // otherStillHidden > 0 proves the path DID apply — otherwise this check passes vacuously
-    (!r.hidden && r.display !== 'none' && r.otherStillHidden > 0)
-      ? ok(`deep link #howllm survives a saved path, and the path still applied (${r.otherStillHidden} other sections filtered)`)
-      : bad(`deep link guard not proven: ${JSON.stringify(r)} (otherStillHidden must be >0 or the path never applied)`);
-    await evl(`localStorage.removeItem('baseline_path')`);
-    await nav(390, 844, true);
-
-    /* ---- Labs next ---- */
-    r = await evl(`(function(){
-      const n=document.querySelector('.lab-next');
-      return { present: !!n, text: n ? n.textContent.replace(/\\s+/g,' ').trim().slice(0,140) : '',
-               mail: !!document.querySelector('.lab-next a[href^="mailto:"]'),
-               undated: document.body.innerText.includes('More labs land here') };
-    })()`);
-    // Lab 002 SHIPPED, so the next-block no longer names it. What must stay true is the
-    // substance: reachable without an account, and no undated promise of a specific lab.
-    (r.present && r.mail && !r.undated && /No schedule promised/.test(r.text))
-      ? ok('Labs: reachable by email, and promises no cadence it might not keep')
-      : bad('Labs next block: ' + JSON.stringify(r));
+    // Reachability into hidden content is now layer 2's problem, and test/layer2.runtime.js
+    // covers it properly: four circle steps, an in-card cross-reference, and a shared deep
+    // link. Duplicating a weaker version here would just be two owners for one fact.
 
     /* ---- Lab 002: triage exercise ---- */
     await evl(`localStorage.clear()`);

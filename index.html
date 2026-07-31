@@ -196,6 +196,10 @@ section { padding: 44px 0; }
   background: var(--bg); padding: 68px 0 40px; -webkit-overflow-scrolling: touch;
 }
 html[data-deep] { overflow: hidden; }           /* the page behind must not scroll */
+/* The close button is FIXED over the top 68px of the layer, so anything scrolled to with
+   block:'start' lands underneath it. On a 390px screen that put a 38x44 dead zone over a
+   card's own summary — tapping the corner of the thing you just opened closed the layer. */
+.deep.open [id] { scroll-margin-top: 78px; }
 .deep-close {
   position: fixed; top: 14px; right: 18px; z-index: 61; min-height: 44px;
   padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border-med);
@@ -204,19 +208,30 @@ html[data-deep] { overflow: hidden; }           /* the page behind must not scro
 }
 .deep-close:hover { border-color: var(--text-ter); }
 .deep-close:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
-/* the doorway */
-.deep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+/* the doorway. Each door carries its own artwork — drawn INLINE as SVG from the page's
+   own gradient tokens, not photographed. Zero extra requests (the whole page still makes
+   one), it themes itself in dark mode for free, and it is our own drawing rather than
+   someone else's picture. */
+.deep-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
 .deep-card {
   text-align: left; font: inherit; cursor: pointer; background: var(--surface);
-  border: 1px solid var(--border-med); border-radius: var(--radius); padding: 16px 18px;
-  min-height: 44px; color: var(--text);
+  border: 1px solid var(--border-med); border-radius: var(--radius); padding: 0;
+  min-height: 44px; color: var(--text); overflow: hidden; display: flex; flex-direction: column;
 }
 .deep-card:hover { border-color: var(--text-ter); }
 .deep-card:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.deep-art { display: block; width: 100%; height: 108px; background: var(--surface2); }
+.deep-body { padding: 14px 16px 16px; }
 .deep-card b { display: block; font-size: 16px; font-weight: 700; margin-bottom: 3px; }
 .deep-card span { display: block; font-size: 14px; color: var(--text-sec); line-height: 1.5; }
 .deep-card i { display: block; margin-top: 9px; font-style: normal; font-size: 13px;
   font-weight: 700; color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .deep-card { transition: transform .16s ease, border-color .16s ease; }
+  .deep-card:hover { transform: translateY(-2px); }
+  .deep-art .fl { transition: opacity .3s ease; }
+  .deep-card:hover .deep-art .fl { opacity: 1; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .deep.open { animation: deepIn .22s cubic-bezier(.22,.9,.24,1) both; }
   @keyframes deepIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -813,7 +828,8 @@ details.card[open] .chev { transform: rotate(90deg); }
 .clip-card figcaption { margin-top: 6px; font-size: 12px; color: var(--text-sec); line-height: 1.4; }
 /* ---------- clip mode (?clip=write|peel): one component, full-bleed, looping —
    for screen-recording vertical social clips. Not linked from the page. ---------- */
-/* .share-strip is a DIV, not a section — it stayed visible and sat beside the clip. */
+/* .share-strip is now a layer-2 section too; the selector is kept so an older
+   markup shape (a bare div) is still hidden in clip mode rather than flashing. */
 html[data-clip] nav, html[data-clip] header.hero, html[data-clip] .trust,
 html[data-clip] section, html[data-clip] footer, html[data-clip] .share-strip { display: none !important; }
 html[data-clip] body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -1589,7 +1605,9 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
   <div class="wrap">
     <div class="slabel">When you want more</div>
     <h2 class="stitle">Go deeper, one door at a time</h2>
-    <div class="ssub">The essentials are above. These four open on top of the page, so you can look at one without losing your place — close it and you're back exactly where you were.</div>
+    <!-- No count in this sentence. It said "these four" for one commit after a fifth door
+         shipped: every check passed, because a correct page can still say a false thing. -->
+    <div class="ssub">The essentials are above. Each of these opens on top of the page, so you can look at one without losing your place — close it and you're back exactly where you were.</div>
     <div class="deep-grid" id="deepGrid"></div>
   </div>
 </section>
@@ -1607,10 +1625,11 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 <button class="deep-close" id="deepClose" type="button" hidden aria-label="Close and go back">✕ Close</button>
 
 <!-- ============ SHARE — pass it on ============ -->
-<div class="share-strip">
+<section id="share" class="deep share-strip">
   <div class="wrap">
     <div class="share-panel">
-      <div class="slabel">Pass it on</div>
+      <div class="slabel">When it helped</div>
+      <h2 class="stitle">Pass it on</h2>
       <p class="share-lead">Someone you know is anxious about AI. Send them the calm version.</p>
       <div class="share-btns">
         <button id="shareBtn" class="share-pill" type="button">🔗 Share this page</button>
@@ -1639,7 +1658,7 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <footer>
   <div class="peek-wrap" aria-hidden="true">
@@ -2566,32 +2585,103 @@ const DEEP = {
   bodysec: ['AI, mapped to a body', 'The parts you keep hearing about — LLM, API, RAG, agents — as body parts that work together.'],
   topics:  ['Costs, privacy, jobs & more', 'Sixteen cards, grouped by where you are: money, privacy, scams, bias, the honest answer on jobs.'],
   howllm:  ['How AI actually works', 'Optional, hands-on deep dives: tokens, embeddings, attention, training, fine-tuning.'],
-  labs:    ['Baseline Labs', 'Level 2 — practice, not reading. Prompting mastery, and checking AI\'s work.']
+  labs:    ['Baseline Labs', 'Level 2 — practice, not reading. Prompting mastery, and checking AI\'s work.'],
+  share:   ['Pass it on', 'Send someone the calm version — plus four short clips of this page in use, free to repost anywhere.']
+};
+/* One original drawing per door. Abstract on purpose: a photo of "how AI works" would be
+   a stock photo of a robot, which is exactly the hype this page exists to defuse. */
+const DEEP_ART = {
+  bodysec: `<svg class="deep-art" viewBox="0 0 300 108" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <circle cx="150" cy="30" r="13" fill="none" stroke="var(--g2)" stroke-width="2"/>
+      <rect x="134" y="50" width="32" height="40" rx="12" fill="none" stroke="var(--g2)" stroke-width="2"/>
+      <path d="M134 58 L112 74 M166 58 L188 74 M142 90 L138 104 M158 90 L162 104" stroke="var(--g2)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="150" cy="30" r="4" fill="var(--g1)"/><circle cx="150" cy="64" r="4" fill="var(--g3)"/>
+      <circle cx="112" cy="74" r="4" fill="var(--g2)"/><circle cx="188" cy="74" r="4" fill="var(--g1)"/>
+      <circle class="fl" cx="138" cy="104" r="4" fill="var(--g3)" opacity=".55"/>
+      <circle class="fl" cx="162" cy="104" r="4" fill="var(--g2)" opacity=".55"/></svg>`,
+  topics: `<svg class="deep-art" viewBox="0 0 300 108" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="none" stroke="var(--g2)" stroke-width="1.5" opacity=".85">
+        <rect x="24" y="18" width="72" height="30" rx="7"/><rect x="108" y="18" width="72" height="30" rx="7"/>
+        <rect x="192" y="18" width="72" height="30" rx="7"/><rect x="24" y="60" width="72" height="30" rx="7"/>
+        <rect x="108" y="60" width="72" height="30" rx="7"/><rect x="192" y="60" width="72" height="30" rx="7"/></g>
+      <rect x="24" y="18" width="72" height="30" rx="7" fill="var(--g1)" opacity=".18"/>
+      <rect class="fl" x="108" y="60" width="72" height="30" rx="7" fill="var(--g3)" opacity=".14"/>
+      <rect class="fl" x="192" y="18" width="72" height="30" rx="7" fill="var(--g2)" opacity=".14"/></svg>`,
+  howllm: `<svg class="deep-art" viewBox="0 0 300 108" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="var(--text-ter)">
+        <text x="26" y="34">the</text><text x="60" y="34">sky</text><text x="96" y="34">is</text></g>
+      <path d="M124 30 L150 30" stroke="var(--g2)" stroke-width="1.5" marker-end="url(#dpa)"/>
+      <defs><marker id="dpa" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0 0 L6 3 L0 6z" fill="var(--g2)"/></marker></defs>
+      <rect x="158" y="20" width="26" height="20" rx="5" fill="var(--g1)" opacity=".2"/>
+      <g>
+        <rect x="26" y="58" width="140" height="7" rx="3.5" fill="var(--g1)" opacity=".75"/>
+        <rect class="fl" x="26" y="72" width="86" height="7" rx="3.5" fill="var(--g2)" opacity=".5"/>
+        <rect class="fl" x="26" y="86" width="46" height="7" rx="3.5" fill="var(--g3)" opacity=".45"/></g></svg>`,
+  labs: `<svg class="deep-art" viewBox="0 0 300 108" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path d="M138 20 v26 L116 88 a6 6 0 0 0 5 9 h58 a6 6 0 0 0 5-9 L162 46 V20"
+            fill="none" stroke="var(--g2)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M132 20 h36" stroke="var(--g2)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M124 74 L176 74 a6 6 0 0 1 3 23 h-58 a6 6 0 0 1 3-23z" fill="var(--g1)" opacity=".22"/>
+      <circle class="fl" cx="140" cy="86" r="3.5" fill="var(--g3)" opacity=".6"/>
+      <circle class="fl" cx="156" cy="80" r="2.5" fill="var(--g2)" opacity=".6"/></svg>`,
+  share: `<svg class="deep-art" viewBox="0 0 300 108" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <circle cx="150" cy="54" r="12" fill="var(--g1)" opacity=".3"/>
+      <circle cx="150" cy="54" r="24" fill="none" stroke="var(--g2)" stroke-width="1.5" opacity=".5"/>
+      <circle class="fl" cx="150" cy="54" r="36" fill="none" stroke="var(--g2)" stroke-width="1.5" opacity=".28"/>
+      <circle class="fl" cx="150" cy="54" r="48" fill="none" stroke="var(--g3)" stroke-width="1.5" opacity=".18"/>
+      <circle cx="96" cy="34" r="5" fill="var(--g3)"/><circle cx="206" cy="34" r="5" fill="var(--g2)"/>
+      <circle cx="90" cy="80" r="5" fill="var(--g2)"/><circle cx="212" cy="78" r="5" fill="var(--g1)"/></svg>`
 };
 function deepOpen(id, push) {
   const sec = document.getElementById(id);
   if (!sec || !sec.classList.contains('deep')) return false;
+  const already = sec.classList.contains('open');
   document.querySelectorAll('.deep.open').forEach(d => d.classList.remove('open'));
   sec.classList.add('open');
   document.documentElement.dataset.deep = id;
   const btn = document.getElementById('deepClose');
   if (btn) { btn.hidden = false; btn.focus({ preventScroll: true }); }
-  sec.scrollTop = 0;
+  // Only reset the scroll when the layer is actually being OPENED. Following a
+  // cross-reference inside an already-open layer used to slam it to the top and then
+  // animate back down — a visible bounce on every in-layer link.
+  if (!already) sec.scrollTop = 0;
+  // The background must stop being reachable, not merely stop being visible. Without
+  // this, Tab from the close button walked into the footer — 78 focusable elements on a
+  // page that cannot scroll, so the focus ring sat on content the user could not see.
+  sec.setAttribute('role', 'dialog'); sec.setAttribute('aria-modal', 'true');
+  const keep = new Set([sec, btn]);
+  [...document.body.children].forEach(el => { if (!keep.has(el)) el.inert = true; });
   // shareable + back-button friendly: the layer is a real history entry
   if (push !== false && location.hash !== '#' + id) history.pushState({ deep: id }, '', '#' + id);
-  tally('lab');
   return true;
 }
 function deepClose(pop) {
   const open = document.querySelector('.deep.open');
   if (!open) return;
   open.classList.remove('open');
+  open.removeAttribute('role'); open.removeAttribute('aria-modal');
   delete document.documentElement.dataset.deep;
+  [...document.body.children].forEach(el => { el.inert = false; });
   const btn = document.getElementById('deepClose');
   if (btn) btn.hidden = true;
   const back = document.querySelector(`[data-deep-open="${open.id}"]`);
   if (back) back.focus({ preventScroll: true });        // return focus where it came from
-  if (pop !== false && location.hash) history.pushState({}, '', location.pathname);
+  if (pop === false) return;                            // already reacting to a popstate
+  // UNDO our own history entry rather than adding another. Pushing on close meant Back
+  // re-opened the door the reader had just dismissed, and three doors cost six Back
+  // presses to leave the page. Only rewind an entry this page actually pushed.
+  if (history.state && history.state.deep) history.back();
+  else if (location.hash) history.replaceState({}, '', location.pathname);
+}
+/* Bring the card a link actually pointed AT into view, once the layer holding it is open.
+   Clicking a cross-reference did this; a link SHARED to the same card did not — the layer
+   opened and the reader landed on a collapsed card somewhere off-screen. Same job, two
+   call sites, so it is one function rather than two that drift. */
+function reveal(target, host) {
+  if (!target || target === host) return;
+  if (target.tagName === 'DETAILS') target.open = true;
+  setTimeout(() => target.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }), 60);
 }
 (function initDeep(){
   const grid = document.getElementById('deepGrid');
@@ -2600,7 +2690,8 @@ function deepClose(pop) {
       const [t, d] = DEEP[id];
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'deep-card'; b.dataset.deepOpen = id;
-      b.innerHTML = `<b>${esc(t)}</b><span>${esc(d)}</span><i>Open →</i>`;
+      b.setAttribute('aria-haspopup', 'dialog');
+      b.innerHTML = (DEEP_ART[id] || '') + `<div class="deep-body"><b>${esc(t)}</b><span>${esc(d)}</span><i>Open →</i></div>`;
       b.addEventListener('click', () => deepOpen(id));
       grid.appendChild(b);
     });
@@ -2608,10 +2699,13 @@ function deepClose(pop) {
   const btn = document.getElementById('deepClose');
   if (btn) btn.addEventListener('click', () => deepClose());
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.querySelector('.deep.open')) deepClose(); });
+  // Back/Forward — and any fragment navigation — resolves the HOST the same way a click
+  // does. It used to ask only "is this hash a deep section?", so arriving at a card inside
+  // one (#card-bias) matched nothing and CLOSED the layer the card lives in.
   addEventListener('popstate', () => {
-    const id = location.hash.slice(1);
-    const sec = id && document.getElementById(id);
-    if (sec && sec.classList.contains('deep')) deepOpen(id, false); else deepClose(false);
+    const t = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+    const host = t && t.closest('.deep');
+    if (host) { deepOpen(host.id, false); reveal(t, host); } else deepClose(false);
   });
   // ONE interception point: any link into layer-2 content opens the layer instead of
   // scrolling to a hidden element. Covers the circle steps, the in-card cross-references,
@@ -2624,16 +2718,13 @@ function deepClose(pop) {
     if (!host) return;
     e.preventDefault();
     deepOpen(host.id);
-    if (t !== host) {                                    // deep link to a card inside
-      if (t.tagName === 'DETAILS') t.open = true;
-      setTimeout(() => t.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', block: 'start' }), 60);
-    }
+    reveal(t, host);
   }, true);
   // a shared link that lands directly on a deep section
   if (location.hash.length > 1) {
     const sec = document.getElementById(location.hash.slice(1));
     const host = sec && sec.closest('.deep');
-    if (host) setTimeout(() => deepOpen(host.id, false), 60);
+    if (host) setTimeout(() => { deepOpen(host.id, false); reveal(sec, host); }, 60);
   }
 })();
 
@@ -2646,11 +2737,15 @@ function deepClose(pop) {
   const nav = document.getElementById('railNav');
   const pct = document.getElementById('railPct');
   if (!nav) return;
-  // short labels: the section's own <h2>, trimmed to fit a 196px rail
+  // Short labels, trimmed to fit a 196px rail. Only two doors are overridden here (their
+  // full titles are too long); every other door falls through to DEEP, the same map the
+  // doorway cards read, so a NEW door can never surface as its raw id — the fifth one did,
+  // and the rail read "share" while the card next to it read "Pass it on".
   const SHORT = { try: 'Do one thing', circle: 'Your learning circle', layers: 'What AI is — 10 layers',
                   reality: "Can, can't & unreliable", deeper: 'Go deeper', quizsec: 'Check your baseline',
-                  bodysec: 'AI, mapped to a body', topics: 'Costs, privacy, jobs',
-                  howllm: 'How AI actually works', labs: 'Labs' };
+                  topics: 'Costs, privacy, jobs', labs: 'Labs' };
+  const label = (sec) => SHORT[sec.id] || (DEEP[sec.id] && DEEP[sec.id][0])
+                      || (sec.querySelector('.stitle') || {}).textContent || sec.id;
   // Layer-1 sections scroll-spy; layer-2 entries open the layer (the global click
   // interception handles the actual opening, so nothing is wired twice).
   const all = [...document.querySelectorAll('section[id]')];
@@ -2659,7 +2754,7 @@ function deepClose(pop) {
     const a = document.createElement('a');
     a.className = 'rail-a' + (sec.classList.contains('deep') ? ' rail-deep' : '');
     a.href = '#' + sec.id;
-    a.textContent = SHORT[sec.id] || (sec.querySelector('.stitle') || {}).textContent || sec.id;
+    a.textContent = label(sec);
     a.dataset.sec = sec.id;
     nav.appendChild(a);
     return a;

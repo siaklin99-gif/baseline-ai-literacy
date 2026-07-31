@@ -24,8 +24,8 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
   await nav();
   let r=await ev(`(function(){return {screens:+(document.scrollingElement.scrollHeight/900).toFixed(1),
     deepHidden:[...document.querySelectorAll('.deep')].every(d=>getComputedStyle(d).display==='none'),
-    doors:document.querySelectorAll('.deep-card').length};})()`);
-  (r.deepHidden && r.doors===4) ? ok(`layer 1 is ${r.screens} screens; all 4 deep sections hidden, 4 doors present`)
+    doors:document.querySelectorAll('.deep-card').length,art:document.querySelectorAll('.deep-card .deep-art').length};})()`);
+  (r.deepHidden && r.doors===5 && r.art===5) ? ok(`layer 1 is ${r.screens} screens; all 5 deep sections hidden, 5 doors each with artwork`)
     : bad(`layer1: ${JSON.stringify(r)}`);
 
   // open via a door
@@ -42,6 +42,50 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));
     return {stillOpen:!!document.querySelector('.deep.open'),attr:document.documentElement.dataset.deep||null};})()`);
   (!r.stillOpen) ? ok('Escape closes the layer') : bad('Escape did not close: '+JSON.stringify(r));
+
+  /* CLOSING MUST ALSO UNDO EVERYTHING OPENING DID. A cold audit deleted the unlock lines
+     from deepClose and all 181 static + 7 runtime + 17 layout checks still passed, while
+     the real page was left permanently unscrollable with a floating "✕ Close" over
+     nothing. The state was being READ into this test and then never asserted. */
+  r=await ev(`(function(){return {
+      attr: document.documentElement.dataset.deep||null,
+      overflow: getComputedStyle(document.documentElement).overflow,
+      closeHidden: document.getElementById('deepClose').hidden,
+      inertLeft: [...document.body.children].filter(el=>el.inert).length,
+      openLeft: document.querySelectorAll('.deep.open').length};})()`);
+  (r.attr===null && r.overflow!=='hidden' && r.closeHidden && r.inertLeft===0 && r.openLeft===0)
+    ? ok('closing restores the page: scroll unlocked, close button gone, background reachable again')
+    : bad('close left state behind: '+JSON.stringify(r));
+
+  /* The background must be unreachable while a layer is open — not merely invisible.
+     Tab from the close button used to walk into the footer, putting the focus ring on
+     content 5000px away that the locked page could not scroll to. */
+  r=await ev(`(function(){document.querySelector('[data-deep-open="topics"]').click();
+    const sec=document.getElementById('topics');
+    const inert=[...document.body.children].filter(el=>el.inert).map(el=>el.id||el.tagName);
+    const reachable=[...document.body.children].filter(el=>!el.inert).map(el=>el.id||el.tagName);
+    const r={inertCount:inert.length, reachable, role:sec.getAttribute('role'),
+             modal:sec.getAttribute('aria-modal')};
+    document.getElementById('deepClose').click(); return r;})()`);
+  (r.inertCount>0 && r.role==='dialog' && r.modal==='true' &&
+   r.reachable.every(x=>x==='topics'||x==='deepClose'||x==='SCRIPT'||x==='NOSCRIPT'))
+    ? ok(`an open layer is a real dialog: ${r.inertCount} background block(s) inert, only the layer and its close button reachable`)
+    : bad('background still reachable: '+JSON.stringify(r));
+
+  /* Back must LEAVE, not re-open. deepClose used to push a second entry, so Back replayed
+     the door the reader had just dismissed and three doors cost six presses to escape. */
+  r=await ev(`(async function(){
+    const before=history.length;
+    document.querySelector('[data-deep-open="labs"]').click();
+    await new Promise(r=>setTimeout(r,120));
+    const opened=location.hash;
+    document.getElementById('deepClose').click();
+    await new Promise(r=>setTimeout(r,250));
+    return {opened, after:location.hash, grew:history.length-before,
+            reopened:!!document.querySelector('.deep.open')};})()`);
+  (r.opened==='#labs' && !r.reopened && r.after!=='#labs' && r.grew<=1)
+    ? ok(`open then close is history-neutral (${r.grew} net entry) — Back leaves the page, it does not replay the door`)
+    : bad('history trap: '+JSON.stringify(r));
 
   // the four learning-circle steps that point INTO layer 2
   await nav();
@@ -78,6 +122,20 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     return {open:s.classList.contains('open'),disp:getComputedStyle(s).display};})()`);
   (r.open&&r.disp==='block') ? ok('a shared link straight to #labs opens that layer on load') : bad('deep link: '+JSON.stringify(r));
 
+  /* A link SHARED to a card inside a layer must land the reader on that card. Clicking a
+     cross-reference expanded it; pasting the same href into a fresh tab opened the layer
+     and left the card collapsed hundreds of pixels off-screen — two code paths for one
+     job, only one of which had the reveal. */
+  await nav(URL+'#card-bias');
+  await new Promise(res=>setTimeout(res,500));
+  r=await ev(`(function(){const c=document.getElementById('card-bias');
+    const s=document.querySelector('.deep.open');const rect=c.getBoundingClientRect();
+    return {layer:s?s.id:null, cardOpen:c.open, top:Math.round(rect.top),
+            inView: rect.top>=0 && rect.top<innerHeight};})()`);
+  (r.layer==='topics'&&r.cardOpen===true&&r.inView)
+    ? ok(`a shared link to a card opens the layer, expands the card and scrolls to it (top ${r.top}px)`)
+    : bad('shared card link: '+JSON.stringify(r));
+
   // mobile
   await nav(URL,390);
   r=await ev(`(function(){document.querySelector('[data-deep-open="topics"]').click();
@@ -85,6 +143,26 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     return {open:s.classList.contains('open'),w:Math.round(rect.width),
       overflow:document.scrollingElement.scrollWidth-document.scrollingElement.clientWidth};})()`);
   (r.open&&r.w===390&&r.overflow<=0) ? ok('layer 2 works full-screen on mobile with no overflow') : bad('mobile: '+JSON.stringify(r));
+
+  /* THE FIXED CLOSE BUTTON MUST NOT SIT ON THE CONTENT. It is fixed over the top 68px of
+     the layer, and scrollIntoView({block:'start'}) puts the target at y=0 — so on a 390px
+     screen a card's own summary landed UNDER the button and tapping its corner closed the
+     layer instead of opening the card. No pixel reference could catch this: every visual
+     capture flattens the layer and hides the button. Measured geometry, on mobile. */
+  await nav(URL,390);
+  r=await ev(`(async function(){
+    const a=document.querySelector('a[href="#card-daily"]')||document.querySelector('a[href^="#card-"]');
+    if(!a) return {err:'no in-layer card link'};
+    const href=a.getAttribute('href');
+    a.click(); await new Promise(r=>setTimeout(r,700));
+    const t=document.querySelector(href+' > summary')||document.querySelector(href);
+    const b=document.getElementById('deepClose');
+    const A=t.getBoundingClientRect(), B=b.getBoundingClientRect();
+    const ox=Math.max(0,Math.min(A.right,B.right)-Math.max(A.left,B.left));
+    const oy=Math.max(0,Math.min(A.bottom,B.bottom)-Math.max(A.top,B.top));
+    return {href, target:Math.round(A.top), overlap:Math.round(ox)+'x'+Math.round(oy), area:ox*oy};})()`);
+  (r.area===0) ? ok(`mobile: the close button never covers the card it scrolled to (${r.href} at y=${r.target})`)
+    : bad('close button overlaps content: '+JSON.stringify(r));
 
   console.log('----------------------------');
   console.log(`${checks} checks, ${fails} failure(s)`);

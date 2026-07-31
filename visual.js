@@ -58,9 +58,8 @@ const VIEWS = [
 // Derived from the DOM, not hand-listed: the hand-list silently omitted #howllm — the
 // largest deep-dive section on the page — while the green line "11 sections pixel-identical"
 // read as full coverage. A list you maintain by hand is a list that forgets.
-const EXTRA_SECTIONS = ['header', '.share-strip', 'footer'];
+const EXTRA_SECTIONS = ['header', 'footer'];   // .share-strip is now section#share, derived
 // layer-2 sections: hidden until opened, so the capture opens each one in turn
-const DEEP_IDS = ['bodysec', 'topics', 'howllm', 'labs'];
 // An absolute pixel count, NOT a percentage. 0.12% of the 2.97M-pixel #topics reference
 // was 3,569 pixels of licence — enough to recolour a whole badge and still pass. Changed
 // pixels do not get cheaper because the section is tall.
@@ -329,6 +328,18 @@ async function main() {
           setTimeout(res, 8000);                       // never hang the run on a dead asset
         })));
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        // FREEZE THE MEDIA CHROME. Chrome draws its own spinner over a <video> whose data
+        // has not arrived, and it ROTATES — so two captures a second apart differ by ~850
+        // pixels forever, and the section can never hold a reference. Same class of bug as
+        // the mid-load posters above: the harness diffing its own timing, not the page.
+        // Only the UA-drawn overlay is hidden; the poster is the actual content and still
+        // renders, and verify.js separately asserts controls= is present in the markup, so
+        // this cannot mask a control bar that went missing.
+        const st = document.createElement('style');
+        st.textContent = 'video::-webkit-media-controls,video::-webkit-media-controls-enclosure' +
+                         '{display:none!important}';
+        document.head.appendChild(st);
+        document.querySelectorAll('video').forEach(v => { try { v.pause(); v.currentTime = 0; } catch {} });
       })()`, awaitPromise: true, returnByValue: true }, sid);
       await sleep(500);
       const { result } = await send('Runtime.evaluate', { expression: PROBE, returnByValue: true }, sid);

@@ -137,9 +137,17 @@ html.includes('Your first 15 minutes') ? ok('"Your first 15 minutes" starter car
                                        : bad('starter card missing — site teaches about AI but not doing');
 html.includes('baseline-ai-literacy/issues') ? ok('footer feedback link present')
                                              : bad('no feedback channel — readers cannot report stale content');
-const h2s = (html.match(/<h2 class="stitle">/g) || []).length;
-h2s === 10 ? ok('all 10 section titles are real <h2> headings (incl. the layer-2 doorway)')
-           : bad(`expected 10 <h2 class="stitle">, found ${h2s} — screen readers lose structure`);
+/* EVERY section needs a real heading, checked per section rather than by counting them.
+   The old check asserted "10 h2s" across 11 sections and so could not notice that #share
+   had none — it became a full-screen layer whose only title was a 12px eyebrow. A count
+   is satisfied by the wrong ten. */
+{
+  const secs = [...html.matchAll(/<section id="([^"]+)"[\s\S]*?<\/section>/g)];
+  const missing = secs.filter(m => !/<h2\b/.test(m[0])).map(m => m[1]);
+  missing.length === 0
+    ? ok(`all ${secs.length} sections carry a real <h2> heading (incl. every layer-2 door)`)
+    : bad(`sections with no <h2>: ${missing.join(', ')} — a screen reader lands in an untitled layer`);
+}
 fs.existsSync(path.join(__dirname, '.github/workflows/freshness.yml'))
   ? ok('freshness watchdog workflow present')
   : bad('freshness watchdog workflow missing');
@@ -513,13 +521,58 @@ g(/id="lab-checking" open/.test(html) && !/id="lab-prompting" open/.test(html),
 g(html.includes('id="rail"') && html.includes('id="railNav"'), 'desktop rail present');
 /* ---- LAYER 2: the four deep-dives open on top instead of extending the scroll ---- */
 {
-  const deep = (html.match(/<section id="(bodysec|topics|howllm|labs)" class="deep">/g) || []).length;
-  g(deep === 4, `4 deep sections marked for layer 2 (found ${deep})`);
+  const deep = (html.match(/<section id="(bodysec|topics|howllm|labs|share)" class="deep/g) || []).length;
+  g(deep === 5, `5 deep sections marked for layer 2, incl. Pass it on (found ${deep})`);
 }
 g(/\.deep \{ display: none; \}/.test(html) && /\.deep\.open \{/.test(html),
   'deep sections are HIDDEN, never removed — the page stays one crawlable document and every #anchor still resolves');
 g(html.includes('id="deepGrid"') && /const DEEP = \{/.test(html),
   'a doorway lists the deep sections rather than hiding them from the reader');
+// Artwork is DRAWN, not photographed: a stock photo of a robot is exactly the hype this
+// page exists to defuse, it would be someone else's work, and it would break the page's
+// one-request promise. Inline SVG from the page's own tokens themes itself for free.
+{
+  const ids = ['bodysec','topics','howllm','labs','share'];
+  const have = ids.filter(k => new RegExp(k + ':\\s*`<svg class="deep-art"').test(html));
+  g(have.length === 5, `every door carries its own inline artwork (${have.length}/5)`);
+  g(!/<img[^>]+deep-art/.test(html) && /var\(--g[123]\)/.test(html),
+    'door artwork is inline SVG using the page tokens — no external image request, no borrowed photo');
+}
+/* Two ways a door count can be RIGHT in the DOM and WRONG on the screen. Both shipped for
+   one commit when the fifth door landed, and every existing check stayed green, because a
+   correct page can still say a false thing (Generated-Claims Rule). */
+{
+  const sub = (html.match(/id="deeper"[\s\S]{0,900}?<div class="ssub">([\s\S]*?)<\/div>/) || [])[1] || '';
+  g(sub && !/\b(two|three|four|five|six|seven|eight|nine|ten|\d+)\b/i.test(sub),
+    'the doorway blurb counts nothing — a hardcoded "these four" goes stale the day a door is added');
+}
+{
+  // Every deep section must resolve to a human title in the rail. SHORT may override for
+  // width, but the FALLBACK must be DEEP — not the raw id, which is what "share" rendered.
+  const short = (html.match(/const SHORT = \{[\s\S]*?\};/) || [''])[0];
+  const ids = ['bodysec','topics','howllm','labs','share'];
+  const uncovered = ids.filter(k => !new RegExp('\\b' + k + ':').test(short));
+  g(/DEEP\[sec\.id\] && DEEP\[sec\.id\]\[0\]/.test(html),
+    `rail labels fall back to DEEP, so the ${uncovered.length} door(s) not in SHORT still read as titles`);
+  /* The DOOR and the SECTION are two lists that must stay equal. A cold audit deleted the
+     share: entry from DEEP and every static check still passed: the section kept existing,
+     it simply had no way in and no title anywhere. Compare the two lists directly. */
+  const map = (html.match(/const DEEP = \{[\s\S]*?\n\};/) || [''])[0];
+  const inMap = [...map.matchAll(/^\s{2}(\w+):\s*\[/gm)].map(m => m[1]);
+  const inDom = [...html.matchAll(/<section id="([^"]+)" class="deep/g)].map(m => m[1]);
+  const orphan = inDom.filter(id => !inMap.includes(id));
+  const ghost  = inMap.filter(id => !inDom.includes(id));
+  g(orphan.length === 0 && ghost.length === 0 && inMap.length === 5,
+    `every deep section has a door and every door has a section (${inMap.length} each` +
+    `${orphan.length ? '; unreachable: ' + orphan.join(',') : ''}${ghost.length ? '; door to nothing: ' + ghost.join(',') : ''})`);
+}
+/* Counting is DISCLOSED to the reader by name, so the code must not quietly count more.
+   deepOpen() called tally('lab') on every door open — including the "Pass it on" door,
+   which is not a lab — so the published "lab copies" number silently became "doors opened
+   plus labs copied", and a learning-circle row counted twice. A wrong number under an
+   honest label is worse than no number. */
+g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?\n\}/.exec(html)[0].includes('tally('),
+  'opening a door counts nothing — the tally means what the footer says it means');
 g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
   'any link into layer 2 opens it — one interception, not a per-link list');
 g(/const deepHost = t\.closest\('\.deep'\)/.test(html),
@@ -544,8 +597,13 @@ g(/const line = innerHeight \* 0\.32/.test(html), 'scroll-spy picks the section 
   const vids = (d.match(/<video /g) || []).length;
   const posters = (d.match(/poster="https:\/\/hlur\.ai\/baseline\/clips\/[^"]+-poster\.jpg"/g) || []).length;
   const lazy = (d.match(/preload="none"/g) || []).length;
+  const playable = (d.match(/\scontrols\b/g) || []).length;
   g(vids === 4 && posters === 4 && lazy === 4,
     `all 4 clips play on the page, each with a poster and preload="none" (${vids} videos, ${posters} posters, ${lazy} lazy)`);
+  // visual.js hides the UA media chrome before capture (its spinner rotates, so the section
+  // could never hold a stable reference). That makes the pixel harness blind to a missing
+  // control bar — so the presence of controls is asserted HERE instead, statically.
+  g(playable === 4, `every clip is playable — controls present on all 4 (found ${playable})`);
   g(/clip=write\|peel\|attn\|triage/.test(html) || /'write', 'peel', 'attn', 'triage'/.test(html),
     'the recorder supports a clip mode for every published clip');
 }

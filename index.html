@@ -732,10 +732,19 @@ details.card[open] .chev { transform: rotate(90deg); }
 .share-pill.ghost:hover { border-color: var(--text-ter); }
 .share-pill:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 .share-note { margin-top: 11px; font-size: 12px; color: var(--text-ter); }
+/* clip deck: the four recordings, playable in place. preload="none" so four videos cost
+   nothing until someone presses play — the page's whole weight budget depends on it. */
+.clip-deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px; margin-top: 16px; text-align: left; }
+.clip-card { margin: 0; }
+.clip-card video { width: 100%; aspect-ratio: 9 / 16; max-height: 300px; object-fit: cover;
+  border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); display: block; }
+.clip-card figcaption { margin-top: 6px; font-size: 12px; color: var(--text-sec); line-height: 1.4; }
 /* ---------- clip mode (?clip=write|peel): one component, full-bleed, looping —
    for screen-recording vertical social clips. Not linked from the page. ---------- */
+/* .share-strip is a DIV, not a section — it stayed visible and sat beside the clip. */
 html[data-clip] nav, html[data-clip] header.hero, html[data-clip] .trust,
-html[data-clip] section, html[data-clip] footer { display: none !important; }
+html[data-clip] section, html[data-clip] footer, html[data-clip] .share-strip { display: none !important; }
 html[data-clip] body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
 html[data-clip] .wrap { max-width: 640px; width: 100%; padding: 20px; }
 html[data-clip="write"] #howllm { display: block !important; background: none; padding: 0; }
@@ -746,6 +755,23 @@ html[data-clip="write"] .gptflow { margin: 0; }
 html[data-clip="peel"] #layers { display: block !important; padding: 0; }
 html[data-clip="peel"] #layers .slabel, html[data-clip="peel"] #layers .stitle,
 html[data-clip="peel"] #layers .ssub, html[data-clip="peel"] .pl-btns { display: none !important; }
+/* attention playground: tap a word, watch where it looks */
+html[data-clip="attn"] #howllm { display: block !important; background: none; padding: 0; }
+html[data-clip="attn"] #howllm .slabel, html[data-clip="attn"] #howllm .stitle,
+html[data-clip="attn"] #howllm .ssub, html[data-clip="attn"] .gptflow { display: none !important; }
+/* hide every OTHER deep-dive card, or the clip frames a different card entirely */
+html[data-clip="attn"] #howllm details:not(#card-attention) { display: none !important; }
+html[data-clip="attn"] #card-attention { border: none; background: none; }
+html[data-clip="attn"] #card-attention summary,
+html[data-clip="attn"] #card-attention .content > *:not(#attnPlay) { display: none !important; }
+/* lab 002: triage a confident answer */
+html[data-clip="triage"] #labs { display: block !important; padding: 0; }
+html[data-clip="triage"] #labs .slabel, html[data-clip="triage"] #labs .stitle,
+html[data-clip="triage"] #labs .ssub, html[data-clip="triage"] #lab-prompting,
+html[data-clip="triage"] .lab-next { display: none !important; }
+html[data-clip="triage"] #lab-checking { border: none; background: none; }
+html[data-clip="triage"] #lab-checking summary,
+html[data-clip="triage"] #lab-checking .content > *:not(#triage) { display: none !important; }
 /* ---------- mini-games (shared: spot-the-fake, match four, model picker) ---------- */
 .mg { background: var(--surface); border: 1px solid var(--border-med); border-radius: 14px; padding: 16px 18px; margin-top: 24px; }
 .mg-incard { margin: 6px 0 18px; background: var(--surface2); border-color: var(--border); }
@@ -1495,10 +1521,29 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
       <p class="share-lead">Someone you know is anxious about AI. Send them the calm version.</p>
       <div class="share-btns">
         <button id="shareBtn" class="share-pill" type="button">🔗 Share this page</button>
-        <a class="share-pill ghost" href="https://hlur.ai/baseline/clips/watch-it-write.mp4">▸ 20s clip · watch it write</a>
-        <a class="share-pill ghost" href="https://hlur.ai/baseline/clips/peel-the-layers.mp4">▸ 20s clip · peel the layers</a>
       </div>
-      <p class="share-note" id="shareNote" aria-live="polite">Clips are free to repost anywhere.</p>
+      <p class="share-note" id="shareNote" aria-live="polite">Or take a clip — they play here, and they're free to repost anywhere.</p>
+      <!-- The clips used to be two text links in the footer, which nobody found. Showing
+           them is the whole point: each one is a real interaction from this page, recorded
+           from the page itself, so what you repost is what a visitor actually gets. -->
+      <div class="clip-deck">
+        <figure class="clip-card">
+          <video src="https://hlur.ai/baseline/clips/peel-the-layers.mp4" poster="https://hlur.ai/baseline/clips/peel-the-layers-poster.jpg" muted loop playsinline preload="none" controls></video>
+          <figcaption>Peel to the core · what AI is, in 10 layers</figcaption>
+        </figure>
+        <figure class="clip-card">
+          <video src="https://hlur.ai/baseline/clips/watch-it-write.mp4" poster="https://hlur.ai/baseline/clips/watch-it-write-poster.jpg" muted loop playsinline preload="none" controls></video>
+          <figcaption>Watch it write · one word at a time</figcaption>
+        </figure>
+        <figure class="clip-card">
+          <video src="https://hlur.ai/baseline/clips/attention-playground.mp4" poster="https://hlur.ai/baseline/clips/attention-playground-poster.jpg" muted loop playsinline preload="none" controls></video>
+          <figcaption>Attention · where each word looks</figcaption>
+        </figure>
+        <figure class="clip-card">
+          <video src="https://hlur.ai/baseline/clips/check-its-work.mp4" poster="https://hlur.ai/baseline/clips/check-its-work-poster.jpg" muted loop playsinline preload="none" controls></video>
+          <figcaption>Lab 002 · which claim would you check?</figcaption>
+        </figure>
+      </div>
     </div>
   </div>
 </div>
@@ -2896,14 +2941,31 @@ LEVELS.forEach(([key]) => initDeck(levelDeck[key]));   // one swipe deck per lev
 /* ---------- clip mode: ?clip=write|peel — a looping component for recording social clips ---------- */
 (function initClipMode(){
   const clip = new URLSearchParams(location.search).get('clip');
-  if (clip !== 'write' && clip !== 'peel') return;
+  if (!['write', 'peel', 'attn', 'triage'].includes(clip)) return;
   document.documentElement.dataset.clip = clip;
+  document.querySelectorAll('details.card').forEach(d => { d.open = true; });
   if (clip === 'write') {
     const b = document.getElementById('gfPause');
     if (b) b.click();                                    // start immediately; IO keeps it running while visible
-  } else {
+  } else if (clip === 'peel') {
     const b = document.querySelector('.pl-btn:not(.pl-up)');
     if (b && !REDUCE) setInterval(() => b.click(), 1700); // peel loops back to layer 1 on its own
+  } else if (clip === 'attn') {
+    // walk the sentence so the bars re-animate for each word
+    const w = [...document.querySelectorAll('#attnPlay .attn-w')];
+    let i = 6;                                           // open on "it", the teaching example
+    if (w.length && !REDUCE) setInterval(() => { i = (i + 1) % w.length; w[i].click(); }, 1500);
+  } else if (clip === 'triage') {
+    // flag the two that matter, reveal, reset — one full loop of the exercise
+    const step = () => {
+      const c = [...document.querySelectorAll('#triage .tri-c')];
+      const again = document.getElementById('triAgain');
+      if (again && !again.hidden) { again.click(); return; }
+      if (!c.some(x => x.classList.contains('on'))) { c[1].click(); return; }
+      if (!c[2].classList.contains('on')) { c[2].click(); return; }
+      document.getElementById('triGo').click();
+    };
+    if (!REDUCE) setInterval(step, 1600);
   }
 })();
 </script>

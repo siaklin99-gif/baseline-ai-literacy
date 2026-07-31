@@ -493,6 +493,19 @@ g(html.includes("id=\"pathFocus\"") && /Show just this path/.test(html),
 g(/only the PATH is restored, never the focused state/.test(html),
   'a returning visitor always lands on the complete page (focus is never persisted)');
 g(/id="lab-checking" open/.test(html), 'Lab 002 is expanded by default, like Lab 001');
+// the clips are SHOWN now, not two text links nobody found. Each must have a poster and
+// preload="none", or four videos would silently cost every visitor bandwidth on load.
+{
+  const deck = html.match(/<div class="clip-deck">[\s\S]*?<\/div>/);
+  const d = deck ? deck[0] : '';
+  const vids = (d.match(/<video /g) || []).length;
+  const posters = (d.match(/poster="https:\/\/hlur\.ai\/baseline\/clips\/[^"]+-poster\.jpg"/g) || []).length;
+  const lazy = (d.match(/preload="none"/g) || []).length;
+  g(vids === 4 && posters === 4 && lazy === 4,
+    `all 4 clips play on the page, each with a poster and preload="none" (${vids} videos, ${posters} posters, ${lazy} lazy)`);
+  g(/clip=write\|peel\|attn\|triage/.test(html) || /'write', 'peel', 'attn', 'triage'/.test(html),
+    'the recorder supports a clip mode for every published clip');
+}
 g(html.includes("t.closest('.path-off')"), 'links into hidden content reveal it instead of scrolling to nothing');
 // labs must not carry an undated promise, and must offer a way to be reached
 g(!/More labs land here/.test(html), 'undated "more labs coming" promise removed');

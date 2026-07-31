@@ -122,7 +122,45 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     ? ok('no horizontal overflow on the page itself — the full-bleed decks stay inside their container')
     : bad(`the page scrolls sideways by ${r.overflow}px — a full-bleed deck escaped`);
 
-  /* ---- 7. DESKTOP KEEPS ITS GRID ---- */
+  /* ---- 7. THE CIRCLE IS A DIAL: swipe turns the ring, tapping the ring turns the swipe ---- */
+  await nav();
+  r=await ev(`(async function(){
+    const list=document.getElementById('lcList'), nodes=document.getElementById('lcNodes');
+    const cur=()=>[...nodes.children].findIndex(n=>n.classList.contains('cur'));
+    const cs=getComputedStyle(list);
+    const start=cur();
+    // swipe the steps -> the ring should follow
+    list.scrollLeft=list.scrollWidth*0.42; await new Promise(r=>setTimeout(r,320));
+    const afterSwipe=cur();
+    // tap a ring number -> the steps should move to it, and NOT leave the section
+    const y0=scrollY;
+    nodes.children[6].dispatchEvent(new MouseEvent('click',{bubbles:true}));
+    await new Promise(r=>setTimeout(r,600));
+    return {deck:cs.display, snap:cs.scrollSnapType, steps:list.children.length,
+            start, afterSwipe, afterTap:cur(),
+            movedTo:Math.round(list.scrollLeft), atEnd:list.scrollLeft>list.scrollWidth-list.clientWidth-40,
+            stayedPut: Math.abs(scrollY-y0) < 400,
+            dots: list.nextElementSibling && list.nextElementSibling.className==='dots'};})()`);
+  (r.deck==='flex' && r.steps===7 && r.start===0 && r.afterSwipe>1 && r.afterTap===6 && r.atEnd && r.stayedPut && !r.dots)
+    ? ok(`the ring is a dial: swiping the 7 steps turned it 0 → ${r.afterSwipe}, tapping step 7 turned the deck to the end without leaving the section (no dots — the ring is the indicator)`)
+    : bad('circle dial: '+JSON.stringify(r));
+
+  /* ---- 8. the clip strip swipes instead of stacking 4 videos vertically ---- */
+  // #share is a layer-2 section: display:none until its door is opened, so it has no
+  // dimensions to measure until then. Measuring it closed reported 0 and looked like a
+  // broken deck — the harness has to open the door the way a reader does.
+  r=await ev(`(async function(){
+    document.querySelector('[data-deep-open="share"]').click();
+    await new Promise(r=>setTimeout(r,350));
+    const d=document.querySelector('.clip-deck'), cs=getComputedStyle(d);
+    return {disp:cs.display, snap:cs.scrollSnapType, clips:d.children.length,
+            scrollable:d.scrollWidth-d.clientWidth,
+            h:Math.round(d.getBoundingClientRect().height)};})()`);
+  (r.disp==='flex' && /mandatory/.test(r.snap) && r.clips===4 && r.scrollable>100)
+    ? ok(`the 4 clips swipe as one ${r.h}px row instead of stacking (was 1327px inside Pass it on)`)
+    : bad('clip deck: '+JSON.stringify(r));
+
+  /* ---- 9. DESKTOP KEEPS ITS GRID ---- */
   await nav(1440,900);
   r=await ev(`(function(){
     const g=document.getElementById('deepGrid'), q=document.querySelector('.qz-deck');

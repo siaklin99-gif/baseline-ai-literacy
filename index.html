@@ -959,7 +959,7 @@ footer { margin-top: 30px; }
      blocks on the page (1517px and 1046px at 390px wide); side by side they are one
      card tall each, and a thumb moves through them left-to-right instead of scrolling
      past them. Same mechanism as Can/Can't and Topics — one deck implementation. */
-  .cols, .tg-deck, #bodymap, .deep-grid, .qz-deck {
+  .cols, .tg-deck, #bodymap, .deep-grid, .qz-deck, #lcList, .clip-deck {
     display: flex; grid-template-columns: none;
     overflow-x: auto; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
@@ -968,13 +968,20 @@ footer { margin-top: 30px; }
     scrollbar-width: none;
   }
   .cols::-webkit-scrollbar, .tg-deck::-webkit-scrollbar, #bodymap::-webkit-scrollbar,
-  .deep-grid::-webkit-scrollbar, .qz-deck::-webkit-scrollbar { display: none; }
-  .cols > *, .tg-deck > *, #bodymap > *, .deep-grid > *, .qz-deck > * {
+  .deep-grid::-webkit-scrollbar, .qz-deck::-webkit-scrollbar,
+  #lcList::-webkit-scrollbar, .clip-deck::-webkit-scrollbar { display: none; }
+  .cols > *, .tg-deck > *, #bodymap > *, .deep-grid > *, .qz-deck > *,
+  #lcList > *, .clip-deck > * {
     scroll-snap-align: start; flex: 0 0 82vw; max-width: 82vw;   /* next card peeks */
   }
   /* align-items:stretch would make every card match the TALLEST — one long question
      would inflate the whole deck. Each card keeps its own height. */
-  .deep-grid > *, .qz-deck > * { align-self: flex-start; }
+  .deep-grid > *, .qz-deck > *, #lcList > *, .clip-deck > * { align-self: flex-start; }
+  /* THE RING IS THE DIAL. Swiping the steps turns it; tapping a number turns it back.
+     The ring already showed how many steps are DONE — this adds where you ARE, which is
+     the thing a one-at-a-time deck otherwise loses. */
+  .lc-node.cur circle:not(.lc-hit) { stroke: var(--g1); stroke-width: 3; }
+  .lc-node.cur text { fill: var(--text); }
 
   /* progress dots */
   .dots { display: flex; gap: 7px; justify-content: center; margin-top: 14px; }
@@ -1079,7 +1086,7 @@ footer { margin-top: 30px; }
   <div class="wrap">
     <div class="slabel">The path</div>
     <h2 class="stitle">Your learning circle</h2>
-    <div class="ssub">Seven steps from "what is AI?" to driving it daily. Tap a step to jump there; tick it when it clicks. Progress stays on this device.</div>
+    <div class="ssub">Seven steps from "what is AI?" to driving it daily. Tap a card to jump there; tick it when it clicks. Progress stays on this device.</div>
     <div class="path-pick" role="group" aria-label="Where are you starting from?">
       <span class="path-q">Where are you starting from?</span>
       <button class="path-chip" type="button" aria-pressed="false" data-path="new">New to AI</button>
@@ -2426,6 +2433,44 @@ function lcNavigate(i) {
     deck.scrollTo({ left: Math.max(0, t.offsetLeft - 18), behavior: REDUCE ? 'auto' : 'smooth' });
   }
 }
+/* ---------- the learning circle as a DIAL (mobile) ----------
+   Seven stacked rows were 504px of the tallest section on the page. Side by side they
+   are one card, and the ring beside them stops being decoration: swipe the steps and the
+   ring follows; tap a number and the steps move to it. One step at a time, both ways.
+
+   Deliberately no progress dots here, unlike the other decks — the ring already IS the
+   position indicator, and two of them would be two ideas of "where am I". */
+function lcIsDeck() {
+  return lcList && getComputedStyle(lcList).display === 'flex';   // the mobile deck rule
+}
+function lcTurnTo(i) {
+  const card = lcList && lcList.children[i];
+  if (!card) return;
+  lcList.scrollTo({ left: Math.max(0, card.offsetLeft - lcList.offsetLeft),
+                    behavior: REDUCE ? 'auto' : 'smooth' });
+  lcMark(i);
+}
+function lcMark(i) {
+  [...lcNodes.children].forEach((n, k) => n.classList.toggle('cur', k === i));
+}
+(function initCircleDial(){
+  if (!lcList) return;
+  let raf = null;
+  const sync = () => {
+    raf = null;
+    if (!lcIsDeck()) { lcMark(-1); return; }         // desktop: no "current" step
+    const left = lcList.getBoundingClientRect().left;
+    let best = 0, bd = Infinity;
+    [...lcList.children].forEach((c, i) => {
+      const d = Math.abs(c.getBoundingClientRect().left - left);
+      if (d < bd) { bd = d; best = i; }
+    });
+    lcMark(best);
+  };
+  lcList.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(sync); }, { passive: true });
+  addEventListener('resize', sync);
+  sync();
+})();
 CIRCLE.forEach((s, i) => {
   const a = (-90 + i * (360 / CIRCLE.length)) * Math.PI / 180;
   const x = 120 + 95 * Math.cos(a), y = 120 + 95 * Math.sin(a);
@@ -2434,7 +2479,13 @@ CIRCLE.forEach((s, i) => {
   g.innerHTML = `<circle class="lc-hit" cx="${x}" cy="${y}" r="23.5" fill="transparent"></circle>
     <circle cx="${x}" cy="${y}" r="16"></circle>
     <text x="${x}" y="${y + 4.5}" text-anchor="middle">${i + 1}</text>`;
-  g.addEventListener('click', () => lcNavigate(i));
+  // On a phone the ring is a DIAL: tapping a number brings that step's card into view
+  // rather than leaving the section. The card itself still carries the link, so nothing
+  // becomes unreachable — you just get to look before you leap. Desktop is unchanged:
+  // there the whole list is visible at once, so a tap that navigates is the right thing.
+  g.addEventListener('click', () => {
+    if (lcIsDeck()) lcTurnTo(i); else lcNavigate(i);
+  });
   lcNodes.appendChild(g);
 
   const row = document.createElement('div');

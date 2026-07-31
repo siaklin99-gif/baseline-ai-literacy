@@ -592,8 +592,19 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
   g(/initDeck\(document\.getElementById\('deepGrid'\)\)/.test(html) &&
     /initDeck\(document\.querySelector\('\.qz-deck'\)\)/.test(html),
     'both new decks get progress dots from the shared initDeck (built by JS, so wired after render)');
-  g(/\.deep-grid > \*, \.qz-deck > \* \{ align-self: flex-start; \}/.test(html),
-    'deck cards keep their own height — stretch would let the tallest question inflate the whole deck');
+  g(/\.deep-grid > \*, \.qz-deck > \*, #lcList > \*, \.clip-deck > \* \{ align-self: flex-start; \}/.test(html),
+    'deck cards keep their own height — stretch would let the tallest card inflate the whole row');
+  // The circle is the one deck with NO dots: the ring already shows position, and two
+  // indicators for one fact is how they end up disagreeing.
+  g(/#lcList, \.clip-deck \{|#lcList, \.clip-deck/.test(html) || /#lcList/.test(html),
+    'the learning circle and the clip strip swipe too');
+  g(/function lcIsDeck\(\)/.test(html) && /function lcTurnTo\(/.test(html) &&
+    /if \(lcIsDeck\(\)\) lcTurnTo\(i\); else lcNavigate\(i\)/.test(html),
+    'the ring is a DIAL on mobile — tapping a number turns the steps to it instead of leaving the section');
+  g(/lcList\.addEventListener\('scroll'/.test(html) && /n\.classList\.toggle\('cur', k === i\)/.test(html),
+    'swiping the steps turns the ring back (the dial reads both ways)');
+  g(/\.lc-node\.cur circle:not\(\.lc-hit\)/.test(html),
+    'the current step is marked on the ring — a one-at-a-time deck otherwise loses "where am I"');
 }
 g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
   'any link into layer 2 opens it — one interception, not a per-link list');

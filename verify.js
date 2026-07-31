@@ -573,27 +573,27 @@ g(html.includes('id="deepGrid"') && /const DEEP = \{/.test(html),
    honest label is worse than no number. */
 g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?\n\}/.exec(html)[0].includes('tally('),
   'opening a door counts nothing — the tally means what the footer says it means');
-/* ---- the mobile fold: shorter phone scroll, identical desktop ---- */
+/* ---- mobile swipe decks: the long sections move sideways, not down ---- */
 {
-  const secs = [...html.matchAll(/<section id="([^"]+)"[^>]*\sdata-mcol\b/g)].map(m => m[1]);
-  g(secs.length === 2 && secs.includes('deeper') && secs.includes('quizsec'),
-    `the two optional sections fold on mobile (${secs.join(', ') || 'none'})`);
-  // Ship OPEN, close with JS. Folding in the markup would hide the content from every
-  // crawler and every reader without JS — the page would be shorter by being smaller.
-  g(!/<section[^>]*\sdata-mcol=["']closed["']/.test(html),
-    'the HTML ships unfolded — JS folds it, so no-JS readers and crawlers keep the whole page');
-  // Base display:none BEFORE the @media, or an equal-specificity base rule written after
-  // its own override silently wins and the toggle appears on desktop.
-  const base = html.indexOf('.mcol-toggle { display: none; }');
-  const mq   = html.indexOf('@media (max-width: 759px)');
-  g(base > -1 && mq > -1 && base < mq,
-    'the toggle is display:none by default and only shown inside the mobile query (source order matters)');
-  g(/section\[data-mcol="closed"\] \.mcol-body \{ display: none; \}/.test(html),
-    'folding hides the body only — the section, its heading and its anchors stay on the page');
-  g(/mcolOpen\(t\)/.test(html) && /if \(t\) mcolOpen\(t\)/.test(html),
-    'both navigation paths unfold a folded section instead of scrolling to a hidden element');
-  g(/sec\.querySelectorAll\('\.reveal'\)\.forEach\(r => r\.classList\.add\('in'\)\)/.test(html),
-    'unfolding marks the scroll-reveal elements shown (a folded block never triggers its observer)');
+  // ONE deck implementation. Can/Can't, Topics and the body map already swiped; the
+  // doorway and the self-test join the SAME rule rather than getting a second mechanism
+  // that would drift from it.
+  const rule = (html.match(/\.cols, \.tg-deck, #bodymap[^{]*\{/) || [''])[0];
+  g(/\.deep-grid/.test(rule) && /\.qz-deck/.test(rule),
+    'the doorway and the self-test swipe on mobile, using the same deck rule as the other decks');
+  const child = (html.match(/\.cols > \*, \.tg-deck > \*[^{]*\{[^}]*\}/) || [''])[0];
+  g(/scroll-snap-align: start/.test(child) && /82vw/.test(child),
+    'cards snap and stop at 82vw so the NEXT card peeks — the affordance that says "swipe me"');
+  // The running score must not be swipeable: as a direct child of #quiz it would have
+  // become card 1 of the deck, so the questions live in their own wrapper.
+  g(/qzDeck\.className = 'qz-deck'/.test(html) && /qzDeck\.appendChild\(el\)/.test(html) &&
+    /quiz\.appendChild\(qzScore\)/.test(html),
+    'the running score sits outside the swipe deck (as a child it would be the first card)');
+  g(/initDeck\(document\.getElementById\('deepGrid'\)\)/.test(html) &&
+    /initDeck\(document\.querySelector\('\.qz-deck'\)\)/.test(html),
+    'both new decks get progress dots from the shared initDeck (built by JS, so wired after render)');
+  g(/\.deep-grid > \*, \.qz-deck > \* \{ align-self: flex-start; \}/.test(html),
+    'deck cards keep their own height — stretch would let the tallest question inflate the whole deck');
 }
 g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
   'any link into layer 2 opens it — one interception, not a per-link list');

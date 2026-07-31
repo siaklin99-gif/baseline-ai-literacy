@@ -1,0 +1,142 @@
+/* ============================================================
+   Baseline — the mobile swipe decks, measured in a real browser.
+   Run:  node test/mobiledeck.runtime.js
+
+   The doorway and the self-test were the two longest blocks on a phone (1517px and
+   1046px at 390x844, against a whole page of 8.89 screens). On mobile they now move
+   SIDEWAYS: native CSS scroll-snap, the next card peeking at the edge, progress dots
+   below — the same deck mechanism Can/Can't and Topics already use.
+
+   What must stay true:
+     · they really scroll horizontally, and really snap
+     · the next card PEEKS — that overhang is the only thing that says "swipe me"
+     · the dots match the cards and follow the swipe, both directions
+     · the running score is NOT inside the deck (as a child it becomes card 1)
+     · a full-bleed deck (negative margins) must not make the PAGE scroll sideways
+     · desktop keeps its grid: all five doors visible at once, no deck, no dots
+   ============================================================ */
+const { spawn } = require('child_process'); const http = require('http');
+const CHROME='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', PORT=9497;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const getJSON=u=>new Promise((res,rej)=>http.get(u,r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>res(JSON.parse(d)));}).on('error',rej));
+let fails=0,checks=0;
+const ok=m=>{checks++;console.log('  \x1b[32m✓\x1b[0m '+m)};
+const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
+(async()=>{
+  const chrome=spawn(CHROME,['--headless=new','--remote-debugging-port='+PORT,'--no-first-run','--hide-scrollbars','--user-data-dir=/tmp/md-'+PORT],{stdio:'ignore'});
+  let ver,t=0; while(t++<50){try{ver=await getJSON(`http://127.0.0.1:${PORT}/json/version`);break;}catch{await sleep(200);}}
+  const ws=new WebSocket(ver.webSocketDebuggerUrl); await new Promise(r=>ws.onopen=r);
+  let id=0; const pend=new Map();
+  ws.onmessage=e=>{const m=JSON.parse(e.data); if(m.id&&pend.has(m.id)){pend.get(m.id)(m.result);pend.delete(m.id);}};
+  const send=(m,p,s)=>new Promise(r=>{pend.set(++id,r);ws.send(JSON.stringify({id,method:m,params:p,sessionId:s}));});
+  const {targetId}=await send('Target.createTarget',{url:'about:blank'});
+  const {sessionId}=await send('Target.attachToTarget',{targetId,flatten:true});
+  await send('Page.enable',{},sessionId); await send('Runtime.enable',{},sessionId);
+  const URL='file://'+require('path').join(__dirname,'..','index.html');
+  const nav=async(w=390,h=844)=>{
+    await send('Emulation.setDeviceMetricsOverride',{width:w,height:h,deviceScaleFactor:1,mobile:w<760},sessionId);
+    await send('Page.navigate',{url:URL},sessionId); await sleep(1800);};
+  const ev=async e=>{const r=await send('Runtime.evaluate',{expression:e,returnByValue:true,awaitPromise:true},sessionId);
+    if(r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0,300)); return r.result.value;};
+
+  console.log('\nBaseline mobile swipe decks\n----------------------------');
+
+  /* ---- 1. both decks scroll sideways and snap ---- */
+  await nav();
+  let r=await ev(`(function(){
+    const out={};
+    for (const [k,sel] of [['doors','#deepGrid'],['quiz','.qz-deck']]) {
+      const d=document.querySelector(sel), cs=getComputedStyle(d);
+      out[k]={cards:d.children.length, disp:cs.display, snap:cs.scrollSnapType,
+              scrollable:d.scrollWidth-d.clientWidth};
+    }
+    out.screens=+(document.scrollingElement.scrollHeight/844).toFixed(2);
+    return out;})()`);
+  (r.doors.cards===5 && r.quiz.cards===9 &&
+   r.doors.disp==='flex' && r.quiz.disp==='flex' &&
+   /mandatory/.test(r.doors.snap) && /mandatory/.test(r.quiz.snap) &&
+   r.doors.scrollable>100 && r.quiz.scrollable>100)
+    ? ok(`both decks swipe: 5 doors and 9 questions in flex rows with mandatory snap (page is ${r.screens} screens, was 8.89)`)
+    : bad('decks: '+JSON.stringify(r));
+
+  /* ---- 2. the next card PEEKS — without the overhang nobody knows to swipe ---- */
+  r=await ev(`(function(){
+    const out={};
+    for (const [k,sel] of [['doors','#deepGrid'],['quiz','.qz-deck']]) {
+      const d=document.querySelector(sel);
+      const first=d.children[0].getBoundingClientRect(), second=d.children[1].getBoundingClientRect();
+      out[k]={pct:Math.round(first.width/innerWidth*100),
+              nextVisible: second.left < innerWidth - 8};
+    }
+    return out;})()`);
+  (r.doors.pct>=70 && r.doors.pct<=90 && r.doors.nextVisible &&
+   r.quiz.pct>=70 && r.quiz.pct<=90 && r.quiz.nextVisible)
+    ? ok(`cards are ${r.doors.pct}% / ${r.quiz.pct}% of the viewport and the next one is on screen — the swipe is discoverable`)
+    : bad('peek: '+JSON.stringify(r));
+
+  /* ---- 3. dots match the cards and follow the swipe, BOTH directions ---- */
+  r=await ev(`(async function(){
+    const d=document.querySelector('.qz-deck');
+    const dots=d.nextElementSibling;
+    const at=()=>[...dots.children].findIndex(x=>x.classList.contains('on'));
+    const start=at();
+    d.scrollLeft=d.scrollWidth*0.45; await new Promise(r=>setTimeout(r,300));
+    const fwd=at();
+    d.scrollLeft=0; await new Promise(r=>setTimeout(r,300));
+    const back=at();
+    return {isDots:dots.className, n:dots.children.length, start, fwd, back};})()`);
+  (r.isDots==='dots' && r.n===9 && r.start===0 && r.fwd>2 && r.back===0)
+    ? ok(`9 dots for 9 questions, tracking both ways (0 → ${r.fwd} → 0): left-to-right and right-to-left`)
+    : bad('dots: '+JSON.stringify(r));
+
+  /* ---- 4. the running score must not be a card ---- */
+  r=await ev(`(function(){
+    const deck=document.querySelector('.qz-deck');
+    const score=document.getElementById('qzScore');
+    return {insideDeck: deck.contains(score), firstCard: deck.children[0].className,
+            scoreVisible: score.getBoundingClientRect().height>0,
+            text: score.textContent.trim()};})()`);
+  (!r.insideDeck && /qz/.test(r.firstCard) && r.scoreVisible)
+    ? ok(`"${r.text}" stays outside the deck — the first card is a question, not the score`)
+    : bad('score placement: '+JSON.stringify(r));
+
+  /* ---- 5. the quiz still WORKS inside the deck ---- */
+  r=await ev(`(function(){
+    const card=document.querySelector('.qz-deck .qz');
+    card.querySelector('.qz-opt').click();
+    return {done:card.classList.contains('done'),
+            score:document.getElementById('qzScore').textContent.trim(),
+            answerShown:getComputedStyle(card.querySelector('.qz-a')).display!=='none'};})()`);
+  (r.done && /1 of 9/.test(r.score) && r.answerShown)
+    ? ok('answering inside the deck still scores and reveals the explanation ("'+r.score+'")')
+    : bad('quiz in deck: '+JSON.stringify(r));
+
+  /* ---- 6. FULL-BLEED MUST NOT LEAK. The decks use negative margins to reach the
+           screen edges; if that escapes its container the whole PAGE scrolls sideways,
+           which on a phone reads as the site being broken. scrollWidth-clientWidth on
+           the scrolling element is the authoritative signal. ---- */
+  r=await ev(`(function(){
+    const d=document.scrollingElement;
+    return {overflow:d.scrollWidth-d.clientWidth};})()`);
+  (r.overflow<=0)
+    ? ok('no horizontal overflow on the page itself — the full-bleed decks stay inside their container')
+    : bad(`the page scrolls sideways by ${r.overflow}px — a full-bleed deck escaped`);
+
+  /* ---- 7. DESKTOP KEEPS ITS GRID ---- */
+  await nav(1440,900);
+  r=await ev(`(function(){
+    const g=document.getElementById('deepGrid'), q=document.querySelector('.qz-deck');
+    const dots=[...document.querySelectorAll('.dots')].filter(d=>getComputedStyle(d).display!=='none').length;
+    const doorsOnScreen=[...g.children].filter(c=>c.getBoundingClientRect().width>100).length;
+    return {gridDisp:getComputedStyle(g).display, quizDisp:getComputedStyle(q).display,
+            sideways:g.scrollWidth-g.clientWidth, dots, doorsOnScreen,
+            pageOverflow:document.scrollingElement.scrollWidth-document.scrollingElement.clientWidth};})()`);
+  (r.gridDisp==='grid' && r.sideways<=0 && r.dots===0 && r.doorsOnScreen===5 && r.pageOverflow<=0)
+    ? ok('desktop unchanged: the doorway is still a grid with all 5 doors visible, no deck, no dots')
+    : bad('desktop leaked the mobile deck: '+JSON.stringify(r));
+
+  console.log('----------------------------');
+  console.log(`${checks} checks, ${fails} failure(s)`);
+  try{ws.close();}catch{} chrome.kill('SIGKILL');
+  process.exit(fails?1:0);
+})();

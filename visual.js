@@ -108,20 +108,29 @@ const PROBE = `(function(){
   const lum = (px) => { if (!px) return null;
     const f = px.slice(0,3).map(x => { x = x/255; return x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4); });
     return .2126*f[0] + .7152*f[1] + .0722*f[2]; };
-  // walk up compositing translucent layers; bail out if any layer is a gradient/image,
-  // because "the contrast against a gradient" is not one number
-  const bgOf = el => { let p = el, acc = null;
-    while (p && p !== document.documentElement) {
+  // Walk up collecting every background layer, then ACTUALLY composite them. The previous
+  // version kept only the first translucent layer and threw it away on reaching an opaque
+  // ancestor — #333 text inside rgba(20,20,20,.9) over a white card scored 12.63:1 when the
+  // truth is 1.11:1, i.e. a false PASS on invisible text. Latent then (no translucent layer
+  // carried text) but one chip away from real.
+  // Bails out on a gradient: "contrast against a gradient" is not one number.
+  const bgOf = el => {
+    const stack = [];                       // nearest-first
+    for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
       const cs = getComputedStyle(p);
       if (cs.backgroundImage && cs.backgroundImage !== 'none') return { gradient: true };
       const px = rgba(cs.backgroundColor);
-      if (px && px[3] > 0) {
-        acc = acc ? acc : px;
-        if (px[3] >= 0.99) return { px: acc[3] >= 0.99 ? acc : px };
-      }
-      p = p.parentElement;
+      if (px && px[3] > 0) { stack.push(px); if (px[3] >= 0.99) break; }
     }
-    return { px: acc || rgba(getComputedStyle(document.body).backgroundColor) }; };
+    const base = rgba(getComputedStyle(document.body).backgroundColor) || [255,255,255,1];
+    if (!stack.length || stack[stack.length - 1][3] < 0.99) stack.push(base);
+    // composite far -> near: result = a*over + (1-a)*under
+    let out = stack[stack.length - 1].slice(0, 3);
+    for (let i = stack.length - 2; i >= 0; i--) {
+      const a = stack[i][3];
+      out = [0, 1, 2].map(k => stack[i][k] * a + out[k] * (1 - a));
+    }
+    return { px: [out[0], out[1], out[2], 1] }; };
 
   // A1 invisible / low-contrast text
   const faint = [];
@@ -295,7 +304,23 @@ async function main() {
       await send('Emulation.setDeviceMetricsOverride', { width: v.w, height: v.h, deviceScaleFactor: 1, mobile: v.mobile }, sid);
       await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: v.theme }] }, sid);
       await send('Page.navigate', { url: PAGE_URL }, sid);
-      await sleep(1600);
+      await sleep(1200);
+      // WAIT FOR MEDIA. The clip posters are absolute hlur.ai URLs (they must be, so the
+      // GitHub Pages mirror resolves them too), so rendering the local file fetches them
+      // over the network with variable timing. A reference recorded mid-load froze three
+      // posters blank and then failed every later run — the harness was diffing its own
+      // race, not the page. Fonts too: text reflows when they land.
+      await send('Runtime.evaluate', { expression: `(async function(){
+        const urls = new Set();
+        document.querySelectorAll('img[src]').forEach(i => urls.add(i.src));
+        document.querySelectorAll('video[poster]').forEach(v => urls.add(v.poster));
+        await Promise.all([...urls].map(u => new Promise(res => {
+          const i = new Image(); i.onload = i.onerror = res; i.src = u;
+          setTimeout(res, 8000);                       // never hang the run on a dead asset
+        })));
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      })()`, awaitPromise: true, returnByValue: true }, sid);
+      await sleep(500);
       const { result } = await send('Runtime.evaluate', { expression: PROBE, returnByValue: true }, sid);
       if (result.exceptionDetails) throw new Error('probe threw: ' + JSON.stringify(result.exceptionDetails).slice(0, 200));
       const r = result.result.value;

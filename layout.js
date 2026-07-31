@@ -16,8 +16,7 @@
      2. TEXT FILL         no long paragraph renders far narrower than the box it
                           sits in — the "capped max-width wastes width" bug
      3. MOBILE FILL       on a phone every text block uses the full column
-     4. NO OVERFLOW       nothing forces sideways scrolling of the page
-     5. STRUCTURE LOCK    container widths and grid column counts are compared to
+     3. STRUCTURE LOCK    container widths and grid column counts are compared to
                           a COMMITTED baseline, so any future edit that changes
                           the desktop-vs-mobile structure fails loudly instead of
                           silently. `--update` rewrites the baseline on purpose,
@@ -157,6 +156,10 @@ async function main() {
 
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + PORT, '--hide-scrollbars',
     '--no-first-run', '--no-default-browser-check', '--user-data-dir=/tmp/baseline-layout-' + PORT], { stdio: 'ignore' });
+  // spawn emits 'error' ASYNCHRONOUSLY, outside the try — a bad Chrome path died with a raw
+  // Node stack trace instead of this harness's own failure line. Exit code was still 1, so it
+  // failed closed, but not in a voice anyone reading the output would recognise.
+  chrome.on('error', (e) => bad('chrome failed to start: ' + e.message));
   let ws;
   try {
     let ver, tries = 0;

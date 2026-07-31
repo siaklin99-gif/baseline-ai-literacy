@@ -287,11 +287,16 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // core layer frames AI as an alien intelligence WE grew — and keeps the honest caveat (no "nothing to worry about")
 (/alien kind of intelligence/.test(html) && /we grew from our own writing/.test(html) && /trusted blindly/.test(html))
   ? ok('core layer: alien-intelligence framing kept with its honest caveat') : bad('core layer alien framing / caveat missing');
-// small meaningful labels use SOLID AA colors (2026-07-24 design pass demoted them off the gradient);
-// nothing small may sit on the low-contrast display gradient
-(!/\.gl-cterm \.gt[^}]*var\(--grad\)/.test(html) && !/\.qz-src[^}]*var\(--grad\)/.test(html)
-  && /\.gl-cterm \.gt \{ color: var\(--accent\)/.test(html))
-  ? ok('small labels are solid AA colors (glossary terms = accent, quiz src = tertiary)') : bad('small meaningful text back on a gradient');
+// Small meaningful labels must not sit on the display gradient — contrast against a
+// gradient is not one number, so visual.js SKIPS those elements and can never judge them.
+// That skip is exactly why this check still earns its place. What it must NOT do is
+// claim the labels are "AA": visual.js measures that at runtime against real surfaces,
+// and a source proxy asserting the same thing would keep printing green even after the
+// token behind --accent regressed. Two owners for one fact drift apart; this one now
+// owns only the part visual.js structurally cannot see.
+(!/\.gl-cterm \.gt[^}]*var\(--grad\)/.test(html) && !/\.qz-src[^}]*var\(--grad\)/.test(html))
+  ? ok('no small meaningful text sits on the display gradient (visual.js owns the AA verdict)')
+  : bad('small meaningful text is back on the gradient — visual.js cannot measure contrast there');
 // 2026-07-24 design consolidation locks
 {
   const halfPx = (html.match(/font-size: \d+\.5px/g) || []).length;

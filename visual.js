@@ -328,10 +328,14 @@ async function main() {
           setTimeout(res, 8000);                       // never hang the run on a dead asset
         })));
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
-        // FREEZE THE MEDIA CHROME. Chrome draws its own spinner over a <video> whose data
-        // has not arrived, and it ROTATES — so two captures a second apart differ by ~850
-        // pixels forever, and the section can never hold a reference. Same class of bug as
-        // the mid-load posters above: the harness diffing its own timing, not the page.
+        // FREEZE THE MEDIA CHROME. HEADLESS Chrome draws a spinner over a <video> whose
+        // data has not arrived (preload="none", so it never does), and it ROTATES — two
+        // captures a second apart differ by ~850 pixels forever and #share can never hold
+        // a reference. Verified 2026-07-31 against the live site: headless and headful
+        // report identical element state (networkState 1, readyState 0) but only headless
+        // PAINTS the spinner, so this is a harness artifact and the page is correct as
+        // shipped. Do not "fix" the page for it. Same class as the mid-load posters above:
+        // the harness diffing its own timing rather than the page.
         // Only the UA-drawn overlay is hidden; the poster is the actual content and still
         // renders, and verify.js separately asserts controls= is present in the markup, so
         // this cannot mask a control bar that went missing.

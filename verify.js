@@ -573,6 +573,28 @@ g(html.includes('id="deepGrid"') && /const DEEP = \{/.test(html),
    honest label is worse than no number. */
 g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?\n\}/.exec(html)[0].includes('tally('),
   'opening a door counts nothing — the tally means what the footer says it means');
+/* ---- the mobile fold: shorter phone scroll, identical desktop ---- */
+{
+  const secs = [...html.matchAll(/<section id="([^"]+)"[^>]*\sdata-mcol\b/g)].map(m => m[1]);
+  g(secs.length === 2 && secs.includes('deeper') && secs.includes('quizsec'),
+    `the two optional sections fold on mobile (${secs.join(', ') || 'none'})`);
+  // Ship OPEN, close with JS. Folding in the markup would hide the content from every
+  // crawler and every reader without JS — the page would be shorter by being smaller.
+  g(!/<section[^>]*\sdata-mcol=["']closed["']/.test(html),
+    'the HTML ships unfolded — JS folds it, so no-JS readers and crawlers keep the whole page');
+  // Base display:none BEFORE the @media, or an equal-specificity base rule written after
+  // its own override silently wins and the toggle appears on desktop.
+  const base = html.indexOf('.mcol-toggle { display: none; }');
+  const mq   = html.indexOf('@media (max-width: 759px)');
+  g(base > -1 && mq > -1 && base < mq,
+    'the toggle is display:none by default and only shown inside the mobile query (source order matters)');
+  g(/section\[data-mcol="closed"\] \.mcol-body \{ display: none; \}/.test(html),
+    'folding hides the body only — the section, its heading and its anchors stay on the page');
+  g(/mcolOpen\(t\)/.test(html) && /if \(t\) mcolOpen\(t\)/.test(html),
+    'both navigation paths unfold a folded section instead of scrolling to a hidden element');
+  g(/sec\.querySelectorAll\('\.reveal'\)\.forEach\(r => r\.classList\.add\('in'\)\)/.test(html),
+    'unfolding marks the scroll-reveal elements shown (a folded block never triggers its observer)');
+}
 g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
   'any link into layer 2 opens it — one interception, not a per-link list');
 g(/const deepHost = t\.closest\('\.deep'\)/.test(html),

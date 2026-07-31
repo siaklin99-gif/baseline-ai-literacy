@@ -237,6 +237,36 @@ html[data-deep] { overflow: hidden; }           /* the page behind must not scro
   @keyframes deepIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 }
 
+/* ---------- mobile: the long optional sections start folded ----------
+   Desktop got shorter by becoming navigable (the rail below). Mobile has no rail and
+   stacks everything one-column, so the same page ran 8.9 screens against desktop's 6.2.
+   Folding is the mobile answer: a section that is OPTIONAL (a doorway, a self-test)
+   opens on a tap instead of being scrolled past.
+   The base rule is display:none so the toggle NEVER appears on desktop, and it sits
+   BEFORE the media query — equal specificity means source order decides, and a base
+   rule written after its own @media override silently wins (learned the hard way). */
+.mcol-toggle { display: none; }
+@media (max-width: 759px) {
+  .mcol-toggle {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; margin-top: 16px; padding: 15px 16px; min-height: 48px;   /* 44px+ tap target */
+    background: var(--surface); border: 1px solid var(--border-med);
+    border-radius: var(--radius); color: var(--text);
+    font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
+  }
+  .mcol-toggle:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+  .mcol-hint { color: var(--text-ter); font-size: 13px; font-weight: 500; }
+  .mcol-chev { color: var(--text-ter); font-size: 13px; transition: transform .18s ease; }
+  section[data-mcol="open"] .mcol-chev { transform: rotate(180deg); }
+  /* Folded, not deleted: the content stays in the DOM so it is still crawlable, still
+     findable by in-page search, and every #anchor into it still resolves. */
+  section[data-mcol="closed"] .mcol-body { display: none; }
+  section[data-mcol] .ssub { margin-bottom: 0; }
+}
+@media (max-width: 759px) and (prefers-reduced-motion: reduce) {
+  .mcol-chev { transition: none; }
+}
+
 /* ---------- desktop rail: the page stops being long by becoming navigable ---------- */
 .rail { display: none; }
 @media (min-width: 1180px) {
@@ -1601,24 +1631,28 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
 </section>
 
 <!-- ============ GO DEEPER — the doorway to layer 2 ============ -->
-<section id="deeper">
+<section id="deeper" data-mcol data-mcol-label="See the doors" data-mcol-hint="5 doors">
   <div class="wrap">
     <div class="slabel">When you want more</div>
     <h2 class="stitle">Go deeper, one door at a time</h2>
     <!-- No count in this sentence. It said "these four" for one commit after a fifth door
          shipped: every check passed, because a correct page can still say a false thing. -->
     <div class="ssub">The essentials are above. Each of these opens on top of the page, so you can look at one without losing your place — close it and you're back exactly where you were.</div>
-    <div class="deep-grid" id="deepGrid"></div>
+    <div class="mcol-body">
+      <div class="deep-grid" id="deepGrid"></div>
+    </div>
   </div>
 </section>
 
 <!-- ============ SELF-QUIZ ============ -->
-<section id="quizsec">
+<section id="quizsec" data-mcol data-mcol-label="Take the check" data-mcol-hint="9 questions">
   <div class="wrap">
     <div class="slabel">Before you go</div>
     <h2 class="stitle">Check your baseline</h2>
     <div class="ssub">Nine quick yes-or-no questions. Pick an answer and see how you did — some are yes, some are no. Get them all and you're ahead of most of the internet.</div>
-    <div id="quiz"></div>
+    <div class="mcol-body">
+      <div id="quiz"></div>
+    </div>
   </div>
 </section>
 
@@ -2396,6 +2430,7 @@ function lcNavigate(i) {
   // section the current start-path tucked away scrolls to a display:none element and
   // looks broken. Navigation must always beat filtering.
   if (t.closest('.path-off') && window.baselineShowAll) window.baselineShowAll();
+  mcolOpen(t);                       // a folded mobile section must unfold, not be scrolled to
   // four of the seven steps point into layer 2 — open it rather than scrolling to a
   // hidden element, which is what "the step does nothing" would have looked like
   const deepHost = t.closest('.deep');
@@ -2557,6 +2592,7 @@ lcUpdate();
     const id = a.getAttribute('href') ? a.getAttribute('href').slice(1) : a.dataset.card;
     const t = id && document.getElementById(id);
     if (t && t.closest('.path-off')) window.baselineShowAll();
+    if (t) mcolOpen(t);              // same for the folded mobile sections
   }, true);
 
   chips.forEach(c => c.addEventListener('click', () => {
@@ -2726,6 +2762,67 @@ function reveal(target, host) {
     const host = sec && sec.closest('.deep');
     if (host) setTimeout(() => { deepOpen(host.id, false); reveal(sec, host); }, 60);
   }
+})();
+
+/* ---------- mobile: fold the long optional sections ----------
+   Mobile ran 8.9 screens to desktop's 6.2 — no rail, and every desktop row becomes a
+   stacked column. The doorway and the self-test are the two longest blocks and both are
+   OPTIONAL, so on a phone they start folded behind a labelled tap target.
+
+   Folded, never removed. The markup ships OPEN and JS closes it, so a reader with no JS
+   (and every crawler) still gets the whole page, and desktop never sees a toggle at all.
+   Anything that navigates INTO a folded section must unfold it first — otherwise a link
+   scrolls to a display:none element and reads as a dead link, which is exactly how the
+   start-path filter broke before it. */
+function mcolOpen(el) {
+  const sec = el && el.closest && el.closest('section[data-mcol]');
+  if (!sec || sec.dataset.mcol !== 'closed') return false;
+  sec.dataset.mcol = 'open';
+  const btn = sec.querySelector('.mcol-toggle');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+  // A folded block never scrolled past the viewport, so its IntersectionObserver never
+  // fired and every .reveal inside would stay at opacity 0 — content that unfolds into
+  // nothing. Mark them shown at the moment of opening.
+  sec.querySelectorAll('.reveal').forEach(r => r.classList.add('in'));
+  return true;
+}
+window.baselineUnfold = mcolOpen;
+(function initMobileFold(){
+  const secs = [...document.querySelectorAll('section[data-mcol]')];
+  if (!secs.length) return;
+  const phone = matchMedia('(max-width: 759px)');
+  secs.forEach(sec => {
+    const body = sec.querySelector('.mcol-body');
+    const sub  = sec.querySelector('.ssub');
+    if (!body || !sub) return;
+    if (!body.id) body.id = sec.id + '-body';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'mcol-toggle';
+    btn.setAttribute('aria-controls', body.id);
+    const label = sec.dataset.mcolLabel || 'Show more';
+    const hint  = sec.dataset.mcolHint || '';
+    btn.innerHTML = `<span>${esc(label)}</span><span><span class="mcol-hint">${esc(hint)}</span> <span class="mcol-chev">▾</span></span>`;
+    btn.addEventListener('click', () => {
+      const nowClosed = sec.dataset.mcol !== 'closed';
+      if (nowClosed) { sec.dataset.mcol = 'closed'; btn.setAttribute('aria-expanded', 'false'); }
+      else mcolOpen(sec);
+    });
+    sub.insertAdjacentElement('afterend', btn);
+  });
+  const apply = () => secs.forEach(sec => {
+    const btn = sec.querySelector('.mcol-toggle');
+    if (phone.matches) {
+      if (!sec.dataset.mcol) { sec.dataset.mcol = 'closed'; if (btn) btn.setAttribute('aria-expanded', 'false'); }
+    } else {
+      // Rotating the phone, or a tablet crossing the breakpoint, must not leave content
+      // hidden on a layout that has no toggle to bring it back.
+      sec.removeAttribute('data-mcol-state');
+      sec.dataset.mcol = '';
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+  });
+  apply();
+  phone.addEventListener ? phone.addEventListener('change', apply) : phone.addListener(apply);
 })();
 
 /* ---------- desktop rail: index + scroll-spy + read-progress ----------

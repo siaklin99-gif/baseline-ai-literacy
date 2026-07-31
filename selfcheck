@@ -48,6 +48,7 @@ if [ "${1:-}" = "--full" ]; then
   step "runtime: return loop + spaced repetition"  node test/return-loop.runtime.js
   step "runtime: paths, playground, labs, tally"   node test/features.runtime.js
   step "runtime: layer 2 (deep sections open on top)" node test/layer2.runtime.js
+  step "runtime: mobile fold (long optional sections)" node test/mobilefold.runtime.js
 elif [ "${1:-}" = "--live" ]; then
   step "source⇄live parity (fetches the deployed site)" node parity.js
 else

@@ -40,9 +40,29 @@ SELF_OUT="$(mktemp)"; trap 'rm -f "$SELF_OUT"' EXIT
 # checks"). That number goes stale every time a check is added, and a stale claim on a
 # page about honesty is the worst place to have one. Compare it to what selfcheck just
 # reported: warn on a plain sync, FAIL on --deploy (an untrue claim must not go live).
-CHECKS="$(grep -oE '^[0-9]+ checks' "$SELF_OUT" | grep -oE '^[0-9]+' | awk '{s+=$1} END{print s+0}')"
+# `|| true`: under `set -euo pipefail` a grep that matches nothing exits 1, pipefail
+# propagates it, and set -e then killed the whole script ON THE ASSIGNMENT — no message,
+# no verdict, exit 1. The very failure mode ("a verdict with no reason") that was just
+# fixed in the host repo's selfcheck. Let it yield 0 and be reported below instead.
+CHECKS="$(grep -oE '^[0-9]+ checks' "$SELF_OUT" | grep -oE '^[0-9]+' | awk '{s+=$1} END{print s+0}' || true)"
 CLAIMED="$(grep -oE 'Ships behind [0-9]+ automated checks' "$SITE/index.html" 2>/dev/null | grep -oE '[0-9]+' || true)"
-if [[ -n "$CLAIMED" && "$CHECKS" -gt 0 && "$CLAIMED" != "$CHECKS" ]]; then
+# A COUNT OF ZERO IS NOT AGREEMENT. This used to read `CHECKS -gt 0` as a precondition
+# for FAILING, so a zero — selfcheck output that could not be parsed, a renamed summary
+# line, a harness that died before printing one — fell through to the else branch and
+# printed "✓ homepage claim matches selfcheck (0 checks)". The one gate standing between
+# a false public claim and production announced agreement when it had compared nothing.
+# Unparseable is now its own outcome, and on --deploy it stops the ship.
+if [[ -z "$CLAIMED" ]]; then
+  echo "  (no check-count claim found on the homepage — nothing to verify)"
+elif [[ "$CHECKS" -eq 0 ]]; then
+  echo
+  echo "⚠  CANNOT VERIFY THE CLAIM: no '<n> checks' lines were parsed from selfcheck's output."
+  echo "   The homepage says \"$CLAIMED automated checks\". That may be true — this run cannot tell."
+  if [[ $DEPLOY -eq 1 ]]; then
+    echo "   Refusing to deploy an unverifiable claim. (Plain ./sync_hlur.sh only warns.)"
+    exit 1
+  fi
+elif [[ "$CLAIMED" != "$CHECKS" ]]; then
   echo
   echo "⚠  CLAIM DRIFT: hlur.ai homepage says \"$CLAIMED automated checks\"; selfcheck reports $CHECKS."
   echo "   Fix the Baseline card receipt in $SITE/index.html"
@@ -51,7 +71,7 @@ if [[ -n "$CLAIMED" && "$CHECKS" -gt 0 && "$CLAIMED" != "$CHECKS" ]]; then
     exit 1
   fi
 else
-  [[ -n "$CLAIMED" ]] && echo "  ✓ homepage claim matches selfcheck ($CHECKS checks)"
+  echo "  ✓ homepage claim matches selfcheck ($CHECKS checks)"
 fi
 
 mkdir -p "$DEST"

@@ -9,68 +9,21 @@
    Clean input was already covered by verify.js — these are the
    tests that earn trust (Adversarial Test Rule).
    ============================================================ */
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
 
 let fails = 0, checks = 0;
 const eq = (got, want, m) => { checks++; if (JSON.stringify(got) === JSON.stringify(want)) console.log('  \x1b[32m✓\x1b[0m ' + m); else { fails++; console.log(`  \x1b[31m✗ ${m}\n      got:  ${JSON.stringify(got)}\n      want: ${JSON.stringify(want)}\x1b[0m`); } };
 const truthy = (got, m) => { checks++; if (got) console.log('  \x1b[32m✓\x1b[0m ' + m); else { fails++; console.log(`  \x1b[31m✗ ${m} (got ${JSON.stringify(got)})\x1b[0m`); } };
 
-/* ---- tiny DOM stub: enough for index.html's inline script to run headless ---- */
-function stubEl() {
-  const t = { style: {}, dataset: {}, children: [],
-    classList: { toggle() {}, add() {}, remove() {} } };
-  return new Proxy(t, {
-    get(o, k) {
-      if (k in o) return o[k];
-      if (['appendChild','addEventListener','removeAttribute','setAttribute','toggleAttribute','scrollIntoView','click','remove','after','before','append','prepend'].includes(k)) return () => {};
-      if (k === 'getAttribute') return () => null;
-      if (k === 'getBoundingClientRect') return () => ({ left: 0, right: 0, top: 0, width: 0, height: 0 });
-      if (k === 'offsetHeight' || k === 'offsetWidth') return 0;
-      if (k === 'querySelector') return () => stubEl();
-      if (k === 'querySelectorAll') return () => [];
-      return undefined;
-    },
-    set(o, k, v) { o[k] = v; return true; }
-  });
-}
-
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-// the inline script is the only <script> with NO attributes
-const m = html.match(/<script>\n([\s\S]*?)<\/script>/);
-if (!m) { console.log('\x1b[31mCould not locate inline script in index.html\x1b[0m'); process.exit(1); }
-
-// load data.js (defines window.BASELINE_DATA), then the page script, in one sandbox
-const dataSrc = fs.readFileSync(path.join(__dirname, '..', 'data.js'), 'utf8');
-const sandbox = {
-  document: { getElementById: () => stubEl(), createElement: () => stubEl(), createElementNS: () => stubEl(),
-              querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl(),
-              // the page attaches a document-level click listener (reveal-on-link for hidden
-              // path sections); the stub needs it or loading the page functions throws
-              addEventListener: () => {}, removeEventListener: () => {},
-              documentElement: stubEl() },
-  localStorage: { getItem: () => null, setItem() {} },
-  console: { log() {}, warn() {}, error() {} },
-  getComputedStyle: () => ({ paddingLeft: '0px', display: 'block' }),
-  requestAnimationFrame: () => 0,
-  addEventListener: () => {},
-  // browser timer globals the page uses (animated flow); no-op stubs for the headless harness
-  setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
-  // PWA globals (service worker registration guards on these)
-  navigator: {}, location: { protocol: 'file:', search: '' }, URLSearchParams,
-  btoa: (s) => Buffer.from(s, 'binary').toString('base64'),
-  atob: (s) => Buffer.from(s, 'base64').toString('binary'),
-  unescape, escape, encodeURIComponent, decodeURIComponent,
-  Date, JSON, Math, parseInt, parseFloat,
-};
-sandbox.window = sandbox;
-vm.createContext(sandbox);
-// expose the functions we want to test onto the sandbox global
-const bootstrap = dataSrc + '\n' + m[1] + '\n;this.__api = { esc, daysSince, renderList, dataCard, STALE_DAYS };';
-try { vm.runInContext(bootstrap, sandbox); }
+/* Uses the SHARED loader. This file used to carry its own copy of the sandbox — and the
+   two promptly drifted: the desktop rail's scroll-spy reads innerHeight, which only the
+   shared copy had, so every unit test here died with an unrelated-looking error while
+   claims_harness.js passed. One loader, one place to fix. */
+const { loadPage } = require('./_load.js');
+let api;
+let sandbox;
+try { ({ api, sandbox } = loadPage()); }
 catch (e) { console.log('\x1b[31mFailed to load page functions: ' + e.message + '\x1b[0m'); process.exit(1); }
-const { esc, daysSince, renderList, dataCard, STALE_DAYS } = sandbox.__api;
+const { esc, daysSince, renderList, dataCard, STALE_DAYS } = api;
 
 console.log('\nBaseline adversarial unit tests\n-------------------------------');
 

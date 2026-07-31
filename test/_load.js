@@ -72,12 +72,19 @@ function loadPage(opts = {}) {
   const sandbox = {
     document: { getElementById: () => stubEl(), createElement: () => stubEl(), createElementNS: () => stubEl(),
                 querySelector: () => stubEl(), querySelectorAll: () => [], head: stubEl(), body: stubEl(),
-                addEventListener: () => {}, removeEventListener: () => {}, documentElement: stubEl() },
+                addEventListener: () => {}, removeEventListener: () => {}, documentElement: stubEl(),
+                // the rail's scroll-spy reads scrollingElement; without it the page script
+                // throws on load and every test reports an unrelated-looking failure
+                scrollingElement: { scrollTop: 0, scrollHeight: 5000, clientHeight: 900, clientWidth: 1440, scrollWidth: 1440 },
+                fonts: { ready: Promise.resolve() } },
     localStorage: storage,
     console: { log() {}, warn() {}, error() {} },
     getComputedStyle: () => ({ paddingLeft: '0px', display: 'block' }),
     requestAnimationFrame: () => 0,
     addEventListener: () => {},
+    // the desktop rail's scroll-spy reads these; without them the whole page script
+    // fails to load and every unit test dies with an unrelated-looking error
+    innerHeight: 900, innerWidth: 1440, scrollY: 0, scrollX: 0, scrollTo: () => {},
     setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
     navigator: { sendBeacon: (url, body) => { beacons.push({ url, body }); return true; } },
     location: { protocol: 'https:', search: '', hostname: opts.host || 'example.test', hash: '' },

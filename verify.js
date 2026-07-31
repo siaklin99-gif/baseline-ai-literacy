@@ -497,7 +497,19 @@ g(html.includes("id=\"pathFocus\"") && /Show just this path/.test(html),
   'focusing is an explicit, labelled choice the reader makes');
 g(/only the PATH is restored, never the focused state/.test(html),
   'a returning visitor always lands on the complete page (focus is never persisted)');
-g(/id="lab-checking" open/.test(html), 'Lab 002 is expanded by default, like Lab 001');
+g(/id="lab-checking" open/.test(html) && !/id="lab-prompting" open/.test(html),
+  'newest lab open, older one collapsed (Labs was the tallest block on desktop)');
+// The desktop rail: nine sections at ~1 screen each is 11 screens of scrolling and none of
+// it is fat, so the answer is navigability, not cutting content (Stripe/MDN/Tailwind).
+// Entries MUST be derived from the DOM — a hand-list is how #howllm went missing from the
+// visual harness for a week.
+g(html.includes('id="rail"') && html.includes('id="railNav"'), 'desktop rail present');
+g(/document\.querySelectorAll\('section\[id\]'\)/.test(html) && /secs\.map\(sec =>/.test(html),
+  'rail entries are derived from the sections on the page, never hand-listed');
+g(/@media \(min-width: 1180px\)/.test(html) && /\.rail \{ display: none; \}/.test(html),
+  'rail is desktop-only — mobile keeps its swipe decks untouched');
+g(html.includes('window.baselineRailTicks'), 'rail mirrors the learning-circle ticks (one idea of progress, not two)');
+g(/const line = innerHeight \* 0\.32/.test(html), 'scroll-spy picks the section at the reading line, not an arbitrary intersecting one');
 // the clips are SHOWN now, not two text links nobody found. Each must have a poster and
 // preload="none", or four videos would silently cost every visitor bandwidth on load.
 {

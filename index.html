@@ -180,6 +180,32 @@ a.xref { color: var(--accent); font-weight: 600; text-decoration: underline; tex
 
 /* ---------- section ---------- */
 section { padding: 44px 0; }
+/* ---------- desktop rail: the page stops being long by becoming navigable ---------- */
+.rail { display: none; }
+@media (min-width: 1180px) {
+  /* shift the whole document right so the rail never overlaps the reading column */
+  body { padding-left: 232px; }
+  .rail { display: block; position: fixed; top: 84px; left: 18px; width: 196px; z-index: 5; }
+  .rail-t { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-ter); margin: 0 0 10px 12px; }
+  .rail-nav { display: flex; flex-direction: column; gap: 1px;
+    max-height: calc(100vh - 190px); overflow-y: auto; }
+  .rail-a { display: block; padding: 7px 12px; border-radius: 7px; font-size: 13px;
+    line-height: 1.35; color: var(--text-sec); text-decoration: none;
+    border-left: 2px solid transparent; }
+  .rail-a:hover { background: var(--surface2); color: var(--text); }
+  .rail-a.on { background: var(--surface2); color: var(--text); font-weight: 700;
+    border-left-color: var(--accent); }
+  .rail-a .rail-done { color: var(--green); margin-left: 5px; font-weight: 700; }
+  .rail-foot { margin: 12px 0 0 12px; font-size: 12px; color: var(--text-ter); }
+  .rail-foot span { color: var(--text-sec); font-weight: 700; }
+  /* the rail gives orientation, so the per-section preamble can breathe less */
+  section { padding: 32px 0; }
+  .ssub { margin-bottom: 16px; }
+}
+@media (min-width: 1180px) and (prefers-reduced-motion: no-preference) {
+  .rail-a { transition: background .15s ease, color .15s ease; }
+}
 /* section identities so the lower page doesn't blur into one texture:
    reality = quiet full-width band; quiz = the try-panel's tinted wash (action bookends) */
 #reality { background: var(--surface2); }
@@ -929,6 +955,16 @@ footer { margin-top: 30px; }
 </header>
 
 <!-- ============ TRUST STRIP (grounded in real properties, no invented authority) ============ -->
+<!-- Desktop rail. Nine sections at ~1 screen each is 11.6 screens of scrolling, and none
+     of it is fat — so the fix is not to cut content but to stop making anyone travel past
+     what they did not come for. Same pattern as Stripe/MDN/Tailwind docs: a sticky index
+     with scroll-spy. Hidden below 1180px, where the mobile swipe decks already solve it. -->
+<aside class="rail" id="rail" aria-label="Sections of this page">
+  <div class="rail-t">On this page</div>
+  <nav class="rail-nav" id="railNav"></nav>
+  <div class="rail-foot"><span id="railPct">0%</span> read</div>
+</aside>
+
 <div class="trust" role="note" aria-label="Why you can trust this page">
   <div class="wrap">
     <span class="trust-pill">Free · no signup</span>
@@ -1443,7 +1479,7 @@ print(round(weight, 3))         <span class="cm"># → ~0.0, the valley floor</s
     <h2 class="stitle">Baseline Labs</h2>
     <div class="ssub">The page above is the foundation. Labs are where you practice — one skill each, built as an exercise, not an essay.</div>
 
-    <details class="card feature" id="lab-prompting" open>
+    <details class="card feature" id="lab-prompting">
       <summary>
         <div class="idx">🧪</div>
         <div class="head"><div class="t">Lab 001 · Prompting mastery</div><div class="s">The one skill that upgrades every answer you get · shipped 2026-07-29</div></div>
@@ -2336,6 +2372,18 @@ function lcUpdate() {
     row.querySelector('.lc-check').setAttribute('aria-pressed', lcDone[i] ? 'true' : 'false');
   });
   document.getElementById('lcReset').hidden = (n === 0);   // only show once there's something to reset
+  // ONE idea of progress: the rail shows the same ticks rather than inventing its own.
+  // CIRCLE[i][2] is an anchor ('#layers', '#card-15min'); map it to the section it lives in.
+  if (window.baselineRailTicks) {
+    const done = new Set();
+    lcDone.forEach((d, i) => {
+      if (!d) return;
+      const t = document.querySelector(CIRCLE[i][2]);
+      const sec = t && t.closest('section[id]');
+      if (sec) done.add(sec.id);
+    });
+    window.baselineRailTicks(done);
+  }
 }
 document.getElementById('lcReset').addEventListener('click', () => {
   lcDone = Array(CIRCLE.length).fill(false);
@@ -2436,6 +2484,57 @@ lcUpdate();
     // always lands on the complete page.
     if (saved && PATHS[saved]) apply(saved);
   } catch (e) {}
+})();
+
+/* ---------- desktop rail: index + scroll-spy + read-progress ----------
+   Entries are DERIVED from the sections on the page, never hand-listed — a hand-list is
+   how #howllm went missing from the visual harness for a week. If a section ships, it is
+   in the rail the same day. Ticks mirror the learning circle, so the rail doubles as
+   progress rather than being a second, competing idea of "where am I". */
+(function initRail(){
+  const nav = document.getElementById('railNav');
+  const pct = document.getElementById('railPct');
+  if (!nav) return;
+  // short labels: the section's own <h2>, trimmed to fit a 196px rail
+  const SHORT = { try: 'Do one thing', circle: 'Your learning circle', layers: 'What AI is — 10 layers',
+                  reality: "Can, can't & unreliable", bodysec: 'AI, mapped to a body',
+                  topics: 'Costs, privacy, jobs', howllm: 'How AI actually works',
+                  labs: 'Labs', quizsec: 'Check your baseline' };
+  const secs = [...document.querySelectorAll('section[id]')];
+  const links = secs.map(sec => {
+    const a = document.createElement('a');
+    a.className = 'rail-a';
+    a.href = '#' + sec.id;
+    a.textContent = SHORT[sec.id] || (sec.querySelector('.stitle') || {}).textContent || sec.id;
+    a.dataset.sec = sec.id;
+    nav.appendChild(a);
+    return a;
+  });
+
+  // scroll-spy: the section occupying the reading position wins. Cheap and exact —
+  // an IntersectionObserver with several sections on screen at once picks arbitrarily.
+  let ticking = false;
+  const spy = () => {
+    ticking = false;
+    const line = innerHeight * 0.32;                 // a third down: where the eye reads
+    let active = secs[0];
+    for (const sec of secs) { if (sec.getBoundingClientRect().top <= line) active = sec; }
+    links.forEach(a => a.classList.toggle('on', a.dataset.sec === active.id));
+    const d = document.scrollingElement;
+    const p = Math.min(100, Math.round(100 * d.scrollTop / Math.max(1, d.scrollHeight - innerHeight)));
+    if (pct) pct.textContent = p + '%';
+  };
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(spy); } }, { passive: true });
+  addEventListener('resize', () => { if (!ticking) { ticking = true; requestAnimationFrame(spy); } }, { passive: true });
+  spy();
+
+  // mirror the learning-circle ticks so there is ONE idea of progress, not two
+  window.baselineRailTicks = (done) => {
+    links.forEach(a => {
+      const old = a.querySelector('.rail-done'); if (old) old.remove();
+      if (done && done.has(a.dataset.sec)) a.insertAdjacentHTML('beforeend', '<span class="rail-done">✓</span>');
+    });
+  };
 })();
 
 /* ---------- copy-a-prompt buttons ---------- */

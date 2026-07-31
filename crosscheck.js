@@ -88,13 +88,18 @@ function assertionExpr(expected) {
     // gutter symmetry: for each major block, left gutter must equal right gutter
     // (this is the real "left/right in sync" property — robust to blocks that are
     //  intentionally different widths, e.g. the centered layers column)
+    // Measure symmetry within the READING AREA, not the viewport. The desktop rail is a
+    // fixed 232px column on the left; content is correctly centred in what remains, so
+    // measuring against the full viewport reported every block as 232px asymmetric — a
+    // true measurement of the wrong thing.
+    const railPad = parseFloat(getComputedStyle(document.body).paddingLeft) || 0;
     const vw = window.innerWidth;
     let maxAsym = 0, worstBlock = '';
     ['.hero .wrap', '#peel', '.pl-stage', '.cols', '#cards'].forEach(sel => {
       const e = document.querySelector(sel); if (!e) return;
       const r = e.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) return; // skip hidden elements
-      const a = Math.abs(Math.round(r.left) - Math.round(vw - r.right));
+      const a = Math.abs(Math.round(r.left - railPad) - Math.round(vw - r.right));
       if (a > maxAsym) { maxAsym = a; worstBlock = sel; }
     });
     // on mobile, the card sections are horizontal scroll-snap decks (layers use the peel stack;

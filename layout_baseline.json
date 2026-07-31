@@ -1,7 +1,7 @@
 {
   "desktop-1440:layers": 720,
   "desktop-1440": {
-    "wrapX": 250,
+    "wrapX": 366,
     "wrapW": 940,
     "grids": {
       "#cards .tg-deck": 2,
@@ -12,7 +12,7 @@
   },
   "desktop-1280:layers": 720,
   "desktop-1280": {
-    "wrapX": 170,
+    "wrapX": 286,
     "wrapW": 940,
     "grids": {
       "#cards .tg-deck": 2,

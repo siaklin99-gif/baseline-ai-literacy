@@ -7,10 +7,11 @@
      node tools/mobile-shots.js --list          what can be captured
      node tools/mobile-shots.js --out /tmp/x    somewhere other than mobile_shots/
 
-   NOT A TEST. Nothing here passes or fails — visual.js owns the pixel diff and
-   test/mobiledeck.runtime.js owns the behaviour. This exists because some things are
-   only visible to a person: whether a swipe deck looks inviting or truncated, whether
-   the dial reads as "you are here", whether a card is cramped. Run it, open the PNGs,
+   Runs in ./selfcheck --full as a SMOKE CHECK: each state's setup throws if its
+   section, deck, or door has vanished, so a renamed id or a deleted door fails the
+   run (exit 1, no PNG for that state). What it can NOT judge is whether a shot LOOKS
+   right — visual.js owns the pixel diff, test/mobiledeck.runtime.js owns the
+   behaviour, and the aesthetic verdict stays a human job. Run it, open the PNGs,
    look.
 
    Why a script and not a handful of ad-hoc screenshots: the states worth looking at are

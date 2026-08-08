@@ -49,6 +49,11 @@ if [ "${1:-}" = "--full" ]; then
   step "runtime: paths, playground, labs, tally"   node test/features.runtime.js
   step "runtime: layer 2 (deep sections open on top)" node test/layer2.runtime.js
   step "runtime: mobile swipe decks (sideways, not down)" node test/mobiledeck.runtime.js
+  # mobile-shots doubles as a smoke check: each state's setup THROWS if its section,
+  # deck, or door has vanished, and the tool exits 1 writing no PNG for it. It cannot
+  # judge whether a shot LOOKS right — that stays a human job; the fresh PNGs land in
+  # mobile_shots/ so the human has something current to look at.
+  step "mobile states capture cleanly (shots -> mobile_shots/)" node tools/mobile-shots.js
 elif [ "${1:-}" = "--live" ]; then
   step "source⇄live parity (fetches the deployed site)" node parity.js
 else

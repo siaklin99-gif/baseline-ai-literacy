@@ -34,11 +34,11 @@ window.BASELINE_DATA = {
       <p><strong>Rule of thumb:</strong> reach for a big flagship model for hard reasoning,
          coding and nuance; use a smaller/cheaper one for quick, high-volume, simple jobs.</p>
       <p style="opacity:.8">These are the main families as of mid-2026. Exact version numbers change
-         almost monthly — the products below don't. Start with one of the big-name ones — the free tier is fine; try an open-weight one later.</p>`,
+         almost monthly — the products below don't.</p>`,
     // { name, kind: "Paid"|"Open weight", best }
     list: [
-      {name:"ChatGPT", kind:"Paid · OpenAI", best:"Strong all-rounder for everyday writing, research and coding."},
-      {name:"Claude", kind:"Paid · Anthropic", best:"Great for careful writing and coding where accuracy matters."},
+      {name:"ChatGPT", kind:"Paid · OpenAI", best:"General-purpose; the most widely used. Positioned for everyday writing, research and coding."},
+      {name:"Claude", kind:"Paid · Anthropic", best:"Positioned around careful long-form writing and coding."},
       {name:"Gemini", kind:"Paid · Google", best:"Good all-rounder, ties into Google apps, handles very long documents."},
       {name:"Grok", kind:"Paid · xAI", best:"Chat assistant with live access to the current web and X posts."},
       {name:"Llama", kind:"Open weight · USA", best:"Meta's model — free to download and run yourself; solid general-purpose chat."},
@@ -62,8 +62,8 @@ window.BASELINE_DATA = {
     // { plan, cost, notes }
     list: [
       {plan:"Free tier", cost:"$0", notes:"Every major tool (ChatGPT, Claude, Gemini) has one, with tighter daily limits."},
-      {plan:"Typical paid plan", cost:"~$20/mo", notes:"ChatGPT Plus, Claude Pro, Google AI Pro — full access, higher limits. The usual pick."},
-      {plan:"Power-user tier", cost:"~$100–200/mo", notes:"ChatGPT Pro, Claude Max, Google AI Ultra — only if you hit the paid limits daily."},
+      {plan:"Typical paid plan", cost:"~$20/mo", notes:"The standard paid plan at every major provider — full access, higher limits."},
+      {plan:"Power-user tier", cost:"~$100–200/mo", notes:"The top tier at every major provider — only worth it if you hit the paid limits daily."},
       {plan:"Run open-weight yourself", cost:"$0 licence", notes:"No per-use fee, but you need a capable computer and pay for its power."}
     ]
   },
@@ -95,7 +95,7 @@ window.BASELINE_DATA = {
        why:"Free, self-paced, no math or coding — built for ordinary citizens. 2M+ learners.",
        url:"https://www.elementsofai.com/"},
       {title:"Co-Intelligence: Living and Working with AI", author:"Ethan Mollick", kind:"Book",
-       why:"Practical, day-to-day use of AI. Readable, but a bit more time-bound than the rest.",
+       why:"Practical, day-to-day use of AI, written around the tools as they stood at publication.",
        url:"https://www.penguinrandomhouse.com/books/741805/co-intelligence-by-ethan-mollick/"},
       {title:"The Alignment Problem", author:"Brian Christian", kind:"Book",
        why:"Deeper: why it's hard to make AI do what we intend, and where bias comes from.",

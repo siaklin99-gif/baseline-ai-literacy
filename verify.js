@@ -321,7 +321,20 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   (/section \{ padding: 44px 0; \}/.test(html) && /#reality \{ background: var\(--surface2\)/.test(html) && /#quizsec \{ background: linear-gradient/.test(html))
     ? ok('section rhythm: 44px gaps + reality band + quiz wash') : bad('section rhythm treatments missing');
   (!/0\.5px/.test(html)) ? ok('no 0.5px hairlines (render reliably everywhere)') : bad('0.5px borders back');
-  ((html.match(/class="trust-pill"/g) || []).length === 3) ? ok('trust strip is 3 short pills') : bad('trust strip bloated again');
+  // 3 -> 4 (2026-08-07): an independence pill. This page names products — three in
+  // the hero, eight in the model card, three more in the price card — and disclosed
+  // nothing, while the sibling site at hlur.ai/hub carries "nothing on this site is
+  // sponsored". Naming without disclosing was the real exposure, not the names.
+  ((html.match(/class="trust-pill"/g) || []).length === 4) ? ok('trust strip is 4 short pills') : bad('trust strip bloated again');
+  // The page may not name products without saying whose side it is on.
+  (/Nothing sponsored · no affiliate links/.test(html))
+    ? ok('independence disclosed on the page that names products')
+    : bad('this page names products but no longer discloses that nothing is sponsored');
+  // And the disclosure must stay TRUE: a tracking parameter on any outbound
+  // product link would make the pill a lie.
+  (!/https:\/\/(chatgpt\.com|claude\.ai|gemini\.google\.com)[^"]*[?&]/.test(html))
+    ? ok('outbound product links carry no affiliate/tracking parameters')
+    : bad('an outbound product link gained a query parameter — the independence pill would be false');
 }
 // keyboard a11y: the custom (non-native) controls must be operable without a mouse
 (html.includes("el.setAttribute('role', 'button')") && html.includes("el.setAttribute('tabindex', '0')") && /item\.addEventListener\('keydown'/.test(html))

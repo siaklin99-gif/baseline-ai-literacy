@@ -7,7 +7,7 @@
       "#cards .tg-deck": null,
       ".foot-cols": 3,
       ".path-pick": 4,
-      ".trust .wrap": 4
+      ".trust .wrap": 5
     }
   },
   "desktop-1280:layers": 720,
@@ -18,7 +18,7 @@
       "#cards .tg-deck": null,
       ".foot-cols": 3,
       ".path-pick": 4,
-      ".trust .wrap": 4
+      ".trust .wrap": 5
     }
   },
   "tablet-768:layers": 720,
@@ -29,7 +29,7 @@
       "#cards .tg-deck": null,
       ".foot-cols": 2,
       ".path-pick": 4,
-      ".trust .wrap": 4
+      ".trust .wrap": 5
     }
   },
   "mobile-390:layers": 390,

@@ -17,7 +17,12 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
-const SKIP = new Set(['node_modules', '.git', '.claude', 'crosscheck_shots']);
+// hlur-site: CI checks the PRIVATE host repo out INSIDE this workspace
+// (deploy-hlur.yml, DEST=$workspace/hlur-site/baseline). Its files are not
+// part of this repo and never ship with it — sweeping them fails the deploy
+// on content that was never going to be published (its review notes carry
+// home paths; the host repo's own harnesses guard its own content).
+const SKIP = new Set(['node_modules', '.git', '.claude', 'crosscheck_shots', 'hlur-site']);
 let fails = 0, checks = 0;
 const ok  = (m) => { checks++; console.log('  \x1b[32m✓\x1b[0m ' + m); };
 const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b[0m'); };

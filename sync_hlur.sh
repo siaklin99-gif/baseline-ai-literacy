@@ -45,7 +45,12 @@ SELF_OUT="$(mktemp)"; trap 'rm -f "$SELF_OUT"' EXIT
 # no verdict, exit 1. The very failure mode ("a verdict with no reason") that was just
 # fixed in the host repo's selfcheck. Let it yield 0 and be reported below instead.
 CHECKS="$(grep -oE '^[0-9]+ checks' "$SELF_OUT" | grep -oE '^[0-9]+' | awk '{s+=$1} END{print s+0}' || true)"
-CLAIMED="$(grep -oE 'Ships behind [0-9]+ automated checks' "$SITE/index.html" 2>/dev/null | grep -oE '[0-9]+' || true)"
+# ANCHORED ON THIS CARD'S WORDING. The homepage gained a second "Ships behind N
+# automated checks" receipt when AI Hub was added at /hub (2026-08-07). The plain
+# prefix matched both, so CLAIMED became two numbers on two lines ("225\n2190")
+# and could never equal a single CHECKS value — this gate would have refused
+# every future Baseline deploy, for a claim that was in fact correct.
+CLAIMED="$(grep -oE 'Ships behind [0-9,]+ automated checks; stale facts flag themselves' "$SITE/index.html" 2>/dev/null | grep -oE '[0-9,]+' | tr -d ',' || true)"
 # A COUNT OF ZERO IS NOT AGREEMENT. This used to read `CHECKS -gt 0` as a precondition
 # for FAILING, so a zero — selfcheck output that could not be parsed, a renamed summary
 # line, a harness that died before printing one — fell through to the else branch and

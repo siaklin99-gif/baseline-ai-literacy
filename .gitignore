@@ -3,3 +3,8 @@ crosscheck_shots/
 
 # visual diffs are run output, not source (references in visual_ref/ ARE committed)
 visual_diff/
+
+# Screenshots from tools/mobile-shots.js — for looking at, not baselines.
+# visual_ref/ holds the APPROVED images the pixel diff compares against and IS
+# committed; these are regenerable in ~40s and would only be confused with it.
+mobile_shots/

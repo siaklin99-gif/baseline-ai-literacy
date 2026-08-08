@@ -14,6 +14,28 @@ const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b
 
 function read(f){ return fs.readFileSync(path.join(__dirname, f), 'utf8'); }
 
+/* The Hlur host repo lives OUTSIDE this repo, and this repo is PUBLIC — so no
+   check may name it by absolute path (that publishes the author's machine
+   username and a private project's location; the exact leak AI_Hub treated as
+   a release blocker). Resolution order: HLUR_SITE (explicit override), $DEST/..
+   (CI, where DEST points at <host>/baseline), then the relative sibling
+   checkout. Absent everywhere => null, and every caller degrades to a loud
+   SKIP that still COUNTS (a check that only exists locally deadlocks the
+   homepage claim gate — see the note at the tally-function check). */
+function hlurFile(...seg) {
+  const roots = [
+    process.env.HLUR_SITE,
+    process.env.DEST && path.join(process.env.DEST, '..'),
+    path.join(__dirname, '..', 'LLC', 'Hlur_Website'),
+  ].filter(Boolean);
+  for (const r of roots) {
+    const p = path.join(r, ...seg);
+    try { if (fs.existsSync(p)) return p; } catch (e) {}
+  }
+  return null;
+}
+const HLUR_SKIP = 'host repo not found (set HLUR_SITE or check out the sibling)';
+
 console.log('\nBaseline verify\n---------------');
 
 /* ---------- 1. data.js loads as valid JS and has expected shape ---------- */
@@ -261,18 +283,14 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   // local=131 vs CI=130 → the claim gate blocked CI deploys). Locally the host repo is
   // the sibling checkout; in CI it's wherever DEST points; if truly absent, the check
   // still counts as an explicit skip.
-  const bdCandidates = [
-    process.env.DEST ? path.join(path.dirname(process.env.DEST), 'build_dist.js') : null,
-    '/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/build_dist.js',
-  ].filter(Boolean);
-  const bd = bdCandidates.find(p => fs.existsSync(p));
+  const bd = hlurFile('build_dist.js');
   if (bd) {
     const src = fs.readFileSync(bd, 'utf8');
     (/PWA_FILES/.test(src) && /sw\.js/.test(src))
       ? ok('host build ships + exempts the baseline PWA files')
       : bad('Hlur build_dist.js would strip or reject the PWA (sw.js/manifest/icons)');
   } else {
-    ok('host-build PWA check: host repo not present here (verified where it is)');
+    ok('host-build PWA check: SKIP — ' + HLUR_SKIP);
   }
 }
 // progress transfer: export/import round-trip code paths + validation
@@ -682,13 +700,8 @@ g(/mailto:hello@hlur\.ai\?subject=Baseline/.test(html), 'feedback no longer requ
 // 1 in CI deadlocks the claim gate forever — the exact bug this file already hit once at
 // ~line 250. The host repo lives at $DEST/.. in CI and beside this repo locally.
 {
-  const cands = [
-    process.env.DEST && path.join(process.env.DEST, '..', 'netlify/functions/tally.mjs'),
-    path.join(__dirname, '../LLC/Hlur_Website/netlify/functions/tally.mjs'),
-    '/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/netlify/functions/tally.mjs'
-  ].filter(Boolean);
-  const fnPath = cands.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
-  let why = 'host repo not present here — checked wherever it is';
+  const fnPath = hlurFile('netlify', 'functions', 'tally.mjs');
+  let why = 'SKIP — ' + HLUR_SKIP;
   let good = true;
   if (fnPath) {
     const fn = fs.readFileSync(fnPath, 'utf8');
@@ -733,18 +746,16 @@ g(html.includes('if (linked && el.contains(linked)) return;'),
 g(!/meaning of "animal\."/.test(html), 'stale "animal" from the canonical Transformer example is gone');
 {
   // both deploy paths publish a full snapshot: one missing --functions silently deletes the other's function
-  const dep = ['/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/deploy.sh',
-               process.env.DEST && path.join(process.env.DEST, '..', 'deploy.sh')]
-    .filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  const dep = hlurFile('deploy.sh');
   g(!dep || /--functions netlify\/functions/.test(fs.readFileSync(dep, 'utf8')),
-    'the host repo\'s own deploy path also ships functions (a snapshot deploy without it deletes them)');
+    dep ? 'the host repo\'s own deploy path also ships functions (a snapshot deploy without it deletes them)'
+        : 'host deploy.sh check: SKIP — ' + HLUR_SKIP);
 }
 {
-  const bd = ['/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/build_dist.js',
-              process.env.DEST && path.join(process.env.DEST, '..', 'build_dist.js')]
-    .filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  const bd = hlurFile('build_dist.js');
   g(!bd || /\\\.\[cm\]\?js\$/.test(fs.readFileSync(bd, 'utf8')),
-    'the publish-dir leak gate rejects .mjs/.cjs as well as .js');
+    bd ? 'the publish-dir leak gate rejects .mjs/.cjs as well as .js'
+       : 'publish-dir leak-gate check: SKIP — ' + HLUR_SKIP);
 }
 
 /* ---------- result ---------- */

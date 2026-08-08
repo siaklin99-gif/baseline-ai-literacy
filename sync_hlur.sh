@@ -24,8 +24,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # DEST is overridable so CI runs THIS script rather than a duplicate in YAML.
-# Locally it defaults to the checkout on this machine.
-DEST="${DEST:-/Users/siaklin/Documents/Claude/Projects/LLC/Hlur_Website/baseline}"
+# Locally it defaults to the SIBLING checkout, resolved relative to this repo —
+# never by absolute path: this repo is public, and an absolute default published
+# the author's machine username and a private project's location (the leak class
+# test/invariants.js now sweeps for). A missing sibling fails loudly below.
+DEST="${DEST:-$(pwd)/../LLC/Hlur_Website/baseline}"
+[[ -d "$(dirname "$DEST")" ]] || { echo "❌ host repo not found at $(dirname "$DEST") — set DEST explicitly"; exit 1; }
 SITE="$(dirname "$DEST")"
 DEPLOY=0
 [[ "${1:-}" == "--deploy" ]] && DEPLOY=1

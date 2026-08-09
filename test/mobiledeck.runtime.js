@@ -173,6 +173,36 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     ? ok('desktop unchanged: the doorway is still a grid with all 5 doors visible, no deck, no dots')
     : bad('desktop leaked the mobile deck: '+JSON.stringify(r));
 
+  /* ---- the stack walkthrough: it must step, draw, and end on the honest note ---- */
+  await nav();
+  r=await ev(`(async function(){
+    document.querySelector('[data-deep-open="bodysec"]').click();
+    await new Promise(r=>setTimeout(r,250));
+    const chips=[...document.querySelectorAll('.stk-chip')];
+    const card=document.getElementById('stkCard');
+    const first=card.querySelector('h4').textContent;
+    // walk to the last piece the way a reader does — by pressing Next
+    for (let i=0;i<4;i++){ card.querySelector('.stk-next').click(); await new Promise(r=>setTimeout(r,90)); }
+    const last=card.querySelector('h4').textContent;
+    const sel=chips.findIndex(c=>c.getAttribute('aria-selected')==='true');
+    const chipR=chips[sel].getBoundingClientRect(), railR=document.getElementById('stkRail').getBoundingClientRect();
+    // the agent must be drawn as a bracket around the tools, and lit at step 5
+    const loop=document.querySelector('.stk-loop');
+    const nodes=[...document.querySelectorAll('.stk-node')].length;
+    // finish: the reply and the caveat only appear after the last press
+    const outBefore=document.getElementById('stkOut').textContent;
+    card.querySelector('.stk-next').click(); await new Promise(r=>setTimeout(r,90));
+    return {first,last,sel,nodes,
+      loopLit: loop.classList.contains('on'),
+      chipInView: chipR.left>=railR.left-1 && chipR.right<=railR.right+1,
+      outBefore: outBefore.slice(0,20),
+      outAfter: document.getElementById('stkOut').textContent.slice(0,20),
+      honest: document.getElementById('stkHonest').textContent.length};})()`);
+  (r.first==='LLM' && r.last==='Agent' && r.sel===4 && r.nodes===4 && r.loopLit &&
+   r.chipInView && /Step through/.test(r.outBefore) && /Sorry about that/.test(r.outAfter) && r.honest>80)
+    ? ok(`the walkthrough steps LLM → Agent, lights the agent LOOP around ${r.nodes} tool rows, keeps the active chip in view, and only reveals the reply + the "it can be wrong" note at the end`)
+    : bad('stack walkthrough: '+JSON.stringify(r));
+
   console.log('----------------------------');
   console.log(`${checks} checks, ${fails} failure(s)`);
   try{ws.close();}catch{} chrome.kill('SIGKILL');

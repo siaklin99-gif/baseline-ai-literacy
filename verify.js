@@ -637,6 +637,37 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
   g(/\.lc-node\.cur circle:not\(\.lc-hit\)/.test(html),
     'the current step is marked on the ring — a one-at-a-time deck otherwise loses "where am I"');
 }
+/* ---- the stack walkthrough: the five parts DOING one job ---- */
+{
+  const stk = (html.match(/const STACK = \[[\s\S]*?\n\];/) || [''])[0];
+  const names = [...stk.matchAll(/name: '([^']+)'/g)].map(m => m[1]);
+  g(names.join(',') === 'LLM,RAG,MCP,API,Agent',
+    `the walkthrough runs the five pieces in the order they act (${names.join(' → ') || 'none'})`);
+  // ONE METAPHOR. The body map above already calls these the brain / a book in hand /
+  // the nervous system / ears and mouth / the hands. If the walkthrough invents its own
+  // words the reader ends up holding two mental models of the same five things and
+  // trusting neither — so the role strings must be the SAME strings.
+  const roles = [...stk.matchAll(/role: '([^']+)'/g)].map(m => m[1]);
+  const bodymap = (html.match(/const BODYMAP = \[[\s\S]*?\n\];/) || [''])[0] || html;
+  const orphan = roles.filter(r => !bodymap.includes(r));
+  g(roles.length === 5 && orphan.length === 0,
+    `the walkthrough reuses the body map's own words — no second metaphor${orphan.length ? ' (orphans: ' + orphan.join(', ') + ')' : ''}`);
+  // The agent is the LOOP, not a sixth step after the tools. Both the words and the
+  // drawing must say so: a straight chain ending in "agent" teaches the wrong shape,
+  // which is exactly what the diagram this was built from got wrong.
+  g(/is not the last step/.test(stk) && /the <em>loop<\/em>/.test(stk),
+    'the Agent step says plainly that it is the loop, not the final step');
+  g(/<g class="stk-loop\$\{cur === 4 \? ' on' : ''\}">/.test(html) &&
+    /stk-loop rect \{ fill: none/.test(html),
+    'the flow draws the agent as a bracket AROUND the tools it drives, not a box after them');
+  g(/const STACK_HONEST = 'Every step above is also a place it can be <b>wrong<\/b>/.test(html),
+    'the walkthrough ends on where it breaks, not on how clever it is');
+  // Placement matters: it completes the body map's own promise ("parts that work
+  // together"), so it belongs in that door rather than as a competing section.
+  const bodysec = (html.match(/<section id="bodysec"[\s\S]*?<\/section>/) || [''])[0];
+  g(bodysec.includes('id="stk"'),
+    'the walkthrough lives inside the body-map door — one door, one set of ideas');
+}
 g(/const host = t && t\.closest\('\.deep'\)/.test(html) && /deepOpen\(host\.id\)/.test(html),
   'any link into layer 2 opens it — one interception, not a per-link list');
 g(/const deepHost = t\.closest\('\.deep'\)/.test(html),
@@ -709,7 +740,13 @@ g(/mailto:hello@hlur\.ai\?subject=Baseline/.test(html), 'feedback no longer requ
     // its own documentation as a violation is a false positive, not a check
     const code = fn.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
     const parts = [
-      [/const EVENTS = \['load'/.test(code) && /EVENTS\.includes\(e\)/.test(code), 'allowlists events server-side'],
+      // Two accepted shapes. The host repo moved to a per-SITE allowlist (SITES[key].events)
+      // so /hub could count too, which broke this guard while the function was MORE correct,
+      // not less. Both forms are checked the same way: a hardcoded list in the function, and
+      // a membership test on the incoming event. Never relax this to "a list exists".
+      [(/const EVENTS = \['load'/.test(code) && /EVENTS\.includes\(e\)/.test(code)) ||
+       (/events: \['load'/.test(code) && /\.events\.includes\(e\)/.test(code)),
+       'allowlists events server-side'],
       // Origin names a SITE, not a person, and is used only to reject cross-site posts —
       // so reading it is allowed. Anything that identifies a HUMAN stays banned, and the
       // header value must never reach the store either.

@@ -938,6 +938,90 @@ footer { margin-top: 30px; }
 /* progress dots for the mobile swipe decks — hidden on desktop */
 .dots { display: none; }
 
+/* ---------- the stack walkthrough: the parts DOING one job ----------
+ The body map names the parts; this shows the same parts working, in order, on one
+ relatable job. Kept inside #bodysec on purpose — one door, one metaphor. */
+.stk { margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--border); }
+.stk-lab { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+color: var(--text-ter); margin-bottom: 6px; }
+.stk-h { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 6px; }
+.stk-sub { color: var(--text-sec); margin-bottom: 14px; }
+.stk-ask { background: var(--surface); border: 1px solid var(--border-med);
+border-radius: var(--radius); padding: 13px 15px; }
+.stk-ask b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em;
+text-transform: uppercase; color: var(--text-ter); margin-bottom: 5px; }
+.stk-ask p { font-size: 16px; }
+/* the rail scrolls sideways on a phone; the active chip is scrolled into view by JS,
+ because a highlight you cannot see is not a highlight */
+.stk-rail { display: flex; gap: 6px; margin: 14px 0 12px; overflow-x: auto;
+scrollbar-width: none; padding-bottom: 2px; }
+.stk-rail::-webkit-scrollbar { display: none; }
+.stk-chip { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 8px 13px;
+min-height: 44px; border: 1px solid var(--border-med); border-radius: 999px;
+background: var(--surface); color: var(--text-sec); font: inherit; font-size: 13px;
+font-weight: 600; cursor: pointer; white-space: nowrap; }
+.stk-chip .n { font-size: 11px; opacity: .7; }
+/* Solid --g1, not the gradient: the circle dial's "you are here" ring already marks the
+ current step that way, and the gradient budget exists so the identity stays a signal
+ rather than wallpaper. One marker style for one job. */
+.stk-chip[aria-selected="true"] { background: var(--g1); color: #fff; border-color: transparent; }
+.stk-chip:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.stk-card { background: var(--surface); border: 1px solid var(--border-med);
+border-radius: var(--radius); padding: 17px; display: flex; flex-direction: column; gap: 11px; }
+.stk-head { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.stk-head .em { font-size: 21px; }
+.stk-head h4 { font-size: 18px; font-weight: 700; }
+.stk-head .role { font-size: 13px; color: var(--text-ter); }
+.stk-plain { font-size: 16px; line-height: 1.55; }
+.stk-does { background: var(--surface2); border-radius: var(--radius-sm);
+padding: 10px 12px; font-size: 14px; color: var(--text-sec); }
+.stk-does b { color: var(--text); font-weight: 700; }
+/* the mask fades the right edge so a clipped line reads as "scrolls" not "broken" */
+.stk-wire { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+color: var(--text-sec); background: var(--surface2); border-radius: var(--radius-sm);
+padding: 9px 11px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+-webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+        mask-image: linear-gradient(90deg, #000 88%, transparent); }
+.stk-wire::-webkit-scrollbar { display: none; }
+.stk-without { border-left: 3px solid var(--amber); background: var(--amber-bg);
+color: var(--amber); padding: 9px 12px; font-size: 14px;
+border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.stk-nav { display: flex; gap: 8px; margin-top: 2px; }
+.stk-nav button { flex: 1; min-height: 44px; border-radius: 999px; border: 1px solid var(--border-med);
+background: var(--surface); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+.stk-nav button.go { background: var(--text); color: var(--bg); border-color: transparent; }
+/* NOT opacity. Fading a button to .4 dropped "← Back" to 2.73:1 in dark mode — the
+ visual harness caught it and refused to record references, which is exactly what it is
+ for. --text-ter is the one muted token documented as AA on every surface the page uses,
+ so the disabled state reads as disabled without becoming unreadable. */
+.stk-nav button:disabled { color: var(--text-ter); border-color: var(--border); cursor: default; }
+.stk-flow { margin-top: 14px; background: var(--surface); border: 1px solid var(--border-med);
+border-radius: var(--radius); padding: 13px; }
+/* Capped. A 336-unit viewBox stretched to a 1400px desktop column scaled the diagram
+   4x — "your message" rendered larger than the section heading. The drawing is a
+   diagram, not a hero. */
+.stk-flow svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+.stk-node rect { fill: var(--surface2); stroke: var(--border-med); stroke-width: 1; }
+.stk-node text { font: 600 11px -apple-system, system-ui, sans-serif; fill: var(--text-sec); }
+.stk-node.on rect { fill: url(#stkFg); stroke: transparent; }
+.stk-node.on text { fill: #fff; }
+.stk-edge { stroke: var(--border-med); stroke-width: 1.5; fill: none; }
+.stk-cap { font: 600 10px -apple-system, system-ui, sans-serif; fill: var(--text-ter); }
+/* the agent is drawn as a BRACKET around the tools it drives, not a box after them —
+ it is the loop, and a straight chain ending at "agent" teaches the wrong shape */
+.stk-loop rect { fill: none; stroke: var(--border-med); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.stk-loop text { font: 700 9px -apple-system, system-ui, sans-serif; fill: var(--text-ter); letter-spacing: .03em; }
+.stk-loop.on rect { stroke: var(--g2); stroke-width: 2.5; stroke-dasharray: none; }
+.stk-loop.on text { fill: var(--g2); }
+.stk-arrow { fill: none; stroke: var(--text-ter); stroke-width: 1.2; }
+.stk-out { margin-top: 13px; background: var(--surface); border: 1px solid var(--border-med);
+border-radius: var(--radius); padding: 13px 15px; }
+.stk-out b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em;
+text-transform: uppercase; color: var(--text-ter); margin-bottom: 5px; }
+.stk-honest { margin-top: 13px; font-size: 14px; color: var(--text-sec);
+border-left: 3px solid var(--border-med); padding-left: 12px; }
+@media (prefers-reduced-motion: reduce) { .stk-rail { scroll-behavior: auto; } }
+
 @media (max-width: 560px) {
   .wrap { padding: 0 18px; }
   .hero { padding: 44px 0 30px; }
@@ -1275,6 +1359,26 @@ footer { margin-top: 30px; }
         </g>
       </svg>
       <div id="bodymap"></div>
+    </div>
+
+    <!-- The body map above names the parts. This shows them DOING one job, because
+         "what is RAG" and "how does RAG connect to the rest" are different questions,
+         and the page only ever answered the first. Same metaphor as the figure — one
+         set of words for one set of ideas. -->
+    <div class="stk" id="stk">
+      <div class="stk-lab">Now watch them work</div>
+      <h3 class="stk-h">One late parcel, five pieces</h3>
+      <p class="stk-sub">You send one sentence. Five things happen before an answer comes back — and each has a name you keep hearing. Step through it once and they stop being jargon.</p>
+      <div class="stk-ask"><b>What you type</b><p>"Order 4521 still hasn't arrived. If it's more than 3 days late, I'd like a refund."</p></div>
+      <div class="stk-rail" id="stkRail" role="tablist" aria-label="The five pieces, in the order they act"></div>
+      <div class="stk-card" id="stkCard"></div>
+      <div class="stk-flow"><svg viewBox="0 0 336 238" aria-hidden="true">
+        <defs><linearGradient id="stkFg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--g1)"/><stop offset=".55" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g3)"/>
+        </linearGradient><marker id="stkAr" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--text-ter)"/></marker></defs>
+        <g id="stkFlow"></g></svg></div>
+      <div class="stk-out"><b>What comes back</b><p id="stkOut">Step through to see the reply.</p></div>
+      <p class="stk-honest" id="stkHonest"></p>
     </div>
   </div>
 </section>
@@ -2016,6 +2120,119 @@ CARDS.forEach((c, i) => {
     </summary><div class="content">${content}</div>`;
   (levelDeck[CARD_LEVELS[i]] || cardsRoot).appendChild(d);
 });
+
+/* ---------- the stack walkthrough ----------
+   One relatable job, walked through piece by piece. The role words ("the brain", "a book
+   in hand") are the SAME ones the body map above uses — a second metaphor for the same
+   five ideas is how a reader ends up with two mental models and trusts neither.
+
+   The agent is deliberately NOT drawn as the last step. It is the loop that drives the
+   middle three, and a straight chain ending in "agent" teaches a shape that is wrong. */
+const STACK = [
+  { em: '🧠', name: 'LLM', role: 'the brain',
+    plain: 'It reads your sentence and works out what you actually want — two things, not one: where the parcel is, <em>and</em> a refund, but only if it is more than 3 days late.',
+    does: '<b>Understands the ask.</b> That is all it has done so far. It does not know your order, your shop, or its rules.',
+    without: 'On its own it would have to guess your order status — and it would guess confidently.' },
+  { em: '📚', name: 'RAG', role: 'a book in hand',
+    plain: 'Before answering, it looks up <em>this shop’s</em> actual rules — not what it half-remembers from the internet.',
+    does: '<b>Fetches the real policy.</b> Delivery promise: 5 days. Refunds are automatic once an order is 3+ days late.',
+    wire: 'search("refund policy", "delivery SLA") → 2 documents',
+    without: 'Without this it answers from memory, and every shop’s refund rules are different.' },
+  { em: '🕸️', name: 'MCP', role: 'the nervous system',
+    plain: 'The wiring that lets the brain reach the shop’s systems at all — one standard plug shape instead of a custom cable per system.',
+    does: '<b>Exposes the tools.</b> Order system, customer records, email — all reachable the same way.',
+    wire: 'tools available: orders · customers · refunds · email',
+    without: 'Without a standard, every single tool needs its own hand-built connection.' },
+  { em: '👂', name: 'API', role: 'ears and mouth',
+    plain: 'The actual asking and telling. This is the bit that touches real data — everything before it was just thinking.',
+    does: '<b>Asks, and gets a real answer.</b> Order 4521: shipped 6 days ago, not delivered.',
+    wire: 'GET /orders/4521 → shipped 6d ago, undelivered',
+    without: 'Without it the answer is a well-written guess about a parcel it never looked at.' },
+  { em: '✋', name: 'Agent', role: 'the hands',
+    plain: 'Here is the part everyone gets wrong: this is not the last step. It is the <em>loop</em> — it decides what to look up, reads the answer, decides again, and keeps going until the job is done. Steps 2 to 4 are what it reaches for.',
+    does: '<b>Decides, then does — repeatedly.</b> 6 days late is past the 3-day rule → refund issued → email sent → case logged. No one clicked through four screens.',
+    wire: 'POST /refunds · POST /email · POST /crm/log',
+    without: 'Without it you get a correct answer and a human still has to do the work.' },
+];
+const STACK_OUT = 'Sorry about that — 4521 shipped 6 days ago and hasn’t arrived, which is past our 3-day mark, so I’ve refunded it in full. Confirmation is on its way to you.';
+/* The page's whole promise is honesty, so the walkthrough must not end on "look how
+   clever". Every step above is also a failure point. */
+const STACK_HONEST = 'Every step above is also a place it can be <b>wrong</b>: the wrong policy pulled, the wrong order read, or the hands acting on a bad answer. The chain does not check itself — that is still your job.';
+
+(function initStack(){
+  const rail = document.getElementById('stkRail');
+  const card = document.getElementById('stkCard');
+  const flow = document.getElementById('stkFlow');
+  if (!rail || !card || !flow) return;
+  let cur = 0;
+
+  STACK.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'stk-chip'; b.setAttribute('role', 'tab');
+    b.innerHTML = `<span class="n">${i + 1}</span> ${esc(s.name)}`;
+    b.addEventListener('click', () => show(i));
+    rail.appendChild(b);
+  });
+
+  const NODES = [
+    { y: 30,  label: 'LLM · the brain',          idx: 0 },
+    { y: 92,  label: 'RAG · a book in hand',     idx: 1 },
+    { y: 130, label: 'MCP · the nervous system', idx: 2 },
+    { y: 168, label: 'API · ears and mouth',     idx: 3 },
+  ];
+  function drawFlow() {
+    let h = `<text class="stk-cap" x="168" y="12" text-anchor="middle">your message</text>`;
+    h += `<path class="stk-edge" d="M168 16 L168 28"/>`;
+    h += `<g class="stk-loop${cur === 4 ? ' on' : ''}">
+      <rect x="18" y="68" width="300" height="136" rx="12"/>
+      <text x="28" y="84">Agent · the hands — repeats until done</text>
+      <path class="stk-arrow" d="M302 178 q14 -32 0 -66" marker-end="url(#stkAr)"/></g>`;
+    NODES.forEach(n => {
+      h += `<g class="stk-node${n.idx === cur ? ' on' : ''}">
+        <rect x="44" y="${n.y}" width="248" height="28" rx="8"/>
+        <text x="168" y="${n.y + 18}" text-anchor="middle">${n.label}</text></g>`;
+    });
+    h += `<path class="stk-edge" d="M168 58 L168 66"/>`;
+    h += `<path class="stk-edge" d="M168 204 L168 216"/>`;
+    h += `<text class="stk-cap" x="168" y="228" text-anchor="middle">refund done · email sent · case logged</text>`;
+    flow.innerHTML = h;
+  }
+
+  function show(i) {
+    cur = i;
+    const s = STACK[i], last = i === STACK.length - 1;
+    card.innerHTML = `
+      <div class="stk-head"><span class="em" aria-hidden="true">${s.em}</span>
+        <h4>${esc(s.name)}</h4><span class="role">${esc(s.role)}</span></div>
+      <p class="stk-plain">${s.plain}</p>
+      <div class="stk-does">${s.does}</div>
+      ${s.wire ? `<div class="stk-wire">${esc(s.wire)}</div>` : ''}
+      <div class="stk-without">${s.without}</div>
+      <div class="stk-nav">
+        <button type="button" class="stk-prev"${i === 0 ? ' disabled' : ''}>← Back</button>
+        <button type="button" class="stk-next go">${last ? 'See the reply' : 'Next →'}</button>
+      </div>`;
+    [...rail.children].forEach((b, k) => b.setAttribute('aria-selected', k === i ? 'true' : 'false'));
+    // Keep the active chip on screen: the rail scrolls sideways on a phone, and a
+    // highlight sitting off the edge tells the reader nothing.
+    // Guarded: the unit-test sandbox is a deliberately minimal DOM stub with no layout
+    // engine, so offsetLeft/scrollTo do not exist there. Page code that ASSUMES browser
+    // layout takes the whole test file down with an error that names none of this.
+    const chip = rail.children[i];
+    if (chip && typeof rail.scrollTo === 'function' && typeof chip.offsetLeft === 'number') {
+      rail.scrollTo({ left: Math.max(0, chip.offsetLeft - rail.offsetLeft - 12),
+                      behavior: REDUCE ? 'auto' : 'smooth' });
+    }
+    card.querySelector('.stk-prev').addEventListener('click', () => i && show(i - 1));
+    card.querySelector('.stk-next').addEventListener('click', () => {
+      if (!last) return show(i + 1);
+      document.getElementById('stkOut').textContent = STACK_OUT;
+      document.getElementById('stkHonest').innerHTML = STACK_HONEST;
+    });
+    drawFlow();
+  }
+  show(0);
+})();
 
 /* ---------- mobile swipe decks: progress dots ---------- */
 /* Adds a dots row after a scroll container and tracks the snapped card.

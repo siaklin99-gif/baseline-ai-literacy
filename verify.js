@@ -665,10 +665,14 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
   // The map is BUILT from STACK, never a second hand-written list: two lists of "the five
   // pieces" drift, and the drift is two diagrams on one page disagreeing about what an
   // agent is. Assert it reads the array rather than hardcoding names.
-  g(/map\.innerHTML =[\s\S]{0,300}STACK\.map\(branch\)/.test(html),
-    'the mind map is generated from the same STACK array the walkthrough steps through');
-  g(/i === 4 \? ' is-driver' : ''/.test(html) && /\.mp-b\.is-driver \{ border-color/.test(html),
-    'the map marks the agent as the driver, not a fifth peer — the same shape the flow draws');
+  g(/STACK\.forEach\(\(s, i\) => \{[\s\S]{0,900}mp-branch/.test(html),
+    'the mind map is DRAWN from the same STACK array the walkthrough steps through');
+  // Drawn, not merely labelled: a dashed loop doubling back around the three branches
+  // the agent runs. Five equal spokes would teach the shape the flow was fixed to stop
+  // teaching, and a mind map is exactly where that mistake looks tidy.
+  g(/class="mp-drive"/.test(html) && /drives these three/.test(html) &&
+    /\.mp-drive \{ fill: none; stroke: var\(--g2\); stroke-width: 2; stroke-dasharray/.test(html),
+    'the map DRAWS the agent looping back over the three branches it drives, not as a fifth spoke');
   // A claim about POSITION goes false when the layout changes: the branches are one
   // column on a phone and a two-column grid on desktop, where four sit above the driver.
   g(!/mp-drives">[^<]*\babove\b/.test(html),

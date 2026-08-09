@@ -1038,27 +1038,30 @@ border-left: 3px solid var(--border-med); padding-left: 12px; }
 .stk-view.on { background: var(--surface2); color: var(--text); border-color: var(--text-ter); }
 .stk-view:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
 .stk-map { margin-top: 14px; }
-.mp-root { text-align: center; font-weight: 700; font-size: 15px; padding: 11px 14px;
-  background: var(--surface); border: 1px solid var(--text-ter); border-radius: 999px; }
-.mp-stem { width: 2px; height: 16px; background: var(--border-med); margin: 0 auto; }
-.mp-branches { list-style: none; display: grid; gap: 10px; }
-@media (min-width: 760px) { .mp-branches { grid-template-columns: 1fr 1fr; } }
-.mp-b { background: var(--surface); border: 1px solid var(--border-med);
-  border-radius: var(--radius); padding: 12px 14px; }
-.mp-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; margin-bottom: 7px; }
-.mp-head b { font-size: 16px; font-weight: 700; }
-.mp-head i { font-style: normal; font-size: 13px; color: var(--text-ter); }
-.mp-jobs { list-style: none; display: grid; gap: 5px; }
-/* the leaf marker is the "branch" — a short rule, so the map reads as a tree without
-   drawing a single line of decorative chrome */
-.mp-jobs li { position: relative; padding-left: 16px; font-size: 14px; color: var(--text-sec); }
-.mp-jobs li::before { content: ''; position: absolute; left: 0; top: 10px;
-  width: 9px; height: 1px; background: var(--border-med); }
-/* The agent is not a sixth peer. It drives the three above it, and the map has to say so
-   or it teaches the exact shape the flow drawing was fixed to stop teaching. */
-.mp-b.is-driver { border-color: var(--g2); }
-@media (min-width: 760px) { .mp-b.is-driver { grid-column: 1 / -1; } }
-.mp-drives { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--g2); }
+/* The canvas is drawn at a fixed 820 units and PANS on a phone rather than shrinking to
+   fit. Scaling a 15-leaf diagram down to 390px is how a mind map turns into grey fuzz;
+   the page already teaches sideways movement with its swipe decks, so panning is a
+   gesture the reader has met. Full-bleed to the screen edges for the same reason. */
+.mp-canvas { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  margin-inline: -18px; padding: 0 18px; }
+.mp-canvas::-webkit-scrollbar { display: none; }
+.mp-canvas svg { display: block; width: 820px; height: auto; }
+@media (min-width: 860px) { .mp-canvas svg { width: 100%; } }
+.mp-hint { margin-top: 6px; font-size: 13px; color: var(--text-ter); text-align: center; }
+@media (min-width: 860px) { .mp-hint { display: none; } }
+.mp-root-t { font: 700 15px -apple-system, system-ui, sans-serif; fill: #fff; }
+.mp-name { font: 700 14px -apple-system, system-ui, sans-serif; }
+.mp-role { font: 500 11px -apple-system, system-ui, sans-serif; fill: var(--text-ter); }
+.mp-leaf { font: 500 12px -apple-system, system-ui, sans-serif; fill: var(--text-sec); }
+.mp-twig { fill: none; stroke: var(--border-med); stroke-width: 1; }
+.mp-branch { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.mp-pod { fill: var(--surface); stroke-width: 1.5; }
+.mp-drive { fill: none; stroke: var(--g2); stroke-width: 2; stroke-dasharray: 5 4; }
+/* paint-order halo: the label sits where the LLM branch sweeps past, and text crossing
+   a 2.5px curve is unreadable in either theme. Stroking the page background behind the
+   glyphs punches a hole in the line instead of moving the label somewhere less useful. */
+.mp-drive-t { font: 700 11px -apple-system, system-ui, sans-serif; fill: var(--g2);
+  paint-order: stroke; stroke: var(--bg); stroke-width: 4; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) { .stk-rail { scroll-behavior: auto; } }
 
 @media (max-width: 560px) {
@@ -2253,15 +2256,58 @@ const STACK_HONEST = 'Every step above is also a place it can be <b>wrong</b>: t
   function buildMap() {
     const map = document.getElementById('stkMap');
     if (!map || map.dataset.built) return;
-    const branch = (s, i) => `
-      <li class="mp-b${i === 4 ? ' is-driver' : ''}">
-        <div class="mp-head"><span aria-hidden="true">${s.em}</span><b>${esc(s.name)}</b><i>${esc(s.role)}</i></div>
-        <ul class="mp-jobs">${(s.jobs || []).map(j => `<li>${esc(j)}</li>`).join('')}</ul>
-        ${i === 4 ? '<p class="mp-drives">drives RAG, MCP and API — it is the loop, not the last step</p>' : ''}
-      </li>`;
+    /* A DRAWN map: one root, five branches curving out of it, each carrying its own
+       twigs. Not five bordered boxes in a grid — that is a list wearing a frame, which
+       is what the first version of this was.
+       The agent's branch is dashed and loops back around RAG/MCP/API, because it drives
+       them; drawing it as a fifth equal spoke would teach the shape the flow diagram
+       was corrected to stop teaching. */
+    const COL = ['var(--g1)', 'var(--g3)', 'var(--g2)', 'var(--g1)', 'var(--g2)'];
+    const ROOT = { x: 118, y: 214 };
+    const Y = [46, 130, 214, 298, 386];          // one row per branch
+    const NX = 300;                               // where each branch's pod sits
+    let g = '';
+
+    STACK.forEach((s, i) => {
+      const y = Y[i], col = COL[i];
+      // a curve out of the root, not a right angle — this is the "branch" of a mind map
+      g += `<path class="mp-branch" stroke="${col}"
+        d="M${ROOT.x + 62} ${ROOT.y} C ${ROOT.x + 130} ${ROOT.y}, ${NX - 80} ${y}, ${NX - 6} ${y}"/>`;
+      g += `<rect class="mp-pod" stroke="${col}" x="${NX}" y="${y - 19}" width="176" height="38" rx="12"/>`;
+      g += `<text class="mp-name" x="${NX + 12}" y="${y - 1}" fill="${col}">${esc(s.em)} ${esc(s.name)}</text>`;
+      g += `<text class="mp-role" x="${NX + 12}" y="${y + 14}">${esc(s.role)}</text>`;
+      // twigs: each job on its own short stem off the pod
+      (s.jobs || []).forEach((job, k) => {
+        const ty = y - 15 + k * 15;
+        g += `<path class="mp-twig" d="M${NX + 176} ${y} C ${NX + 196} ${y}, ${NX + 196} ${ty}, ${NX + 214} ${ty}"/>`;
+        g += `<text class="mp-leaf" x="${NX + 220}" y="${ty + 4}">${esc(job)}</text>`;
+      });
+    });
+
+    /* The driver loop is a BRACKET around exactly the three branches the agent runs —
+       RAG, MCP, API — with a dashed line up from the agent's own pod. The first version
+       was a straight vertical line through the whole fan with a rotated label lying over
+       the curves: it read as a stray stroke, not as "this one drives those". A diagram
+       that has to be explained is not doing its job. */
+    const BX = NX - 24;
+    g += `<path class="mp-drive" d="M${BX + 16} 111 L${BX + 6} 111 Q${BX} 111 ${BX} 117
+                                     L${BX} 311 Q${BX} 317 ${BX + 6} 317 L${BX + 16} 317"/>`;
+    g += `<path class="mp-drive" d="M${NX - 4} 386 C ${BX - 34} 386, ${BX - 30} 340, ${BX - 2} 320" marker-end="url(#stkAr)"/>`;
+    g += `<text class="mp-drive-t" x="${BX}" y="100" text-anchor="middle">drives these three</text>`;
+
+    // the root last, so it sits above every branch that leaves it
+    g += `<ellipse cx="${ROOT.x}" cy="${ROOT.y}" rx="62" ry="34" fill="url(#stkFg)"/>`;
+    g += `<text class="mp-root-t" x="${ROOT.x}" y="${ROOT.y - 4}" text-anchor="middle">One late</text>`;
+    g += `<text class="mp-root-t" x="${ROOT.x}" y="${ROOT.y + 14}" text-anchor="middle">parcel</text>`;
+
     map.innerHTML =
-      `<div class="mp-root">One late parcel, answered</div><div class="mp-stem"></div>` +
-      `<ul class="mp-branches">${STACK.map(branch).join('')}</ul>`;
+      `<div class="mp-canvas"><svg viewBox="0 0 820 430" role="img"
+         aria-label="A mind map: one late parcel at the centre, with five branches — LLM the brain, RAG a book in hand, MCP the nervous system, API ears and mouth, and Agent the hands, which loops back to drive RAG, MCP and API.">
+         <defs><linearGradient id="mpFg" x1="0" y1="0" x2="1" y2="1">
+           <stop offset="0" stop-color="var(--g1)"/><stop offset=".55" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g3)"/>
+         </linearGradient></defs>${g}</svg></div>` +
+      `<p class="mp-hint">Drag sideways to follow the branches →</p>`;
+    map.innerHTML = map.innerHTML.replace('url(#stkFg)', 'url(#mpFg)');
     map.dataset.built = '1';
   }
   {

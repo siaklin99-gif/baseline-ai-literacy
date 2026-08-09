@@ -213,24 +213,32 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     const card=document.getElementById('stkCard'), flow=document.querySelector('.stk-flow');
     const before={map:map.hidden, rail:rail.hidden};
     mapBtn.click(); await new Promise(r=>setTimeout(r,120));
-    const names=[...map.querySelectorAll('.mp-head b')].map(b=>b.textContent);
-    const roles=[...map.querySelectorAll('.mp-head i')].map(b=>b.textContent);
-    const jobs=[...map.querySelectorAll('.mp-b')].map(b=>b.querySelectorAll('.mp-jobs li').length);
-    const driver=map.querySelector('.mp-b.is-driver');
-    const drivesTxt=(map.querySelector('.mp-drives')||{}).textContent||'';
+    // the map is DRAWN now, so assert the drawing: pods, twigs, and the driver bracket
+    const names=[...map.querySelectorAll('.mp-name')].map(t=>t.textContent.replace(/^[^A-Za-z]+/,''));
+    const roles=[...map.querySelectorAll('.mp-role')].map(t=>t.textContent);
+    const leaves=map.querySelectorAll('.mp-leaf').length;
+    const branches=map.querySelectorAll('.mp-branch').length;
+    const twigs=map.querySelectorAll('.mp-twig').length;
+    const drive=map.querySelectorAll('.mp-drive').length;
+    const drivesTxt=(map.querySelector('.mp-drive-t')||{}).textContent||'';
+    const svg=map.querySelector('svg');
+    const canvas=map.querySelector('.mp-canvas');
+    const pans=canvas ? canvas.scrollWidth-canvas.clientWidth : -1;
     const out=document.querySelector('.stk-out');
     const afterMap={map:map.hidden, rail:rail.hidden, card:card.hidden, flow:flow.hidden, out:out.hidden};
     step.click(); await new Promise(r=>setTimeout(r,120));
     const back={map:map.hidden, rail:rail.hidden, card:card.hidden};
-    return {before, names, roles, jobs, afterMap, back,
-      driverIsAgent: !!driver && driver.querySelector('b').textContent==='Agent',
-      drivesTxt, saysAbove:/\babove\b/.test(drivesTxt),
+    return {before, names, roles, leaves, branches, twigs, drive, drivesTxt,
+      saysAbove:/\babove\b/.test(drivesTxt), pans,
+      labelled:(svg.getAttribute('aria-label')||'').length,
+      afterMap, back,
       pressed: mapBtn.getAttribute('aria-pressed')};})()`);
   (r.before.map===true && r.names.join(',')==='LLM,RAG,MCP,API,Agent' &&
-   r.jobs.every(n=>n===3) && r.driverIsAgent && !r.saysAbove &&
+   r.branches===5 && r.twigs===15 && r.leaves===15 && r.drive===2 && r.labelled>80 &&
+   r.pans>0 && !r.saysAbove &&
    r.afterMap.map===false && r.afterMap.rail===true && r.afterMap.card===true && r.afterMap.flow===true && r.afterMap.out===true &&
    r.back.map===true && r.back.rail===false)
-    ? ok(`the map shows all five at once (${r.jobs.reduce((a,b)=>a+b,0)} jobs), marks the Agent as the driver — "${r.drivesTxt.slice(0,44)}…" — and swapping views hides the stepper cleanly both ways`)
+    ? ok(`the map is DRAWN: ${r.branches} curved branches off one root, ${r.twigs} twigs to ${r.leaves} leaves, a dashed bracket saying "${r.drivesTxt}", ${r.pans}px of pan on a phone, and an aria-label for anyone who cannot see it`)
     : bad('mind map: '+JSON.stringify(r));
 
   console.log('----------------------------');

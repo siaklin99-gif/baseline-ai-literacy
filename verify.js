@@ -662,6 +662,19 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
     'the flow draws the agent as a bracket AROUND the tools it drives, not a box after them');
   g(/const STACK_HONEST = 'Every step above is also a place it can be <b>wrong<\/b>/.test(html),
     'the walkthrough ends on where it breaks, not on how clever it is');
+  // The map is BUILT from STACK, never a second hand-written list: two lists of "the five
+  // pieces" drift, and the drift is two diagrams on one page disagreeing about what an
+  // agent is. Assert it reads the array rather than hardcoding names.
+  g(/map\.innerHTML =[\s\S]{0,300}STACK\.map\(branch\)/.test(html),
+    'the mind map is generated from the same STACK array the walkthrough steps through');
+  g(/i === 4 \? ' is-driver' : ''/.test(html) && /\.mp-b\.is-driver \{ border-color/.test(html),
+    'the map marks the agent as the driver, not a fifth peer — the same shape the flow draws');
+  // A claim about POSITION goes false when the layout changes: the branches are one
+  // column on a phone and a two-column grid on desktop, where four sit above the driver.
+  g(!/mp-drives">[^<]*\babove\b/.test(html),
+    'the driver note names RAG/MCP/API rather than claiming a position that the desktop grid makes false');
+  const jobs = (html.match(/jobs: \[/g) || []).length;
+  g(jobs === 5, `every piece carries its own jobs for the map (${jobs}/5)`);
   // Placement matters: it completes the body map's own promise ("parts that work
   // together"), so it belongs in that door rather than as a competing section.
   const bodysec = (html.match(/<section id="bodysec"[\s\S]*?<\/section>/) || [''])[0];

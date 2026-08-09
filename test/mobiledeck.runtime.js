@@ -203,6 +203,36 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     ? ok(`the walkthrough steps LLM → Agent, lights the agent LOOP around ${r.nodes} tool rows, keeps the active chip in view, and only reveals the reply + the "it can be wrong" note at the end`)
     : bad('stack walkthrough: '+JSON.stringify(r));
 
+  /* ---- the mind map: same five, one picture, and it must agree with the flow ---- */
+  await nav();
+  r=await ev(`(async function(){
+    document.querySelector('[data-deep-open="bodysec"]').click();
+    await new Promise(r=>setTimeout(r,220));
+    const step=document.getElementById('stkViewStep'), mapBtn=document.getElementById('stkViewMap');
+    const map=document.getElementById('stkMap'), rail=document.getElementById('stkRail');
+    const card=document.getElementById('stkCard'), flow=document.querySelector('.stk-flow');
+    const before={map:map.hidden, rail:rail.hidden};
+    mapBtn.click(); await new Promise(r=>setTimeout(r,120));
+    const names=[...map.querySelectorAll('.mp-head b')].map(b=>b.textContent);
+    const roles=[...map.querySelectorAll('.mp-head i')].map(b=>b.textContent);
+    const jobs=[...map.querySelectorAll('.mp-b')].map(b=>b.querySelectorAll('.mp-jobs li').length);
+    const driver=map.querySelector('.mp-b.is-driver');
+    const drivesTxt=(map.querySelector('.mp-drives')||{}).textContent||'';
+    const out=document.querySelector('.stk-out');
+    const afterMap={map:map.hidden, rail:rail.hidden, card:card.hidden, flow:flow.hidden, out:out.hidden};
+    step.click(); await new Promise(r=>setTimeout(r,120));
+    const back={map:map.hidden, rail:rail.hidden, card:card.hidden};
+    return {before, names, roles, jobs, afterMap, back,
+      driverIsAgent: !!driver && driver.querySelector('b').textContent==='Agent',
+      drivesTxt, saysAbove:/\babove\b/.test(drivesTxt),
+      pressed: mapBtn.getAttribute('aria-pressed')};})()`);
+  (r.before.map===true && r.names.join(',')==='LLM,RAG,MCP,API,Agent' &&
+   r.jobs.every(n=>n===3) && r.driverIsAgent && !r.saysAbove &&
+   r.afterMap.map===false && r.afterMap.rail===true && r.afterMap.card===true && r.afterMap.flow===true && r.afterMap.out===true &&
+   r.back.map===true && r.back.rail===false)
+    ? ok(`the map shows all five at once (${r.jobs.reduce((a,b)=>a+b,0)} jobs), marks the Agent as the driver — "${r.drivesTxt.slice(0,44)}…" — and swapping views hides the stepper cleanly both ways`)
+    : bad('mind map: '+JSON.stringify(r));
+
   console.log('----------------------------');
   console.log(`${checks} checks, ${fails} failure(s)`);
   try{ws.close();}catch{} chrome.kill('SIGKILL');

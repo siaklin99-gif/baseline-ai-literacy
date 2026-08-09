@@ -1020,6 +1020,45 @@ border-radius: var(--radius); padding: 13px 15px; }
 text-transform: uppercase; color: var(--text-ter); margin-bottom: 5px; }
 .stk-honest { margin-top: 13px; font-size: 14px; color: var(--text-sec);
 border-left: 3px solid var(--border-med); padding-left: 12px; }
+
+/* ---------- the same five, as one picture ----------
+   The stepper teaches SEQUENCE; this teaches SHAPE — everything visible at once, which
+   is what a mind map is actually for. Built from HTML, not SVG: the last diagram I drew
+   here stretched its viewBox across a desktop column and rendered its labels larger than
+   the section heading. Real text also stays selectable, searchable and readable to a
+   screen reader, and reflows instead of shrinking on a phone.
+
+   It is generated from the SAME STACK array the walkthrough uses. Two hand-written lists
+   of "the five pieces" would drift, and the drift would be two diagrams on one page
+   quietly disagreeing about what an agent is. */
+.stk-views { display: flex; gap: 6px; margin: 14px 0 0; }
+.stk-view { flex: 1; min-height: 44px; padding: 9px 12px; border-radius: 999px;
+  border: 1px solid var(--border-med); background: var(--surface); color: var(--text-sec);
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.stk-view.on { background: var(--surface2); color: var(--text); border-color: var(--text-ter); }
+.stk-view:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.stk-map { margin-top: 14px; }
+.mp-root { text-align: center; font-weight: 700; font-size: 15px; padding: 11px 14px;
+  background: var(--surface); border: 1px solid var(--text-ter); border-radius: 999px; }
+.mp-stem { width: 2px; height: 16px; background: var(--border-med); margin: 0 auto; }
+.mp-branches { list-style: none; display: grid; gap: 10px; }
+@media (min-width: 760px) { .mp-branches { grid-template-columns: 1fr 1fr; } }
+.mp-b { background: var(--surface); border: 1px solid var(--border-med);
+  border-radius: var(--radius); padding: 12px 14px; }
+.mp-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; margin-bottom: 7px; }
+.mp-head b { font-size: 16px; font-weight: 700; }
+.mp-head i { font-style: normal; font-size: 13px; color: var(--text-ter); }
+.mp-jobs { list-style: none; display: grid; gap: 5px; }
+/* the leaf marker is the "branch" — a short rule, so the map reads as a tree without
+   drawing a single line of decorative chrome */
+.mp-jobs li { position: relative; padding-left: 16px; font-size: 14px; color: var(--text-sec); }
+.mp-jobs li::before { content: ''; position: absolute; left: 0; top: 10px;
+  width: 9px; height: 1px; background: var(--border-med); }
+/* The agent is not a sixth peer. It drives the three above it, and the map has to say so
+   or it teaches the exact shape the flow drawing was fixed to stop teaching. */
+.mp-b.is-driver { border-color: var(--g2); }
+@media (min-width: 760px) { .mp-b.is-driver { grid-column: 1 / -1; } }
+.mp-drives { margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--g2); }
 @media (prefers-reduced-motion: reduce) { .stk-rail { scroll-behavior: auto; } }
 
 @media (max-width: 560px) {
@@ -1370,6 +1409,10 @@ border-left: 3px solid var(--border-med); padding-left: 12px; }
       <h3 class="stk-h">One late parcel, five pieces</h3>
       <p class="stk-sub">You send one sentence. Five things happen before an answer comes back — and each has a name you keep hearing. Step through it once and they stop being jargon.</p>
       <div class="stk-ask"><b>What you type</b><p>"Order 4521 still hasn't arrived. If it's more than 3 days late, I'd like a refund."</p></div>
+      <div class="stk-views" role="group" aria-label="How to view the five pieces">
+        <button type="button" class="stk-view on" id="stkViewStep" aria-pressed="true">Walk through it</button>
+        <button type="button" class="stk-view" id="stkViewMap" aria-pressed="false">See it all at once</button>
+      </div>
       <div class="stk-rail" id="stkRail" role="tablist" aria-label="The five pieces, in the order they act"></div>
       <div class="stk-card" id="stkCard"></div>
       <div class="stk-flow"><svg viewBox="0 0 336 238" aria-hidden="true">
@@ -1377,6 +1420,7 @@ border-left: 3px solid var(--border-med); padding-left: 12px; }
           <stop offset="0" stop-color="var(--g1)"/><stop offset=".55" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g3)"/>
         </linearGradient><marker id="stkAr" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--text-ter)"/></marker></defs>
         <g id="stkFlow"></g></svg></div>
+      <div class="stk-map" id="stkMap" hidden></div>
       <div class="stk-out"><b>What comes back</b><p id="stkOut">Step through to see the reply.</p></div>
       <p class="stk-honest" id="stkHonest"></p>
     </div>
@@ -2132,26 +2176,31 @@ const STACK = [
   { em: '🧠', name: 'LLM', role: 'the brain',
     plain: 'It reads your sentence and works out what you actually want — two things, not one: where the parcel is, <em>and</em> a refund, but only if it is more than 3 days late.',
     does: '<b>Understands the ask.</b> That is all it has done so far. It does not know your order, your shop, or its rules.',
+    jobs: ['Reads what you actually asked for', 'Spots the condition: only if 3+ days late', 'Writes the final reply in plain words'],
     without: 'On its own it would have to guess your order status — and it would guess confidently.' },
   { em: '📚', name: 'RAG', role: 'a book in hand',
     plain: 'Before answering, it looks up <em>this shop’s</em> actual rules — not what it half-remembers from the internet.',
     does: '<b>Fetches the real policy.</b> Delivery promise: 5 days. Refunds are automatic once an order is 3+ days late.',
     wire: 'search("refund policy", "delivery SLA") → 2 documents',
+    jobs: ['Pulls this shop’s refund policy', 'Pulls the 5-day delivery promise', 'Grounds the answer in real rules'],
     without: 'Without this it answers from memory, and every shop’s refund rules are different.' },
   { em: '🕸️', name: 'MCP', role: 'the nervous system',
     plain: 'The wiring that lets the brain reach the shop’s systems at all — one standard plug shape instead of a custom cable per system.',
     does: '<b>Exposes the tools.</b> Order system, customer records, email — all reachable the same way.',
     wire: 'tools available: orders · customers · refunds · email',
+    jobs: ['One plug shape for every tool', 'Offers up orders, records, email', 'No bespoke wiring per system'],
     without: 'Without a standard, every single tool needs its own hand-built connection.' },
   { em: '👂', name: 'API', role: 'ears and mouth',
     plain: 'The actual asking and telling. This is the bit that touches real data — everything before it was just thinking.',
     does: '<b>Asks, and gets a real answer.</b> Order 4521: shipped 6 days ago, not delivered.',
     wire: 'GET /orders/4521 → shipped 6d ago, undelivered',
+    jobs: ['Asks: where is order 4521?', 'Hears: shipped 6 days ago', 'Tells: refund it, email them'],
     without: 'Without it the answer is a well-written guess about a parcel it never looked at.' },
   { em: '✋', name: 'Agent', role: 'the hands',
     plain: 'Here is the part everyone gets wrong: this is not the last step. It is the <em>loop</em> — it decides what to look up, reads the answer, decides again, and keeps going until the job is done. Steps 2 to 4 are what it reaches for.',
     does: '<b>Decides, then does — repeatedly.</b> 6 days late is past the 3-day rule → refund issued → email sent → case logged. No one clicked through four screens.',
     wire: 'POST /refunds · POST /email · POST /crm/log',
+    jobs: ['Decides what to look up next', 'Checks 6 days against the 3-day rule', 'Runs the whole job to the end'],
     without: 'Without it you get a correct answer and a human still has to do the work.' },
 ];
 const STACK_OUT = 'Sorry about that — 4521 shipped 6 days ago and hasn’t arrived, which is past our 3-day mark, so I’ve refunded it in full. Confirmation is on its way to you.';
@@ -2196,6 +2245,46 @@ const STACK_HONEST = 'Every step above is also a place it can be <b>wrong</b>: t
     h += `<path class="stk-edge" d="M168 204 L168 216"/>`;
     h += `<text class="stk-cap" x="168" y="228" text-anchor="middle">refund done · email sent · case logged</text>`;
     flow.innerHTML = h;
+  }
+
+  /* The map, drawn from the SAME array as the stepper. The agent branch is marked as the
+     driver rather than listed as a fifth peer — a flat five-way split is precisely the
+     wrong shape, and it is the one the source diagram taught. */
+  function buildMap() {
+    const map = document.getElementById('stkMap');
+    if (!map || map.dataset.built) return;
+    const branch = (s, i) => `
+      <li class="mp-b${i === 4 ? ' is-driver' : ''}">
+        <div class="mp-head"><span aria-hidden="true">${s.em}</span><b>${esc(s.name)}</b><i>${esc(s.role)}</i></div>
+        <ul class="mp-jobs">${(s.jobs || []).map(j => `<li>${esc(j)}</li>`).join('')}</ul>
+        ${i === 4 ? '<p class="mp-drives">drives RAG, MCP and API — it is the loop, not the last step</p>' : ''}
+      </li>`;
+    map.innerHTML =
+      `<div class="mp-root">One late parcel, answered</div><div class="mp-stem"></div>` +
+      `<ul class="mp-branches">${STACK.map(branch).join('')}</ul>`;
+    map.dataset.built = '1';
+  }
+  {
+    const bStep = document.getElementById('stkViewStep');
+    const bMap  = document.getElementById('stkViewMap');
+    const rail  = document.getElementById('stkRail');
+    const flow  = document.querySelector('.stk-flow');
+    const setView = (mapOn) => {
+      buildMap();
+      document.getElementById('stkMap').hidden = !mapOn;
+      // the stepper's three parts hide together — leaving the rail visible above a map
+      // would offer a control that no longer drives anything on screen
+      // .stk-out goes with them: it reads "Step through to see the reply", an instruction
+      // for a view that is no longer on screen. The honest note stays — it is true of both.
+      [rail, card, flow, document.querySelector('.stk-out')]
+        .forEach(el => { if (el) el.hidden = mapOn; });
+      bMap.classList.toggle('on', mapOn);  bMap.setAttribute('aria-pressed', String(mapOn));
+      bStep.classList.toggle('on', !mapOn); bStep.setAttribute('aria-pressed', String(!mapOn));
+    };
+    if (bStep && bMap) {
+      bStep.addEventListener('click', () => setView(false));
+      bMap.addEventListener('click', () => setView(true));
+    }
   }
 
   function show(i) {

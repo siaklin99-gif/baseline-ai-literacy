@@ -67,7 +67,13 @@
        nothing checked until visual.js started diffing dark mode. #a09e94 clears 4.5
        on every dark surface (worst 4.73:1). */
     --text: #f1f0ec; --text-sec: #b4b2a9; --text-ter: #a09e94;
-    --green: #5dcaa5; --green-bg: #085041;
+    /* #085041 until 2026-08-09. Against the dark page it measured 1.85 while
+       red, amber and blue — the tints it is a peer of — sat at 1.20-1.24, so
+       green was half again as heavy as its own siblings; in light all four are
+       1.07-1.09. Here that made a right answer shout louder than a wrong one.
+       1.21 now, and --green text on it goes 4.68:1 -> 7.15:1. Matches the
+       global palette and hlur.ai/hub. */
+    --green: #5dcaa5; --green-bg: #093026;
     --red: #f09595; --red-bg: #501313;
     --amber: #ef9f27; --amber-bg: #412402;
     --blue: #85b7eb; --blue-bg: #042c53;

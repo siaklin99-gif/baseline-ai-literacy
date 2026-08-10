@@ -175,7 +175,12 @@ const getJSON = (u) => new Promise((res, rej) =>
     await send('Page.navigate', { url: URL }, sessionId);
     await sleep(2500);
     const upd = await ev(`(async () => {
-      const deadline = Date.now() + 8000;
+      /* 8s was not enough on a loaded machine — this went red inside a full suite run
+         minutes after passing 4/4 in isolation. A flaky guard is worse than none: it
+         teaches you to ignore reds. Longer deadline, and an explicit re-register so the
+         update check is REQUESTED rather than waited for. */
+      const deadline = Date.now() + 25000;
+      try { await navigator.serviceWorker.register('sw.js'); } catch (e) {}
       while (Date.now() < deadline) {
         const r = await navigator.serviceWorker.getRegistration();
         if (r) { try { await r.update(); } catch (e) {} }
@@ -187,7 +192,7 @@ const getJSON = (u) => new Promise((res, rej) =>
         if (r && r.active && r.active.state === 'activated' && !keys.includes('baseline-v1')) {
           return { state: r.active.state, keys, controlled: !!navigator.serviceWorker.controller };
         }
-        await new Promise(z => setTimeout(z, 300));
+        await new Promise(z => setTimeout(z, 400));
       }
       const keys = await caches.keys();
       const r = await navigator.serviceWorker.getRegistration();

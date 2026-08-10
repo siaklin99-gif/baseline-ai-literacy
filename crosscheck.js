@@ -130,15 +130,22 @@ function assertionExpr(expected) {
     const taps = PRIMARY.map(([sel,name]) => {
       // only audit VISIBLE controls (the slider is hidden on mobile, replaced by the swipe deck)
       const boxes = [...document.querySelectorAll(sel)].map(e => e.getBoundingClientRect()).filter(b => b.width > 0 && b.height > 0);
-      if (!boxes.length) return null;
-      return { name, minW: Math.round(Math.min(...boxes.map(b => b.width))), minH: Math.round(Math.min(...boxes.map(b => b.height))) };
-    }).filter(Boolean);
+      // A control that goes invisible used to return null and vanish from the audit —
+      // its 44x44 check silently stopped existing instead of failing. Absence is now
+      // REPORTED, and the caller asserts every selector was actually audited.
+      if (!boxes.length) return { name, sel, absent: true };
+      return { name, sel, minW: Math.round(Math.min(...boxes.map(b => b.width))), minH: Math.round(Math.min(...boxes.map(b => b.height))) };
+    });
+    // the three level groups are #cards > .tg; each holds its own deck of cards
+    const levelSplit = [...document.querySelectorAll('#cards .tg')]
+      .map(g => g.querySelectorAll('details.card').length).filter(n => n > 0);
     const bodyText = document.body.innerText;
     const expected = ${JSON.stringify(expected)};
     const missing = expected.filter(s => !bodyText.includes(s));
     const leaks = (bodyText.match(/\\bundefined\\b|\\bNaN\\b|\\[object Object\\]/g) || []);
     return {
       w: window.innerWidth,
+      levelSplit: levelSplit,
       pageHeight: Math.ceil(document.documentElement.scrollHeight),
       overflow: cs.scrollWidth - cs.clientWidth,
       zeroHeightCards: zeroCards,
@@ -247,7 +254,11 @@ async function main() {
       r.maxAsym <= 3       ? ok(`${tag} all blocks symmetric (max L/R gutter diff ${r.maxAsym}px)`) : bad(`${tag} asymmetric block "${r.worstBlock}": L/R gutters differ by ${r.maxAsym}px`);
       r.missingCount === 0   ? ok(`${tag} all ${expected.length} data strings rendered (parity)`) : bad(`${tag} ${r.missingCount} data string(s) missing from DOM: ${r.missingSample.join(' | ')}`);
       r.leaks.length === 0   ? ok(`${tag} no undefined/NaN/[object Object] leaks`) : bad(`${tag} leaked tokens: ${[...new Set(r.leaks)].join(', ')}`);
-      (r.cardCount === 16 && r.strayCards === 0) ? ok(`${tag} 16 topic cards present (8/5/3), none stray`) : bad(`${tag} cards=${r.cardCount} (want 16), strays=${r.strayCards} (want 0)`);
+      // The "(8/5/3)" in the old sentence was measured nowhere — 16 cards in any
+      // arrangement passed while the message asserted a specific split. Count the levels.
+      (r.cardCount === 16 && r.strayCards === 0 && String(r.levelSplit) === '8,5,3')
+        ? ok(`${tag} 16 topic cards, split ${r.levelSplit.join('/')} across the three levels, none stray`)
+        : bad(`${tag} cards=${r.cardCount} (want 16), split=${(r.levelSplit||[]).join('/')} (want 8/5/3), strays=${r.strayCards} (want 0)`);
       (r.bmCount === 8 && r.bpDots === 8 && r.glCount === 14 && r.qzCount === 9 && r.lcNodeCount === 7 && r.lcRowCount === 7)
         ? ok(`${tag} body map (8+8 dots) + glossary (14) + quiz (9) + circle (7) rendered`)
         : bad(`${tag} body map=${r.bmCount}/dots=${r.bpDots} (want 8), glossary=${r.glCount} (want 14), quiz=${r.qzCount} (want 9), circle=${r.lcNodeCount}/${r.lcRowCount} (want 7)`);
@@ -261,10 +272,19 @@ async function main() {
       // touch targets (mobile only — that's where fingers tap)
       if (c.mobile) {
         r.taps.forEach(t => {
-          (t.minW >= 44 && t.minH >= 44)
-            ? ok(`${tag} ${t.name} tap target ${t.minW}x${t.minH} (>=44)`)
-            : bad(`${tag} ${t.name} tap target ${t.minW}x${t.minH} — under 44x44`);
+          if (t.absent) {
+            bad(`${tag} ${t.name} (${t.sel}) renders nowhere — its 44x44 check did not run, ` +
+                `which is a silent gap, not a pass. Remove it from PRIMARY deliberately if it is gone.`);
+          } else {
+            (t.minW >= 44 && t.minH >= 44)
+              ? ok(`${tag} ${t.name} tap target ${t.minW}x${t.minH} (>=44)`)
+              : bad(`${tag} ${t.name} tap target ${t.minW}x${t.minH} — under 44x44`);
+          }
         });
+        // and the count itself: seven selectors in, seven verdicts out
+        (r.taps.length === 7)
+          ? ok(`${tag} all 7 primary controls audited (none silently dropped)`)
+          : bad(`${tag} only ${r.taps.length} of 7 primary controls audited`);
       }
       console.log(`     \x1b[2m→ saved crosscheck_shots/${c.name}.png\x1b[0m`);
     }

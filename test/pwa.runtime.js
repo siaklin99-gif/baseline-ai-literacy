@@ -44,7 +44,11 @@ function serve() {
     const srv = http.createServer((req, res) => {
       const rel = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html';
       if (overrides.has(rel)) {
-        res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' });
+        // Content-Type by EXTENSION, not hardcoded text/html. Serving an overridden
+        // sw.js as text/html made Chrome reject the script outright, so the worker-update
+        // check failed against a perfectly good sw.js — the harness's bug, not the code's.
+        res.writeHead(200, { 'Content-Type': TYPES[path.extname(rel)] || 'text/html',
+                             'Cache-Control': 'no-store' });
         return res.end(overrides.get(rel));
       }
       const abs = path.join(ROOT, rel);
@@ -161,6 +165,40 @@ const getJSON = (u) => new Promise((res, rej) =>
       : bad(fresh === '__UNCONTROLLED__'
           ? 'the page was not controlled by the service worker on this load, so freshness was never actually tested'
           : `served a STALE page: expected the new bytes (${MARK}), got ${fresh === null ? 'the old page' : fresh} — every returning visitor would keep the pre-deploy site`);
+    /* ---- 4. THE UPDATE PATH: a replaced worker must actually take over ----
+       A cold audit injected an sw.js with NO install and NO activate handler — no
+       skipWaiting, no clients.claim, no old-cache purge — and this file went 3/3 green.
+       Every run starts from a throwaway profile, so the worker-REPLACEMENT path (the one
+       that runs on every real deploy) was never exercised. */
+    const swLive = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+    overrides.set('sw.js', swLive.replace(/const CACHE = '[^']+'/, "const CACHE = 'baseline-v2-probe'"));
+    await send('Page.navigate', { url: URL }, sessionId);
+    await sleep(2500);
+    const upd = await ev(`(async () => {
+      const deadline = Date.now() + 8000;
+      while (Date.now() < deadline) {
+        const r = await navigator.serviceWorker.getRegistration();
+        if (r) { try { await r.update(); } catch (e) {} }
+        const keys = await caches.keys();
+        /* The invariant is that the OLD cache is PURGED — that is what activate promises.
+           Requiring the new cache to already exist raced its population and made this
+           flaky (1 of 3 runs): a worker can be activated, having correctly deleted
+           baseline-v1, a moment before anything has been fetched through it. */
+        if (r && r.active && r.active.state === 'activated' && !keys.includes('baseline-v1')) {
+          return { state: r.active.state, keys, controlled: !!navigator.serviceWorker.controller };
+        }
+        await new Promise(z => setTimeout(z, 300));
+      }
+      const keys = await caches.keys();
+      const r = await navigator.serviceWorker.getRegistration();
+      return { state: r && r.active ? r.active.state : 'none', keys,
+               controlled: !!navigator.serviceWorker.controller };
+    })()`);
+    overrides.delete('sw.js');
+    (!upd.__error && upd.state === 'activated' && upd.controlled && !upd.keys.includes('baseline-v1'))
+      ? ok(`a new worker version takes over and purges the old cache (now: ${upd.keys.join(', ') || 'empty, awaiting first fetch'}) — the update path every deploy depends on`)
+      : bad(`the replacement worker did not take over cleanly: state ${upd.__error || upd.state}, caches [${(upd.keys || []).join(', ')}] ` +
+            `— a worker with no activate handler would leave the old cache behind forever`);
   } catch (e) {
     bad('PWA run threw: ' + e.message);
   }

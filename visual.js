@@ -52,6 +52,13 @@ const bad = (m) => { checks++; fails++; console.log('  \x1b[31m✗ ' + m + '\x1b
 const VIEWS = [
   { name: 'desktop',      w: 1280, h: 900, mobile: false, theme: 'light' },
   { name: 'mobile',       w: 390,  h: 844, mobile: true,  theme: 'light' },
+  /* 320 light. This is the only harness doing contrast, text-clipping, overlap,
+     blank-section and pixel-diff-vs-approved-refs, and it had no 320 column — so the one
+     class of regression it could never see was the one 320 causes most: narrower
+     wrapping. A heading clipped by its own box, two controls colliding after an extra
+     wrap line, a chip losing its background. One theme is enough: wrapping is a layout
+     fact, not a colour fact, and the run stays fast. */
+  { name: 'mobile-320',   w: 320,  h: 568, mobile: true,  theme: 'light' },
   { name: 'desktop-dark', w: 1280, h: 900, mobile: false, theme: 'dark'  },
   { name: 'mobile-dark',  w: 390,  h: 844, mobile: true,  theme: 'dark'  },
 ];

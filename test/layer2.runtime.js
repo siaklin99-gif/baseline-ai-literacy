@@ -19,7 +19,12 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
   const nav=async(u=URL,w=1440)=>{await send('Emulation.setDeviceMetricsOverride',{width:w,height:900,deviceScaleFactor:1,mobile:w<500},sessionId);
     await send('Page.navigate',{url:u},sessionId); await sleep(1600);};
   const ev=async e=>{const r=await send('Runtime.evaluate',{expression:e,returnByValue:true,awaitPromise:true},sessionId);
-    if(r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0,200)); return r.result.value;};
+    // history.back() destroys the execution context, so `r` itself can come back
+    // undefined. Returning null beats taking the whole file down with a TypeError that
+    // names nothing about what was being tested.
+    if(!r) return null;
+    if(r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0,200));
+    return r.result ? r.result.value : null;};
 
   await nav();
   let r=await ev(`(function(){return {screens:+(document.scrollingElement.scrollHeight/900).toFixed(1),
@@ -83,9 +88,19 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     await new Promise(r=>setTimeout(r,250));
     return {opened, after:location.hash, grew:history.length-before,
             reopened:!!document.querySelector('.deep.open')};})()`);
-  (r.opened==='#labs' && !r.reopened && r.after!=='#labs' && r.grew<=1)
-    ? ok(`open then close is history-neutral (${r.grew} net entry) — Back leaves the page, it does not replay the door`)
-    : bad('history trap: '+JSON.stringify(r));
+  /* ACTUALLY PRESS BACK — in its own call. The sentence claimed "Back leaves the page,
+     it does not replay the door" while the predicate only counted history entries; Back
+     was never pressed, and at grew===1 the sentence contradicted its own test.
+     It has to be a SEPARATE evaluate: history.back() tears down the execution context,
+     so reading state in the same expression returns undefined and kills the run. */
+  await ev(`history.back()`).catch(() => {});
+  await sleep(400);
+  const back = await ev(`(function(){return {
+      hash: location.hash,
+      doorOpen: !!document.querySelector('.deep.open')};})()`);
+  (r.opened==='#labs' && !r.reopened && r.after!=='#labs' && r.grew<=1 && !back.doorOpen)
+    ? ok(`open then close is history-neutral (${r.grew} net entry), and a real Back press lands on "${back.hash || 'no hash'}" with no door reopened`)
+    : bad('history trap: '+JSON.stringify({...r, afterBack: back}));
 
   // the four learning-circle steps that point INTO layer 2
   await nav();

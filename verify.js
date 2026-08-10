@@ -113,7 +113,7 @@ if (DATA) {
 {
   const dsrc = read('data.js');
   !/Open source/.test(dsrc)
-    ? ok('models labelled "open weight" (not overclaimed as OSI "open source")')
+    ? ok('data.js never says "Open source" — downloadable models stay "open weight"')
     : bad('data.js still says "Open source" — Llama et al. are open-WEIGHT; fix the label');
 }
 
@@ -186,7 +186,7 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // action-first block: try panel with a copy-a-prompt button + tool links
 (html.includes('id="try"') && html.includes('try-copy') && html.includes('chatgpt.com')) ? ok('above-fold action panel (copy prompt + tool links) present') : bad('action panel missing');
 // multiple starter prompts (not one generic line) so a beginner sees a use that fits them
-((html.match(/class="try-tab/g) || []).length >= 3 && html.includes('data-prompt=')) ? ok('action panel offers 3+ swappable starter prompts') : bad('only one starter prompt (add variety)');
+((html.match(/class="try-tab/g) || []).length >= 3 && html.includes('data-prompt=')) ? ok('action panel has 3+ starter tabs and at least one data-prompt to swap in') : bad('only one starter prompt (add variety)');
 // trust signal grounded in real properties (no invented authority) + honest maker attribution
 (html.includes('class="trust"') && html.includes('trust-pill') && html.includes('>hlur.ai<')) ? ok('trust strip present (real properties + hlur.ai attribution)') : bad('trust strip missing');
 // core thesis surfaced in the hero (was buried in a collapsed card)
@@ -194,7 +194,7 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 // AI-deception safety card (biggest content gap in the cold audit)
 (html.includes('Spotting AI fakes') && html.includes('family code word')) ? ok('AI-fakes/scams safety card present') : bad('safety card missing');
 // IP: MCP analogy must be our own expression, not Anthropic's "USB-C for AI" line
-(!html.includes('USB-C')) ? ok('MCP analogy is original (no lifted "USB-C" line)') : bad('MCP still uses the "USB-C" marketing phrasing');
+(!html.includes('USB-C')) ? ok('the MCP analogy avoids the ubiquitous "USB-C" line') : bad('MCP still uses the "USB-C" marketing phrasing');
 // dedicated "Under the hood" section with the LLM explainer + its interactive demo
 (html.includes('id="howllm"') && html.includes('id="card-llm-predict"') && html.includes('id="llmDemo"') && html.includes('id="llmStep"'))
   ? ok('"Under the hood" section + interactive next-word demo present') : bad('LLM section / interactive demo missing');
@@ -213,11 +213,11 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('Check the memory setting') && html.includes('apps add search') && !/Does it remember you between chats, by default\?/.test(html))
   ? ok('quiz Q3/Q4 match current product truth (memory + web search on by default)') : bad('quiz reverted to stale "no memory / no news" claims');
 (/a\.try-more/.test(html) && /t\.open = true/.test(html))
-  ? ok('try-more link opens its collapsed target card (not a dead-end anchor)') : bad('try-more dead-ends on a collapsed card again');
+  ? ok('the try-more handler exists and sets open on its target (behaviour proven in the runtime suite)') : bad('try-more dead-ends on a collapsed card again');
 (/const REDUCE = window\.matchMedia/.test(html) && !/behavior: 'smooth'/.test(html))
   ? ok('all smooth scrolls respect prefers-reduced-motion (REDUCE-gated)') : bad('an unconditional smooth scroll crept back in');
 (/IntersectionObserver\(/.test(html) && /userPaused/.test(html))
-  ? ok('flow animation runs only on-screen (IO) and manual pause wins') : bad('flow animation autoplays offscreen again');
+  ? ok('the flow references an IntersectionObserver and a userPaused flag') : bad('flow animation autoplays offscreen again');
 // flow: nothing moves until the user presses Play, and each prediction shows ITS OWN odds
 (/let userPaused = true/.test(html) && /const PRED = /.test(html) && /\[\['today', 60\]/.test(html))
   ? ok('flow is play-on-demand with per-prediction odds (today gets its own bars)') : bad('flow autoplays or the odds bars are static again');
@@ -250,9 +250,9 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.indexOf('AI jargon in plain English') < html.indexOf('"Pick the right model for the job"'))
   ? ok('jargon decoder lives in the Beginner group (day-one need)') : bad('jargon card demoted out of Beginner');
 (!/\.gl-deck > \*/.test(html))
-  ? ok('glossary is a vertical list on mobile (no deck-in-a-deck)') : bad('nested glossary swipe deck is back');
+  ? ok('the glossary declares no horizontal deck rule of its own') : bad('nested glossary swipe deck is back');
 (!/Explain \[a term you keep hearing\]/.test(html))
-  ? ok('15-min card prompts extend (not duplicate) the try panel') : bad('15-min card duplicates the try-panel prompts again');
+  ? ok('the 15-minute card does not repeat the opening prompt from the try panel') : bad('15-min card duplicates the try-panel prompts again');
 // ---------- 2026-07-30 platform batch: return loop, games, PWA, clip mode ----------
 // return loop: misses persist + resurface, visits counted — all device-local
 (/qzRemember/.test(html) && html.includes("'baseline_quiz_missed'") && html.includes('qz-return') && html.includes('id="lcDay"'))
@@ -304,8 +304,12 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
 (html.includes('https://hlur.ai/baseline/clips/watch-it-write.mp4') && html.includes('https://hlur.ai/baseline/clips/peel-the-layers.mp4'))
   ? ok('footer links both shareable clips (absolute URLs, both homes safe)') : bad('clip links missing from the page footer');
 // don't fake a produced video — point to the real one (verified https)
-(!/3Blue1Brown|LPZh9BOjkQs/.test(html) || /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
-  ? ok('3Blue1Brown video is a well-formed link (credited, not imitated)') : bad('malformed 3B1B link');
+/* Was an IMPLICATION: "absent OR well-formed", so deleting the video entirely passed
+   while still printing "credited". Presence is now required, because that is what the
+   sentence says. */
+(/3Blue1Brown/.test(html) && /href="https:\/\/www\.youtube\.com\/watch\?v=LPZh9BOjkQs"/.test(html))
+  ? ok('the 3Blue1Brown video is present and credited with a well-formed link')
+  : bad(/3Blue1Brown/.test(html) ? 'malformed 3B1B link' : '3Blue1Brown credit is gone — the check used to pass vacuously on its absence');
 // external hands-on links must resolve to a real place (verified https)
 (!/karpathy\/(nanoGPT|makemore)/.test(html) || /href="https:\/\/github\.com\/karpathy\/(nanoGPT|makemore)"/.test(html))
   ? ok('Karpathy hands-on links are well-formed https URLs') : bad('malformed Karpathy link');
@@ -351,7 +355,7 @@ html.includes('id="quiz"') ? ok('has id="quiz"') : bad('missing id="quiz"');
   // And the disclosure must stay TRUE: a tracking parameter on any outbound
   // product link would make the pill a lie.
   (!/https:\/\/(chatgpt\.com|claude\.ai|gemini\.google\.com)[^"]*[?&]/.test(html))
-    ? ok('outbound product links carry no affiliate/tracking parameters')
+    ? ok('the three named model links (chatgpt/claude/gemini) carry no tracking parameters')
     : bad('an outbound product link gained a query parameter — the independence pill would be false');
 }
 // keyboard a11y: the custom (non-native) controls must be operable without a mouse
@@ -521,7 +525,7 @@ g(/\.codeblock \{[^}]*background-attachment: local, local, scroll, scroll, local
   const tells = m ? [...m[1].matchAll(/tell: '((?:[^'\\]|\\.)*)'/g)].map(x => x[1]) : [];
   const deducible = tells.filter(t => /other two|each other|next to it|from the other|arithmetic|contradic|rule[sd]? .*out|fenced/i.test(t));
   (tells.length === 3 && deducible.length === 3)
-    ? ok('all 3 spot-the-fake rounds are solvable from the statements shown (not trivia recall)')
+    ? ok('all 3 spot-the-fake tells point back at the other statements rather than at outside knowledge')
     : bad(`${deducible.length}/${tells.length} spot-the-fake tells cite the other statements — the rest test recall`);
   g(!/Luna Nova/.test(html), 'trivia-only Galileo round retired');
 }
@@ -676,7 +680,7 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
   // caught the two disagreeing. Now the DISTINCTION itself is what is tested.
   g(/class="mp-drive"/.test(html) && /drives these three/.test(html) &&
     /i === 4 \? ' is-loop' : ''/.test(html) &&
-    /\.mp-branch\.is-loop \{ stroke-dasharray/.test(html) &&
+    /\.mp-branch\.is-loop \{ stroke-dasharray: *[1-9]/.test(html) &&
     /\.mp-drive \{ fill: none; stroke: var\(--g2\); stroke-width: 2; stroke-dasharray/.test(html),
     'the map draws the agent as a DASHED loop — visibly not a fifth solid spoke like the other four');
   // A claim about POSITION goes false when the layout changes: the branches are one
@@ -705,7 +709,7 @@ g(/document\.querySelectorAll\('section\[id\]'\)/.test(html) && /all\.map\(sec =
   'rail entries are derived from the sections on the page, never hand-listed');
 g(/@media \(min-width: 1180px\)/.test(html) && /\.rail \{ display: none; \}/.test(html),
   'rail is desktop-only — mobile keeps its swipe decks untouched');
-g(html.includes('window.baselineRailTicks'), 'rail mirrors the learning-circle ticks (one idea of progress, not two)');
+g(html.includes('window.baselineRailTicks'), 'the rail reads its ticks from window.baselineRailTicks, the source the circle writes');
 g(/const line = innerHeight \* 0\.32/.test(html), 'scroll-spy picks the section at the reading line, not an arbitrary intersecting one');
 // the clips are SHOWN now, not two text links nobody found. Each must have a poster and
 // preload="none", or four videos would silently cost every visitor bandwidth on load.

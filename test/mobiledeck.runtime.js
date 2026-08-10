@@ -226,6 +226,13 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     const roles=[...map.querySelectorAll('.mp-role')].map(t=>t.textContent);
     const leaves=map.querySelectorAll('.mp-leaf').length;
     const branches=map.querySelectorAll('.mp-branch').length;
+    /* COMPUTED, not declared. verify.js could only ever check that the source mentions
+       stroke-dasharray; setting it to 0 rendered the agent's branch solid and identical
+       to the other four while every static check stayed green. The browser's own resolved
+       value is the only thing that can say "visibly a loop". */
+    const dashes=[...map.querySelectorAll('.mp-branch')]
+      .map(b=>getComputedStyle(b).strokeDasharray)
+      .map(d=>(!d||d==='none'||/^0px?(,\s*0px?)*$/.test(d))?'solid':'dashed');
     const twigs=map.querySelectorAll('.mp-twig').length;
     const drive=map.querySelectorAll('.mp-drive').length;
     const drivesTxt=(map.querySelector('.mp-drive-t')||{}).textContent||'';
@@ -239,15 +246,33 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     return {before, names, roles, leaves, branches, twigs, drive, drivesTxt,
       saysAbove:/\babove\b/.test(drivesTxt), pans,
       labelled:(svg.getAttribute('aria-label')||'').length,
-      afterMap, back,
+      dashes, afterMap, back,
       pressed: mapBtn.getAttribute('aria-pressed')};})()`);
   (r.before.map===true && r.names.join(',')==='LLM,RAG,MCP,API,Agent' &&
    r.branches===5 && r.twigs===15 && r.leaves===15 && r.drive===2 && r.labelled>80 &&
+   r.dashes.filter(d=>d==='dashed').length===1 && r.dashes[4]==='dashed' &&
    r.pans>0 && !r.saysAbove &&
    r.afterMap.map===false && r.afterMap.rail===true && r.afterMap.card===true && r.afterMap.flow===true && r.afterMap.out===true &&
    r.back.map===true && r.back.rail===false)
-    ? ok(`the map is DRAWN: ${r.branches} curved branches off one root, ${r.twigs} twigs to ${r.leaves} leaves, a dashed bracket saying "${r.drivesTxt}", ${r.pans}px of pan on a phone, and an aria-label for anyone who cannot see it`)
+    ? ok(`the map is DRAWN: ${r.branches} curved branches off one root, ${r.twigs} twigs to ${r.leaves} leaves, a dashed bracket saying "${r.drivesTxt}", exactly 1 of 5 branches rendering dashed (the Agent), ${r.pans}px of pan on a phone, and an aria-label for anyone who cannot see it`)
     : bad('mind map: '+JSON.stringify(r));
+
+  /* THE BUDGET AT 320 TOO. The 390 cap could not see the width where it is breached:
+     narrower wrapping makes every paragraph taller, so the same page runs ~15% longer.
+     Measured 6.57 screens at 390 (844-tall) and 11.19 at 320 (568-tall). Those numbers
+     are NOT comparable and must not share a cap: a 320 device has a screen 33% shorter,
+     so the same content is more screens even before the extra wrapping. This counts what
+     the reader actually swipes on THAT device, which is the only figure that means
+     anything to them. Raising it is a decision; leaving it unmeasured was an accident. */
+  await nav(320, 568);
+  const SCREEN_BUDGET_320 = 11.6;                 // measured 11.19 of a 568-tall screen + 0.4
+  r = await ev(`(function(){ return {
+      screens: +(document.scrollingElement.scrollHeight/568).toFixed(2),
+      overflow: document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth };})()`);
+  (r.screens <= SCREEN_BUDGET_320 && r.overflow <= 0)
+    ? ok(`320px: ${r.screens} of ${SCREEN_BUDGET_320} phone-screens allowed, no sideways page scroll`)
+    : bad(`320px: ${r.screens} screens (budget ${SCREEN_BUDGET_320}), overflow ${r.overflow}px — ` +
+          `on a 568-tall screen. Shorten the page, or raise the cap deliberately and say why.`);
 
   console.log('----------------------------');
   console.log(`${checks} checks, ${fails} failure(s)`);

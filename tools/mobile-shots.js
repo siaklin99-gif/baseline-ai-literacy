@@ -34,7 +34,9 @@ const path = require('path');
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const PAGE = 'file://' + path.join(__dirname, '..', 'index.html');
-const W = 390, H = 844;                    // iPhone-ish; the mobile breakpoint is 759px
+const W = +(process.env.SHOT_W || 390), H = +(process.env.SHOT_H || 844);
+/* Width is overridable so the human eye pass can reach 320, where every mobile defect a
+   cold audit found actually lived:  SHOT_W=320 SHOT_H=568 node tools/mobile-shots.js  */
 
 /* Each state: [name, theme, setup]. `setup` runs in the page after load and before the
    shot — scroll somewhere, open a door, push a deck to the middle. */

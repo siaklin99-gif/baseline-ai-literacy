@@ -52,12 +52,20 @@ const bad=m=>{checks++;fails++;console.log('  \x1b[31m✗ '+m+'\x1b[0m')};
     }
     out.screens=+(document.scrollingElement.scrollHeight/844).toFixed(2);
     return out;})()`);
-  (r.doors.cards===5 && r.quiz.cards===9 &&
+  /* THE BUDGET IS NOW LOAD-BEARING. `screens` was computed, interpolated into the green
+     sentence ("page is 6.57 screens, was 8.89") and tested by nothing — the page could
+     double in length and this stayed green with the new number reading like a result.
+     Per the parity rule, re-tighten in the SAME commit as any reduction or the headroom
+     you just freed is exactly where the length creeps back. */
+  const SCREEN_BUDGET = 7.0;                       // measured 6.57 at 390x844 + 0.4
+  (r.screens <= SCREEN_BUDGET && r.doors.cards===5 && r.quiz.cards===9 &&
    r.doors.disp==='flex' && r.quiz.disp==='flex' &&
    /mandatory/.test(r.doors.snap) && /mandatory/.test(r.quiz.snap) &&
    r.doors.scrollable>100 && r.quiz.scrollable>100)
-    ? ok(`both decks swipe: 5 doors and 9 questions in flex rows with mandatory snap (page is ${r.screens} screens, was 8.89)`)
-    : bad('decks: '+JSON.stringify(r));
+    ? ok(`both decks swipe: 5 doors and 9 questions in flex rows with mandatory snap (page is ${r.screens} of ${SCREEN_BUDGET} screens allowed, was 8.89)`)
+    : bad((r.screens > SCREEN_BUDGET
+            ? `the page grew to ${r.screens} phone-screens, over the ${SCREEN_BUDGET} budget — shorten it, or raise the budget deliberately and say why. `
+            : '') + 'decks: '+JSON.stringify(r));
 
   /* ---- 2. the next card PEEKS — without the overhang nobody knows to swipe ---- */
   r=await ev(`(function(){

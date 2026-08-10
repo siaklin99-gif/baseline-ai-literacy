@@ -47,6 +47,11 @@ const VIEWPORTS = [
   { name: 'desktop-1280', w: 1280, h: 900, mobile: false },
   { name: 'tablet-768',   w: 768,  h: 1024, mobile: true },
   { name: 'mobile-390',   w: 390,  h: 844, mobile: true },
+  /* 320 is in CLAUDE.md's parity rule and was never implemented — so every mobile defect
+     a cold audit found lived here: the wordmark touching the first nav link (0px gap),
+     both nav links wrapping to two lines, 11.26 phone-screens. 390 was clean throughout,
+     which is exactly how testing one mobile width hides the other. */
+  { name: 'mobile-320',   w: 320,  h: 568, mobile: true },
 ];
 
 // Grids whose column count IS the mobile-vs-desktop structure. If one of these
@@ -141,9 +146,28 @@ const PROBE = `(function(){
     grids[sel] = kids.length ? new Set(kids.map(c => Math.round(c.getBoundingClientRect().x))).size : 0;
   });
 
+  /* THE NAV, MEASURED BY NAME. Adding a 320 viewport only helps if something actually
+     asserts what breaks there — otherwise the extra column is decoration that passes by
+     construction. At 320 the wordmark ran flush into "What I make" (0px) and both links
+     wrapped to two lines; at 390 the same markup had a 68px gap and no wrap. So: a
+     positive fit guard, not a hope. */
+  const nav = (() => {
+    const logo = document.querySelector('nav .wordmark');
+    const links = [...document.querySelectorAll('nav .nav-links a')];
+    if (!logo || !links.length) return null;
+    const lg = logo.getBoundingClientRect();
+    const visible = links.filter(a => a.getBoundingClientRect().width > 0);
+    const first = visible[0].getBoundingClientRect();
+    return {
+      gap: round(first.left - lg.right),
+      wrapped: visible.filter(a => a.getClientRects().length > 1).map(a => a.textContent.trim()),
+      links: visible.length,
+    };
+  })();
+
   return {
     viewport: window.innerWidth,
-    wraps, starved, grids,
+    wraps, starved, grids, nav,
 
     // NOTE: page overflow is crosscheck.js's job, deliberately not duplicated here.
   };
@@ -195,6 +219,14 @@ async function main() {
       if (result.exceptionDetails) throw new Error('probe threw: ' + (result.exceptionDetails.exception || {}).description);
       const r = result.result.value;
       const tag = `[${v.name}]`;
+
+      // 0. the nav must FIT at this width — the check that makes a 320 column real
+      if (r.nav) {
+        (r.nav.gap >= 12 && r.nav.wrapped.length === 0)
+          ? ok(`${tag} nav fits: ${r.nav.gap}px between the wordmark and ${r.nav.links} links, none wrapped`)
+          : bad(`${tag} nav collides — ${r.nav.gap}px gap (need >=12)` +
+                (r.nav.wrapped.length ? `, wrapped: ${r.nav.wrapped.join(', ')}` : ''));
+      }
 
       // 1. one content column, except where a narrower one is declared on purpose
       const declared = r.wraps.filter(w => NARROW_BY_DESIGN[w.id]);

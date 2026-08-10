@@ -39,8 +39,19 @@
     "grids": {
       "#cards .tg-deck": null,
       ".foot-cols": 1,
-      ".path-pick": 4,
+      ".path-pick": 3,
       ".trust .wrap": 2
+    }
+  },
+  "mobile-320:layers": 320,
+  "mobile-320": {
+    "wrapX": 0,
+    "wrapW": 320,
+    "grids": {
+      "#cards .tg-deck": null,
+      ".foot-cols": 1,
+      ".path-pick": 2,
+      ".trust .wrap": 1
     }
   }
 }

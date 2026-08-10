@@ -206,6 +206,28 @@ html[data-deep] { overflow: hidden; }           /* the page behind must not scro
    block:'start' lands underneath it. On a 390px screen that put a 38x44 dead zone over a
    card's own summary — tapping the corner of the thing you just opened closed the layer. */
 .deep.open [id] { scroll-margin-top: 78px; }
+/* ...but scroll-margin only helps content you JUMP to. Everything else slides underneath
+   the fixed button as the panel scrolls: measured 15 occluding states at 320px and 10 at
+   390px, the first casualty being the door's own "AI, mapped to a body" heading. Zero at
+   1440px, where the button sits in empty gutter — which is why it was never noticed.
+   The reading column now simply stops short of the button's lane on narrow screens. */
+/* Reserving a right-hand gutter was the wrong shape — it fought the full-bleed decks,
+   which are supposed to reach the screen edge. The real problem is that a FLOATING pill
+   lets text peek out around it, which reads as broken rather than as scrolled-away. So
+   the layer gets a proper opaque header strip: content passes cleanly BEHIND it, the way
+   every sticky header on the web behaves, and the button sits on top of that.
+   The strip is exactly the layer's existing 68px top padding, so nothing else moves. */
+/* The strip must hang off the CLOSE BUTTON, not off the layer. A ::before inside
+   .deep.open scrolls away with the panel (the layer is the scroller), so the bar left
+   the top of the screen on the first swipe and the heading collided with the button
+   again — verified by screenshot, where "AI, mapped to a body" was sliced through
+   "body". #deepClose is a body-level fixed element, so its own ::before stays put.
+   z-index -1 keeps it behind the button; the button's own z-index 61 stacking context
+   keeps the pair above all layer content. */
+.deep-close::before {
+  content: ''; position: fixed; top: 0; left: 0; right: 0; height: 68px;
+  background: var(--bg); z-index: -1;
+}
 .deep-close {
   position: fixed; top: 14px; right: 18px; z-index: 61; min-height: 44px;
   padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border-med);
@@ -781,7 +803,13 @@ details.card[open] .chev { transform: rotate(90deg); }
 .qz-next { display: block; margin-top: 6px; font-size: 14px; color: var(--text-sec); font-weight: 500; }
 .lc-day { text-align: center; font-size: 12px; color: var(--text-ter); margin-top: 10px; }
 /* guided start: pick your starting point, the path lights up */
-.path-pick { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 20px; }
+/* justify-content was CENTER, so the container's left edge matched every other block
+   while its visible pills sat centred on the wrap midpoint — aligning with neither the
+   heading above nor the cards below, and breaking into a ragged orphan row at 320.
+   layout.js counts child left-edges within a grid, so a correct container with floating
+   contents passed by construction: the same shape as the footer bug that harness exists
+   to catch. */
+.path-pick { display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex-wrap: wrap; margin: 2px 0 20px; }
 .path-q { font-size: 13px; color: var(--text-sec); font-weight: 600; margin-right: 4px; }
 .path-chip { min-height: 44px; padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600;
   background: var(--surface); color: var(--text-sec); border: 1px solid var(--border-med);
@@ -912,6 +940,23 @@ nav { position: sticky; top: 0; z-index: 20; background: var(--bg); border-botto
 .nav-links a.nav-cta { background: var(--coral-btn); color: var(--coral-btn-text); padding: 10px 16px; border-radius: 999px; font-weight: 600; display: inline-block; }
 .nav-links a.nav-cta:hover { opacity: 0.9; }
 @media (max-width: 560px) { .nav-sm-hide { display: none; } .nav-inner { padding: 11px 24px; } .nav-links { gap: 12px; } .nav-links a { font-size: 13px; } }
+/* At 320 the wordmark ran right up to "What I make" — a measured 0px gap — and both nav
+   links wrapped to two lines, so the logo's accent dot read as a bullet belonging to the
+   link. 390 was fine (68px gap, no wrap), which is exactly why testing one mobile width
+   missed it. Shrink the mark and the wordmark, never the tap target. */
+@media (max-width: 380px) {
+  /* Tap targets scale with the SVG, so a viewport narrower than 390 shrinks them below
+     the page's own 44px minimum: measured 40x40 on the circle's numbered nodes and 38x38
+     on the body-map markers at 320. Same fix as the 560px bump above, one step further —
+     only the INVISIBLE hit circles grow, so nothing moves visually. */
+  .bp-hit { r: 35px; }
+  .lc-node .lc-hit { r: 26px; }
+  .nav-inner { padding: 11px 16px; }
+  .wordmark { font-size: 24px; gap: 6px; }
+  .nav-mark { width: 22px; height: 22px; }
+  .nav-links { gap: 10px; }
+  .nav-links a { font-size: 12px; white-space: nowrap; }
+}
 
 footer { margin-top: 30px; }
 .peek-wrap { display: flex; justify-content: center; }
@@ -1061,6 +1106,7 @@ border-left: 3px solid var(--border-med); padding-left: 12px; }
 .mp-leaf { font: 500 12px -apple-system, system-ui, sans-serif; fill: var(--text-sec); }
 .mp-twig { fill: none; stroke: var(--border-med); stroke-width: 1; }
 .mp-branch { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.mp-branch.is-loop { stroke-dasharray: 5 4; }
 .mp-pod { fill: var(--surface); stroke-width: 1.5; }
 .mp-drive { fill: none; stroke: var(--g2); stroke-width: 2; stroke-dasharray: 5 4; }
 /* paint-order halo: the label sits where the LLM branch sweeps past, and text crossing
@@ -2277,7 +2323,12 @@ const STACK_HONEST = 'Every step above is also a place it can be <b>wrong</b>: t
     STACK.forEach((s, i) => {
       const y = Y[i], col = COL[i];
       // a curve out of the root, not a right angle — this is the "branch" of a mind map
-      g += `<path class="mp-branch" stroke="${col}"
+      // The agent's branch is DASHED, like its driver bracket. A cold audit caught the
+      // guard claiming "not as a fifth spoke" while the drawing gave the agent a solid
+      // root branch identical to the other four — the sentence was true of the intent
+      // and false of the picture. Now the picture agrees: four solid spokes, and a
+      // dashed one that visibly belongs to the loop.
+      g += `<path class="mp-branch${i === 4 ? ' is-loop' : ''}" stroke="${col}"
         d="M${ROOT.x + 62} ${ROOT.y} C ${ROOT.x + 130} ${ROOT.y}, ${NX - 80} ${y}, ${NX - 6} ${y}"/>`;
       g += `<rect class="mp-pod" stroke="${col}" x="${NX}" y="${y - 19}" width="176" height="38" rx="12"/>`;
       g += `<text class="mp-name" x="${NX + 12}" y="${y - 1}" fill="${col}">${esc(s.em)} ${esc(s.name)}</text>`;
@@ -2736,9 +2787,21 @@ pwaBtn.addEventListener('click', async () => {
       const o = JSON.parse(decodeURIComponent(escape(atob(raw.slice(4)))));
       // validate EVERYTHING first, write only after — a corrupt key must not half-import
       const staged = [];
+      /* SHAPE, not just syntax. JSON.parse only proved each value was parseable, so
+         baseline_circle:"{}" imported happily and the five readers downstream had to
+         each re-defend themselves. That inverts the project's own rule — validate at
+         the boundary — and leaves the safety in five places instead of one. */
+      const SHAPE = {
+        baseline_circle: (v) => Array.isArray(v) && v.every(x => typeof x === 'boolean'),
+        baseline_quiz_missed: (v) => Array.isArray(v),
+        baseline_path: (v) => typeof v === 'string',
+        baseline_visits: (v) => Array.isArray(v) || typeof v === 'number' || typeof v === 'string',
+      };
       KEYS.forEach(k => {
         if (typeof o[k] !== 'string') return;
-        JSON.parse(o[k]);                    // any invalid key aborts the whole import
+        const parsed = JSON.parse(o[k]);      // any invalid key aborts the whole import
+        const shapeOk = SHAPE[k] || (() => true);
+        if (!shapeOk(parsed)) throw new Error('shape:' + k);
         staged.push([k, o[k]]);
       });
       if (!staged.length) { note.textContent = 'Code was readable but held no progress.'; return; }
@@ -2763,8 +2826,16 @@ const LC_C = 2 * Math.PI * 95;   // ring circumference
 let lcDone = Array(CIRCLE.length).fill(false);
 try {
   const saved = JSON.parse(localStorage.getItem('baseline_circle') || '[]');
-  // ticks saved before "Peek under the hood" (step 6) existed: keep the old quiz tick on the quiz
-  if (Array.isArray(saved) && saved.length === 6) saved.splice(5, 0, false);
+  /* Ticks saved before "Peek under the hood" (step 6) existed: keep the old quiz tick on
+     the quiz. This is a LENGTH heuristic, and length is not a version — the day CIRCLE
+     gains an 8th step, a stored 7-length array becomes indistinguishable from a current
+     one and every tick silently shifts by one. So the migration is pinned to the exact
+     shape it was written for; if the step count changes, this stops matching and the
+     next migration has to be written deliberately instead of inheriting a wrong guess. */
+  const MIGRATE_FROM = 6, MIGRATE_TO = 7;
+  if (Array.isArray(saved) && saved.length === MIGRATE_FROM && CIRCLE.length === MIGRATE_TO) {
+    saved.splice(5, 0, false);
+  }
   if (Array.isArray(saved)) saved.forEach((v, i) => { if (i < lcDone.length) lcDone[i] = !!v; });
 } catch (e) {}
 

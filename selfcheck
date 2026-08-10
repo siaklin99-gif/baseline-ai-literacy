@@ -49,6 +49,10 @@ if [ "${1:-}" = "--full" ]; then
   step "runtime: paths, playground, labs, tally"   node test/features.runtime.js
   step "runtime: layer 2 (deep sections open on top)" node test/layer2.runtime.js
   step "runtime: mobile swipe decks (sideways, not down)" node test/mobiledeck.runtime.js
+  # The PWA path is the only component that can serve every returning visitor a stale
+  # page after a deploy, and until now nothing exercised it: every other rendered check
+  # loads file://, where the worker is gated off. This one serves the repo over real HTTP.
+  step "runtime: service worker (registers, offline, fresh-after-deploy)" node test/pwa.runtime.js
   # mobile-shots doubles as a smoke check: each state's setup THROWS if its section,
   # deck, or door has vanished, and the tool exits 1 writing no PNG for it. It cannot
   # judge whether a shot LOOKS right — that stays a human job; the fresh PNGs land in

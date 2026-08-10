@@ -670,9 +670,15 @@ g(!/function deepOpen\([\s\S]*?\n\}/.test(html) || !/function deepOpen\([\s\S]*?
   // Drawn, not merely labelled: a dashed loop doubling back around the three branches
   // the agent runs. Five equal spokes would teach the shape the flow was fixed to stop
   // teaching, and a mind map is exactly where that mistake looks tidy.
+  // The predicate must cover every noun in the sentence. It used to assert "not as a
+  // fifth spoke" while testing only that a dashed loop and a label existed — and the
+  // drawing gave the agent a solid root branch identical to the other four. A cold audit
+  // caught the two disagreeing. Now the DISTINCTION itself is what is tested.
   g(/class="mp-drive"/.test(html) && /drives these three/.test(html) &&
+    /i === 4 \? ' is-loop' : ''/.test(html) &&
+    /\.mp-branch\.is-loop \{ stroke-dasharray/.test(html) &&
     /\.mp-drive \{ fill: none; stroke: var\(--g2\); stroke-width: 2; stroke-dasharray/.test(html),
-    'the map DRAWS the agent looping back over the three branches it drives, not as a fifth spoke');
+    'the map draws the agent as a DASHED loop — visibly not a fifth solid spoke like the other four');
   // A claim about POSITION goes false when the layout changes: the branches are one
   // column on a phone and a two-column grid on desktop, where four sit above the driver.
   g(!/mp-drives">[^<]*\babove\b/.test(html),

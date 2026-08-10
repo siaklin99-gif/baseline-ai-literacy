@@ -172,6 +172,10 @@ const COMBOS = [
   { name: 'desktop-light', w: 1280, h: 900, mobile: false, dsf: 1, theme: 'light' },
   { name: 'desktop-dark',  w: 1280, h: 900, mobile: false, dsf: 1, theme: 'dark'  },
   { name: 'mobile-light',  w: 390,  h: 844, mobile: true,  dsf: 2, theme: 'light' },
+  /* 320 light only: page-level overflow and clipping are layout facts, not colour facts,
+     so one theme proves them and the run stays fast. Added because every mobile defect a
+     cold audit found lived at 320 while 390 was clean. */
+  { name: 'mobile-320',    w: 320,  h: 568, mobile: true,  dsf: 2, theme: 'light' },
   { name: 'mobile-dark',   w: 390,  h: 844, mobile: true,  dsf: 2, theme: 'dark'  },
 ];
 

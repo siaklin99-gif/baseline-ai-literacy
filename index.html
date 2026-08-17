@@ -936,10 +936,11 @@ nav { position: sticky; top: 0; z-index: 20; background: var(--bg); border-botto
     /* accent lifts on dark — see the note in AI_Hub/assets/style.css; the inlined mark
        must match the standalone dark SVG rather than keeping the light teal */
     .nm-acc { fill: #2D8E7E; }
-    /* MUST stay after the light rule: equal specificity, so source order decides. Placed
-       above it first and the light teal won in dark mode — the exact ordering trap this
+    .nm-bar { stroke: #2D8E7E; }
+    /* MUST stay after the light rules: equal specificity, so source order decides. Placed
+       above them first and the light teal won in dark mode — the exact ordering trap this
        codebase has hit before. */
-    @media (prefers-color-scheme: dark) { .nm-acc { fill: #4fae9d; } }
+    @media (prefers-color-scheme: dark) { .nm-acc { fill: #4fae9d; } .nm-bar { stroke: #4fae9d; } }
 .wordmark span { color: var(--teal); }
 .nav-links { display: flex; gap: 20px; align-items: center; }
 .nav-links a { color: var(--text-sec); text-decoration: none; font-size: 14px; font-weight: 500; padding: 10px 0; }
@@ -1188,7 +1189,7 @@ border-left: 3px solid var(--border-med); padding-left: 12px; }
 
 <nav>
   <div class="nav-inner">
-    <a class="wordmark" href="https://hlur.ai/"><svg class="nav-mark" viewBox="0 0 64 64" aria-hidden="true"><g fill="currentColor"><rect x="10" y="9" width="15" height="15" rx="2"/><rect x="10" y="40" width="15" height="15" rx="2"/><rect x="39" y="9" width="15" height="15" rx="2"/><rect x="39" y="40" width="15" height="15" rx="2"/></g><g class="nm-acc"><rect x="10" y="24.5" width="15" height="15" rx="2"/><rect x="39" y="24.5" width="15" height="15" rx="2"/></g></svg>Hlur<span>.</span></a>
+    <a class="wordmark" href="https://hlur.ai/"><svg class="nav-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M17.5 32h29" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" class="nm-bar"/><g fill="currentColor"><rect x="10" y="9" width="15" height="15" rx="2"/><rect x="10" y="40" width="15" height="15" rx="2"/><rect x="39" y="9" width="15" height="15" rx="2"/><rect x="39" y="40" width="15" height="15" rx="2"/></g><g class="nm-acc"><rect x="10" y="24.5" width="15" height="15" rx="2"/><rect x="39" y="24.5" width="15" height="15" rx="2"/></g></svg>Hlur<span>.</span></a>
     <div class="nav-links">
       <a href="https://hlur.ai/#make">What I make</a>
       <a class="nav-sm-hide" href="https://hlur.ai/lur">Meet Lur</a>

@@ -20,11 +20,31 @@
    blank than a confident wrong price.
    ============================================================ */
 
+/* Re-checked 2026-10-18 (was 2026-07-21, 89d — the harness warns at 90d and blocks
+   commits, which is the deadline that actually bites; the public amber is 120d).
+
+   WHAT WAS ACTUALLY VERIFIED, so a later reader knows what this stamp covers:
+   • All 9 linked sources return 200. melaniemitchell.me answered 406 to curl's default
+     Accept header and 200 to a browser's — a false red, not link rot. Check headers
+     before retiring a link.
+   • pricing: Claude Pro $20/mo and Max $125/mo billed monthly, read off claude.com
+     /pricing. "~$20" and "~$100-200" both still bracket the real numbers.
+   • models: all eight families still ship. The four assistants are all active; the four
+     open-weight labs all released downloadable weights during 2026 (secondary sources —
+     blogs and aggregators — not official release pages, so medium confidence on the
+     specifics, high on "these labs still ship open weights").
+
+   WHY NO ROW TEXT CHANGED: every row deliberately avoids version numbers and exact
+   prices. Sources disagreed on which version each assistant is running right now — which
+   is precisely the churn these rows were written to sit above. A row that named "GPT-5.4"
+   would need rewriting every quarter and would be wrong between rewrites. Keep it that
+   way: if a refresh ever tempts you to add a version number, that is the row getting
+   worse, not more current. */
 window.BASELINE_DATA = {
 
   /* Topic 3 & 4 — which models exist, and which to use for what */
   models: {
-    asOf: "2026-07-21",
+    asOf: "2026-10-18",
     source: "Vendor sites · live landscape",
     sourceUrl: "https://artificialanalysis.ai/models",
     // We list by PRODUCT name (stable) not version number (churns monthly).
@@ -50,7 +70,7 @@ window.BASELINE_DATA = {
 
   /* Topic 6 — setup & what it costs, closed vs open weight */
   pricing: {
-    asOf: "2026-07-21",
+    asOf: "2026-10-18",
     source: "Vendor pricing pages (e.g. Claude's)",
     sourceUrl: "https://claude.com/pricing",
     html: `
@@ -70,7 +90,7 @@ window.BASELINE_DATA = {
 
   /* Topic 12 — books & classes worth taking */
   books: {
-    asOf: "2026-07-21",
+    asOf: "2026-10-18",
     // deliberate: no single section URL — every title above links to its own
     // publisher/author page, which ARE the sources.
     source: "Publisher & author pages — linked on each title",
